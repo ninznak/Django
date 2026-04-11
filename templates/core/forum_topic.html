@@ -1,0 +1,61 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
+    <div class="max-w-4xl mx-auto px-6">
+        <a href="/forum/" class="text-[#3d7a4f] hover:underline mb-8 inline-block" data-i18="forum_back">← Back to Forum</a>
+        
+        <!-- Topic Header -->
+        <div class="bg-white rounded-3xl p-8 border border-primary/10 mb-6">
+            <h1 class="font-display text-3xl font-semibold" data-i18="forum_topic_title">Best settings for bas relief in Blender 4.3?</h1>
+            <div class="flex items-center gap-4 mt-4 text-sm text-gray-500">
+                <span data-i18="forum_topic_author_meta">by Mikhail Sorokin · 3D Modeling · 2 hours ago</span>
+            </div>
+            <p class="mt-6 text-gray-600" data-i18="forum_topic_body">
+                I've been trying to print some of the medal models at home with my FDM printer and I'm losing a lot of the fine detail. 
+                Anyone have experience with resin vs FDM for this kind of work? What settings give the best results?
+            </p>
+        </div>
+        
+        <!-- Replies -->
+        <div class="space-y-4">
+            <div class="bg-white rounded-2xl p-6 border border-primary/10">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-[#3d7a4f] flex items-center justify-center text-white font-bold">A</div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold">ArtMaster</span>
+                            <span class="text-xs text-gray-400">· 1h ago</span>
+                        </div>
+                        <p class="mt-2 text-gray-600" data-i18="forum_reply_1">
+                            Great question! For FDM, I'd recommend: 0.12mm layer height, no supports needed for flat surfaces, PLA+ or PETG, and slow print speed (30mm/s).
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-6 border border-primary/10">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-[#a8c957] flex items-center justify-center text-white font-bold">D</div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold">DmitriK</span>
+                            <span class="text-xs text-gray-400">· 45m ago</span>
+                        </div>
+                        <p class="mt-2 text-gray-600" data-i18="forum_reply_2">
+                            Resin printer will give you much better results for fine detail. The Elegoo Saturn is great for this price range.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reply Form -->
+        <div class="mt-8 bg-white rounded-2xl p-6 border border-primary/10">
+            <h3 class="font-semibold mb-4" data-i18="forum_add_reply">Add a Reply</h3>
+            <textarea class="w-full p-4 border border-gray-200 rounded-xl" rows="4" data-i18-placeholder="forum_reply_placeholder" placeholder="Write your reply..."></textarea>
+            <button class="btn-primary mt-4" data-i18="forum_post_reply">Post Reply</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

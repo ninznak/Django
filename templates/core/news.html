@@ -1,0 +1,82 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-12">
+            <span class="section-label" data-i18="news_label">News</span>
+            <h1 class="font-display text-5xl md:text-6xl font-semibold mt-4" data-i18="news_title">News & Articles</h1>
+            <p class="text-gray-500 mt-4 max-w-xl mx-auto" data-i18="news_subtitle">Materials about 3D modeling, AI content generation and their interaction.</p>
+        </div>
+        
+        <!-- Articles Grid -->
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Featured Article -->
+            <div class="md:col-span-2 bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group cursor-pointer">
+                <div class="aspect-[2/1] overflow-hidden">
+                    <img src="{% static 'images/news/bas-relief-depth-1920x1200.png' %}" 
+                         alt="Bas Relief" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                </div>
+                <div class="p-8">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="tag-pill" data-i18="news_technique">Technique</span>
+                        <span class="text-sm text-gray-400">8 min read</span>
+                    </div>
+                    <h2 class="text-2xl font-semibold">Bas Relief Depth: Achieving Sub-Millimeter Precision in ZBrush</h2>
+                    <p class="text-gray-500 mt-3">How to calibrate your ZBrush brushes and subdivision levels to produce production-ready bas relief geometry for casting.</p>
+                    <p class="text-sm text-gray-400 mt-4">March 14, 2026</p>
+                </div>
+            </div>
+            
+            <!-- Article 2 -->
+            <div class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group cursor-pointer">
+                <div class="aspect-video overflow-hidden">
+                    <img src="{% static 'images/news/midjourney-1920x1200.png' %}" 
+                         alt="Midjourney" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="tag-pill" data-i18="news_ai">AI</span>
+                        <span class="text-sm text-gray-400">6 min read</span>
+                    </div>
+                    <h3 class="text-xl font-semibold">Midjourney v7 for Numismatic Concept Art</h3>
+                    <p class="text-sm text-gray-400 mt-3">March 8, 2026</p>
+                </div>
+            </div>
+            
+            <!-- Article 3 -->
+            <div class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group cursor-pointer">
+                <div class="aspect-video overflow-hidden">
+                    <img src="{% static 'images/news/medals-velvet-1920x1200.jpg' %}" 
+                         alt="Medals" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="tag-pill" data-i18="news_industry">Industry</span>
+                        <span class="text-sm text-gray-400">5 min read</span>
+                    </div>
+                    <h3 class="text-xl font-semibold">The 2026 Commemorative Medal Market</h3>
+                    <p class="text-sm text-gray-400 mt-3">February 28, 2026</p>
+                </div>
+            </div>
+            
+            <!-- Article 4 -->
+            <div class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group cursor-pointer">
+                <div class="aspect-video overflow-hidden">
+                    <img src="{% static 'images/news/ai-video-1920x1200.png' %}" 
+                         alt="AI Video" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="tag-pill" data-i18="news_ai">AI</span>
+                        <span class="text-sm text-gray-400">7 min read</span>
+                    </div>
+                    <h3 class="text-xl font-semibold">Sora & Kling: AI Video for 3D Presentations</h3>
+                    <p class="text-sm text-gray-400 mt-3">February 20, 2026</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

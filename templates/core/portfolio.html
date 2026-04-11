@@ -1,0 +1,111 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-12">
+            <span class="section-label" data-i18="portfolio_title">Portfolio</span>
+            <h1 class="font-display text-5xl md:text-6xl font-semibold mt-4" data-i18="portfolio_title">Selected Works</h1>
+            <p class="text-gray-500 mt-4 max-w-xl mx-auto" data-i18="portfolio_subtitle">Explore my 3D models and AI-generated content.</p>
+        </div>
+        
+        <!-- Category Tabs -->
+        <div class="flex justify-center gap-4 mb-12">
+            <a href="/portfolio/?category=all" class="btn-primary" data-i18="portfolio_all">All</a>
+            <a href="/portfolio/?category=3d" class="btn-outline" data-i18="portfolio_3d">3D Models</a>
+            <a href="/portfolio/?category=ai" class="btn-outline" data-i18="portfolio_ai">AI Art</a>
+        </div>
+        
+        <!-- 3D Works -->
+        <div class="mb-16">
+            <h2 class="font-display text-3xl font-semibold mb-8" data-i18="portfolio_3d_title">3D Bas-Reliefs & Medals</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="group relative overflow-hidden rounded-3xl cursor-pointer">
+                    <div class="aspect-square overflow-hidden bg-gray-100">
+                        <img src="{% static 'images/featured/bronze-victory-relief-1920x2400.jpg' %}" 
+                             alt="Bronze Victory Relief" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <p class="text-white font-semibold" data-i18="portfolio_bronze_victory">Bronze Victory Relief</p>
+                            <p class="text-white/60 text-sm" data-i18="portfolio_bronze_victory_cat">3D Bas Relief</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group relative overflow-hidden rounded-3xl cursor-pointer">
+                    <div class="aspect-square overflow-hidden bg-gray-100">
+                        <img src="{% static 'images/featured/numismatic-heritage-1920x1280.jpg' %}" 
+                             alt="Numismatic Heritage" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <p class="text-white font-semibold" data-i18="portfolio_numismatic">Numismatic Heritage Set</p>
+                            <p class="text-white/60 text-sm" data-i18="portfolio_numismatic_cat">3D Coins</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group relative overflow-hidden rounded-3xl cursor-pointer">
+                    <div class="aspect-square overflow-hidden bg-gray-100">
+                        <img src="{% static 'images/shop/eagle-relief-stl-1920x1440.png' %}" 
+                             alt="Commemorative Medal" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <p class="text-white font-semibold" data-i18="portfolio_commemorative">Gold Commemorative Medal</p>
+                            <p class="text-white/60 text-sm" data-i18="portfolio_commemorative_cat">Custom Commission</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Works -->
+        <div>
+            <h2 class="font-display text-3xl font-semibold mb-8" data-i18="portfolio_ai_title">AI-Generated Art</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="group relative overflow-hidden rounded-3xl cursor-pointer">
+                    <div class="aspect-square overflow-hidden bg-gray-100">
+                        <img src="{% static 'images/featured/cosmic-weave-1920x1080.png' %}" 
+                             alt="Cosmic Weave" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <p class="text-white font-semibold" data-i18="portfolio_cosmic">Cosmic Weave</p>
+                            <p class="text-white/60 text-sm" data-i18="portfolio_cosmic_cat">AI Generative</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group relative overflow-hidden rounded-3xl cursor-pointer">
+                    <div class="aspect-square overflow-hidden bg-gray-100">
+                        <img src="{% static 'images/featured/verdant-machine-1920x2400.png' %}" 
+                             alt="Verdant Machine" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <p class="text-white font-semibold" data-i18="portfolio_verdant">Verdant Machine</p>
+                            <p class="text-white/60 text-sm" data-i18="portfolio_verdant_cat">AI Image</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group relative overflow-hidden rounded-3xl cursor-pointer">
+                    <div class="aspect-square overflow-hidden bg-gray-100">
+                        <img src="{% static 'images/shop/verdant-dreamscape-print-1920x1440.png' %}" 
+                             alt="Surreal Landscape" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <p class="text-white font-semibold" data-i18="portfolio_surreal">Surreal Landscape</p>
+                            <p class="text-white/60 text-sm" data-i18="portfolio_surreal_cat">AI Art</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

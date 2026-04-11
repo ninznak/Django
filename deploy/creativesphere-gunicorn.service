@@ -1,0 +1,26 @@
+# Install: sudo cp deploy/creativesphere-gunicorn.service /etc/systemd/system/
+# Edit WorkingDirectory / ExecStart paths to match APP_DIR on the server.
+# Then: sudo systemctl daemon-reload && sudo systemctl enable --now creativesphere-gunicorn
+
+[Unit]
+Description=CreativeSphere Django (Gunicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/Django
+Environment=DJANGO_SETTINGS_MODULE=creativesphere.settings
+ExecStart=/var/www/Django/venv/bin/gunicorn \
+    --bind 127.0.0.1:8000 \
+    --workers 3 \
+    --timeout 120 \
+    --access-logfile - \
+    --error-logfile - \
+    creativesphere.wsgi:application
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

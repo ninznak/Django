@@ -1,0 +1,42 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-12">
+            <span class="section-label" data-i18="shop_label">Shop</span>
+            <h1 class="font-display text-5xl md:text-6xl font-semibold mt-4" data-i18="shop_title">Purchase Work</h1>
+            <p class="text-gray-500 mt-4 max-w-xl mx-auto" data-i18="shop_subtitle">Digital downloads, 3D model files and exclusive prints.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for product in shop_products %}
+            <div class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col">
+                <div class="relative aspect-[4/3]">
+                    <img src="{% static product.img %}"
+                         alt="{{ product.alt }}"
+                         class="w-full h-full object-cover">
+                    {% if product.badge %}
+                    <div class="absolute top-4 left-4">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-[#a8c957]">{{ product.badge }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="p-5 flex-1 flex flex-col">
+                    <p class="text-xs uppercase tracking-widest text-gray-400" data-i18="{{ product.type_i18 }}">Digital Download</p>
+                    <h4 class="font-semibold mt-2">{{ product.title }}</h4>
+                    {% if product.description %}
+                    <p class="text-sm text-gray-500 mt-2 flex-1">{{ product.description }}</p>
+                    {% endif %}
+                    <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
+                        <span class="text-xl font-bold text-[#3d7a4f]">{{ product.price }}</span>
+                        <button type="button" class="btn-primary text-sm py-2 px-4" data-add-to-cart data-product-id="{{ product.id }}" data-i18="shop_add_cart">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

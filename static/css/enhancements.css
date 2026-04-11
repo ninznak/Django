@@ -1,0 +1,132 @@
+/**
+ * UX & visual polish layer — safe to remove: delete this file and
+ * remove its <link> + enhancements.js from base.html to roll back.
+ */
+
+/* ── Skip link (accessibility) ───────────────────────────────────────── */
+.skip-to-content {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 200;
+  padding: 0.65rem 1.25rem;
+  border-radius: 0 0 12px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary, #3d7a4f);
+  box-shadow: 0 8px 24px rgba(26, 46, 26, 0.35);
+  transform: translate(-50%, -120%);
+  transition: transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.skip-to-content:focus {
+  outline: 3px solid var(--accent, #a8c957);
+  outline-offset: 2px;
+  transform: translate(-50%, 0.5rem);
+}
+
+/* ── Smooth scroll (respect reduced motion) ──────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ── Selection matches brand ─────────────────────────────────────────── */
+::selection {
+  background: rgba(168, 201, 87, 0.35);
+  color: inherit;
+}
+
+/* ── Sticky header: depth on scroll ───────────────────────────────────── */
+.site-header {
+  transition: box-shadow 0.35s ease, background-color 0.35s ease;
+}
+.site-header.is-scrolled {
+  box-shadow: 0 4px 24px rgba(26, 46, 26, 0.12);
+  background: rgba(220, 232, 207, 0.92) !important;
+}
+
+/* ── Nav links: calm underline + hover ───────────────────────────────── */
+.site-header .site-logo::after {
+  display: none !important;
+}
+.site-header nav a[href]:not(.btn-primary):not(.btn-outline):not(.site-logo) {
+  position: relative;
+  text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+.site-header nav a[href]:not(.btn-primary):not(.btn-outline):not(.site-logo)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--primary, #3d7a4f);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s cubic-bezier(0.34, 1.1, 0.64, 1);
+  opacity: 0.85;
+}
+.site-header nav a[href]:not(.btn-primary):not(.btn-outline):not(.site-logo):hover::after,
+.site-header nav a[href]:not(.btn-primary):not(.btn-outline):not(.site-logo):focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* Mobile full-screen menu links */
+.nav-mobile-panel a[href] {
+  text-decoration: none;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+.nav-mobile-panel a[href]:hover,
+.nav-mobile-panel a[href]:focus-visible {
+  opacity: 0.85;
+  color: var(--primary, #3d7a4f) !important;
+}
+
+/* ── Focus visible (keyboard) ────────────────────────────────────────── */
+button:focus-visible,
+a:focus-visible,
+.lang-btn:focus-visible {
+  outline: 2px solid var(--primary, #3d7a4f);
+  outline-offset: 3px;
+}
+.btn-primary:focus-visible,
+.btn-outline:focus-visible {
+  outline-offset: 2px;
+}
+
+/* Cart button: keep circular focus */
+#cart-toggle:focus-visible {
+  border-radius: 0.75rem;
+}
+
+/* ── Main content: skip target ───────────────────────────────────────── */
+#main-content:focus {
+  outline: none;
+}
+#main-content:focus-visible {
+  outline: 2px dashed var(--primary, #3d7a4f);
+  outline-offset: 4px;
+}
+
+/* ── Footer links ────────────────────────────────────────────────────── */
+footer a {
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+footer a:hover {
+  opacity: 1;
+}
+
+/* ── Touch targets: min tap size on small screens ───────────────────── */
+@media (max-width: 768px) {
+  .lang-btn {
+    min-width: 1.75rem;
+    min-height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

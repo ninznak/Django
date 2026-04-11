@@ -1,0 +1,77 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid lg:grid-cols-2 gap-12 items-start">
+            <!-- Left Column -->
+            <div>
+                <span class="section-label" data-i18="about_label">About</span>
+                <h1 class="font-display text-5xl md:text-6xl font-semibold mt-4" data-i18="about_title">Craft & Intelligence</h1>
+                
+                <div class="mt-8 space-y-6 text-gray-600 leading-relaxed">
+                    <p data-i18="about_subtitle">
+                        My studio represents the fusion of traditional craftsmanship with cutting-edge artificial intelligence.
+                        For over 12 years, I've been creating detailed 3D models of medals, coins, and bas-reliefs,
+                        while simultaneously exploring the frontiers of AI-generated imagery and video.
+                    </p>
+                    <p data-i18="about_p2">
+                        My work bridges the gap between classical artistry and modern technology. Each 3D model 
+                        begins with careful research into historical context, followed by meticulous digital sculpting. 
+                        Meanwhile, AI tools allow me to visualize concepts and explore creative directions that 
+                        would be impossible through traditional methods alone.
+                    </p>
+                    <p data-i18="about_p3">
+                        Whether you need a custom commemorative medal, want to explore AI-generated concept art, 
+                        or are looking for a collaborator on a creative project, I'm here to help bring your vision to life.
+                    </p>
+                </div>
+                
+                <div class="mt-10">
+                    <a href="/homepage/#contact" class="btn-primary" data-i18="about_cta">
+                        Get in Touch
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Right Column - Image -->
+            <div class="relative">
+                <div class="aspect-square rounded-3xl overflow-hidden shadow-2xl">
+                    <img src="{% static 'images/featured/cosmic-weave-1920x1080.png' %}" 
+                         alt="My studio" 
+                         class="w-full h-full object-cover">
+                </div>
+                
+                <div class="absolute -bottom-6 -left-6 bg-white rounded-2xl p-6 shadow-xl">
+                    <p class="font-display text-3xl font-bold text-[#3d7a4f]">12+</p>
+                    <p class="text-sm text-gray-500" data-i18="about_years_exp">Years of Experience</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20">
+            <div class="text-center">
+                <p class="font-display text-4xl font-bold text-[#3d7a4f]">200+</p>
+                <p class="text-sm text-gray-500 mt-2" data-i18="about_3d_created">3D Models Created</p>
+            </div>
+            <div class="text-center">
+                <p class="font-display text-4xl font-bold text-[#3d7a4f]">50+</p>
+                <p class="text-sm text-gray-500 mt-2" data-i18="about_ai_projects">AI Projects</p>
+            </div>
+            <div class="text-center">
+                <p class="font-display text-4xl font-bold text-[#3d7a4f]">1.2K</p>
+                <p class="text-sm text-gray-500 mt-2" data-i18="about_community">Community Members</p>
+            </div>
+            <div class="text-center">
+                <p class="font-display text-4xl font-bold text-[#3d7a4f]">24h</p>
+                <p class="text-sm text-gray-500 mt-2" data-i18="about_response">Response Time</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

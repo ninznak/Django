@@ -1,0 +1,1091 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ seo.title }}{% endblock %}</title>
+    <meta name="description" content="{{ seo.description }}">
+    {% if seo.keywords %}
+    <meta name="keywords" content="{{ seo.keywords }}">
+    {% endif %}
+    <meta name="robots" content="{{ seo.robots }}">
+    <link rel="canonical" href="{{ seo.canonical_url }}">
+
+    <meta property="og:type" content="{{ seo.og_type }}">
+    <meta property="og:site_name" content="{{ seo.site_name }}">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:title" content="{{ seo.title }}">
+    <meta property="og:description" content="{{ seo.description }}">
+    <meta property="og:url" content="{{ seo.canonical_url }}">
+    {% if seo.og_image %}
+    <meta property="og:image" content="{{ seo.og_image }}">
+    {% endif %}
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ seo.title }}">
+    <meta name="twitter:description" content="{{ seo.description }}">
+    {% if seo.og_image %}
+    <meta name="twitter:image" content="{{ seo.og_image }}">
+    {% endif %}
+
+    {% if seo.json_ld %}
+    <script type="application/ld+json">{{ seo.json_ld }}</script>
+    {% endif %}
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <!-- UX polish: remove next line + enhancements.js at page bottom to roll back -->
+    <link rel="stylesheet" href="{% static 'css/enhancements.css' %}">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #3d7a4f;
+            --primary-light: #5a9a6e;
+            --accent: #a8c957;
+            --accent-strong: #4a5e38;
+            --bg-dark: #1a2e1a;
+            --bg-card: #243324;
+            --text: #263120;
+            --muted: #4c5940;
+            --line: rgba(74, 94, 56, 0.22);
+        }
+        
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.28), transparent 46%),
+                        radial-gradient(circle at 84% 6%, rgba(92, 122, 72, 0.24), transparent 42%),
+                        linear-gradient(150deg, #dce8cf 0%, #b6c9a1 42%, #8ea772 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        
+        .font-display {
+            font-family: 'Fraunces', serif;
+        }
+        
+        /* Text shadow effect for headings */
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 4px 12px rgba(61,122,79,0.15);
+        }
+        
+        .text-gradient-animated {
+            background: linear-gradient(120deg, #3a4d2c 5%, #7f9f61 30%, #d8ec9d 52%, #7f9f61 74%, #3a4d2c 98%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmerFlow 8.4s ease-in-out infinite;
+        }
+        
+        @keyframes shimmerFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Orb animations - FLOATING SPHERES */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            will-change: transform;
+        }
+        
+        .orb-a {
+            top: 10vh;
+            left: 8vw;
+            width: 390px;
+            height: 390px;
+            background: radial-gradient(circle at 35% 40%, rgba(234,255,194,0.98) 0 58%, rgba(140,185,94,0.88) 62%, rgba(140,185,94,0) 70%);
+            filter: blur(22px);
+            opacity: 0.74;
+            box-shadow: inset 0 0 0 2px rgba(223, 245, 184, 0.32), 0 0 34px rgba(137, 177, 91, 0.34);
+            animation: orbFloatA 17s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
+        }
+        
+        .orb-b {
+            right: 8vw;
+            bottom: 10vh;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle at 42% 45%, rgba(154,204,106,0.96) 0 57%, rgba(78,117,51,0.84) 62%, rgba(78,117,51,0) 72%);
+            filter: blur(22px);
+            opacity: 0.74;
+            box-shadow: inset 0 0 0 2px rgba(223, 245, 184, 0.32), 0 0 34px rgba(137, 177, 91, 0.34);
+            animation: orbFloatB 20s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
+        }
+        
+        .orb-c {
+            top: 45vh;
+            left: 38vw;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle at 45% 50%, rgba(186,226,132,0.9) 0 56%, rgba(95,136,64,0.78) 62%, rgba(95,136,64,0) 72%);
+            filter: blur(22px);
+            opacity: 0.74;
+            box-shadow: inset 0 0 0 2px rgba(223, 245, 184, 0.32), 0 0 34px rgba(137, 177, 91, 0.34);
+            animation: orbFloatC 15s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
+        }
+        
+        @keyframes orbFloatA {
+            0% { transform: translate3d(0, 0, 0) scale(1); }
+            25% { transform: translate3d(180px, -120px, 0) scale(1.12); }
+            50% { transform: translate3d(74px, 170px, 0) scale(0.92); }
+            75% { transform: translate3d(-130px, -60px, 0) scale(1.07); }
+            100% { transform: translate3d(0, 0, 0) scale(1); }
+        }
+        
+        @keyframes orbFloatB {
+            0% { transform: translate3d(0, 0, 0) scale(1); }
+            20% { transform: translate3d(-150px, 110px, 0) scale(1.08); }
+            45% { transform: translate3d(-240px, -80px, 0) scale(0.9); }
+            70% { transform: translate3d(120px, -150px, 0) scale(1.12); }
+            100% { transform: translate3d(0, 0, 0) scale(1); }
+        }
+        
+        @keyframes orbFloatC {
+            0% { transform: translate3d(0, 0, 0) scale(1); }
+            30% { transform: translate3d(-100px, -150px, 0) scale(1.12); }
+            60% { transform: translate3d(130px, -40px, 0) scale(0.92); }
+            100% { transform: translate3d(0, 0, 0) scale(1); }
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--primary);
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            opacity: 0.93;
+        }
+        
+        .btn-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 2px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .card {
+            background: rgba(225, 236, 198, 0.54);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            border: 1px solid var(--line);
+            box-shadow: 0 12px 24px rgba(63, 84, 46, 0.1);
+        }
+        
+        .section-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            color: var(--primary);
+        }
+        
+        .tag-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            background: var(--accent);
+            color: var(--bg-dark);
+        }
+        
+        /* Language switcher */
+        .lang-switch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 16px;
+        }
+        
+        .lang-btn {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .lang-btn:hover {
+            color: var(--primary);
+        }
+        
+        .lang-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        body.nav-menu-open {
+            overflow: hidden;
+        }
+
+        @media (max-width: 1023px) {
+            .lang-switch {
+                margin-right: 0;
+            }
+        }
+
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="relative">
+    {% csrf_token %}
+    <a href="#main-content" class="skip-to-content" data-i18="nav_skip">Skip to content</a>
+    <!-- Background Orbs - Floating Spheres -->
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+    
+    <!-- Header -->
+    <header class="site-header fixed top-0 left-0 right-0 z-50" style="background: rgba(220, 232, 207, 0.68); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line);">
+        <nav class="max-w-7xl mx-auto px-3 sm:px-6 flex flex-col gap-3 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-2 sm:gap-y-2 sm:py-3 lg:py-4 min-w-0">
+            <!-- Top: logo | (desktop links) | menu · cart · lang · Shop · Sign in -->
+            <div class="flex w-full min-w-0 items-center justify-between gap-2 sm:flex-1 sm:min-w-0">
+                <a href="/" class="site-logo font-display text-xl max-sm:text-2xl sm:text-lg lg:text-2xl font-extrabold tracking-tight text-shadow shrink-0 min-w-0" style="letter-spacing: 1.2px;">
+                    <span style="font-weight: 700;">Kurilenko</span><span style="font-weight: 400; opacity: 0.85;">Art</span>
+                </a>
+
+                <div class="hidden lg:flex flex-1 justify-center items-center gap-4 xl:gap-6 min-w-0 px-2" style="font-size: 14px;">
+                    <a href="/homepage/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_home">Главная</a>
+                    <a href="/about/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_about">Обо мне</a>
+                    <a href="/portfolio/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_portfolio">Портфолио</a>
+                    <a href="/news/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_news">Новости</a>
+                    <a href="/forum/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_forum">Форум</a>
+                    <a href="/homepage/#contact" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_contact">Контакты</a>
+                    <a href="/copyright/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_copyright">Авторское право</a>
+                </div>
+
+                <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+                    <button type="button" class="js-nav-drawer-open hidden sm:inline-flex lg:hidden items-center justify-center rounded-xl p-2 transition-colors" style="color: #3a4830;" aria-expanded="false" aria-controls="nav-drawer" aria-label="Меню">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                    <button type="button" id="cart-toggle" class="relative z-50 rounded-xl p-1.5 sm:p-2 transition-colors shrink-0" style="color: var(--muted);" aria-label="Cart">
+                        <svg class="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"/>
+                            <circle cx="20" cy="21" r="1"/>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                        </svg>
+                        <span id="cart-badge" class="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white {% if cart_total_items == 0 %}hidden{% endif %}" style="background: var(--primary);">{{ cart_total_items }}</span>
+                    </button>
+                    <div class="lang-switch shrink-0">
+                        <span class="lang-btn active" onclick="setLang('ru')" id="lang-ru">RU</span>
+                        <span style="color: var(--muted);">/</span>
+                        <span class="lang-btn" onclick="setLang('en')" id="lang-en">EN</span>
+                    </div>
+                    <a href="/shop/" class="hidden sm:inline-flex btn-outline text-xs sm:text-sm py-1.5 px-2 sm:py-2 sm:px-3 whitespace-nowrap shrink-0" data-i18="nav_shop_btn">Магазин</a>
+                    <a href="/sign-up-login/" class="hidden sm:inline-flex btn-primary text-xs sm:text-sm py-1.5 px-2 sm:py-2 sm:px-3 sm:px-4 whitespace-nowrap shrink-0" data-i18="sign_in">Вход</a>
+                </div>
+            </div>
+
+            <!-- Narrow phones only: menu + Shop + Sign in -->
+            <div class="flex w-full flex-wrap items-center justify-center gap-3 border-t pt-3 sm:hidden" style="border-color: var(--line);">
+                <button type="button" class="js-nav-drawer-open inline-flex items-center justify-center rounded-xl p-2 transition-colors" style="color: #3a4830;" aria-expanded="false" aria-controls="nav-drawer" aria-label="Меню">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <a href="/shop/" class="btn-outline text-sm py-2.5 px-5 whitespace-nowrap shrink-0" data-i18="nav_shop_btn">Магазин</a>
+                <a href="/sign-up-login/" class="btn-primary text-sm py-2.5 px-6 whitespace-nowrap shrink-0" data-i18="sign_in">Вход</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Mobile / tablet: full-screen menu (main links only; Shop & Sign in stay in header) -->
+    <div id="nav-drawer" class="fixed inset-0 z-[70] hidden flex-col lg:hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="nav-drawer-title">
+        <div id="nav-drawer-backdrop" class="absolute inset-0 bg-black/45 backdrop-blur-sm"></div>
+        <div class="relative flex min-h-full flex-col" style="background: rgba(220, 232, 207, 0.97); backdrop-filter: blur(12px);">
+            <p id="nav-drawer-title" class="sr-only" data-i18="nav_drawer_title">Разделы сайта</p>
+            <button type="button" id="nav-menu-close" class="absolute top-4 right-4 z-10 flex h-11 w-11 items-center justify-center rounded-xl transition-colors" style="color: #3a4830; background: rgba(255,255,255,0.35); border: 1px solid var(--line);" aria-label="Закрыть меню">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+            <nav class="nav-mobile-panel flex flex-1 flex-col items-center justify-center gap-5 sm:gap-6 px-8 pt-24 pb-16 overflow-y-auto" aria-label="Main">
+                <a href="/homepage/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_home">Главная</a>
+                <a href="/about/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_about">Обо мне</a>
+                <a href="/portfolio/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_portfolio">Портфолио</a>
+                <a href="/news/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_news">Новости</a>
+                <a href="/forum/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_forum">Форум</a>
+                <a href="/homepage/#contact" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_contact">Контакты</a>
+                <a href="/copyright/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_copyright">Авторское право</a>
+            </nav>
+        </div>
+    </div>
+    
+    <script>
+        // Language data - translations
+        const translations = {
+            ru: {
+                nav_home: "Главная",
+                nav_about: "Обо мне",
+                nav_portfolio: "Портфолио",
+                nav_shop: "Магазин",
+                nav_shop_btn: "Магазин",
+                nav_news: "Новости",
+                nav_forum: "Форум",
+                nav_contact: "Контакты",
+                nav_copyright: "Авторское право",
+                nav_skip: "Перейти к содержимому",
+                nav_menu_open: "Открыть меню",
+                nav_menu_close: "Закрыть меню",
+                nav_drawer_title: "Разделы сайта",
+                sign_in: "Вход",
+                hero_label: "Творческое Портфолио",
+                hero_title1: "Где Мастерство",
+                hero_title2: "Встречает",
+                hero_title3: "Интеллект",
+                hero_sub: "3D барельефы, медали и монеты вместе с AI-изображениями и видео — одна творческая вселенная.",
+                hero_cta1: "Смотреть Портфолио",
+                hero_cta2: "В Магазин",
+                stats_3d: "3D Моделей",
+                stats_ai: "AI Проектов",
+                stats_years: "Лет Опыта",
+                featured_label: "Избранные Работы",
+                featured_title: "Двойная Творческая Практика",
+                featured_sub: "Рукотворные 3D-модели и AI-контент, каждое направление обогащает другое.",
+                news_label: "Обновления",
+                news_title: "Новости и Статьи",
+                news_sub: "Материалы о 3D-моделировании, AI-генерации контента и их взаимодействии.",
+                news_read_more: "Читать далее",
+                news_view_all: "Все Статьи",
+                shop_label: "Магазин",
+                shop_title: "Приобрести Работу",
+                shop_sub: "Цифровые загрузки, файлы 3D-моделей и эксклюзивные принты.",
+                shop_add_cart: "В корзину",
+                shop_view_all: "Весь Магазин",
+                nav_cart: "Корзина",
+                cart_title: "Корзина",
+                cart_close: "Закрыть",
+                cart_empty: "Корзина пуста",
+                cart_qty: "Кол-во",
+                cart_remove: "Удалить",
+                cart_clear: "Очистить",
+                cart_subtotal: "Подытог",
+                cart_checkout: "Оформить заказ",
+                cart_checkout_hint: "Оплата скоро будет доступна.",
+                forum_label: "Сообщество",
+                forum_title: "Присоединиться к Обсуждению",
+                forum_sub: "Общайтесь с 3D-художниками и AI-энтузиастами. Делитесь работами, получайте отзывы.",
+                forum_members: "Участников",
+                forum_threads: "Тем",
+                forum_posts: "Сообщений",
+                forum_go: "На Форум",
+                carousel_3d_models: "3D Модели",
+                carousel_bas_relief_collection: "Коллекция Барельефов",
+                carousel_models_available: "200+ Моделей Доступно",
+                carousel_latest_commission: "Последний Заказ",
+                carousel_silver_relief_panel: "Серебряная Рельефная Панель",
+                carousel_custom_order_progress: "Под Заказ · В Работе",
+                carousel_ai_content: "AI Контент",
+                carousel_generative_art_series: "Серия Генеративного Арта",
+                carousel_neural_landscapes: "Нейронные Пейзажи Vol.3",
+                contact_label: "Связаться",
+                contact_title: "Заказ или Сотрудничество",
+                contact_sub: "Принимаю заказы на 3D-моделирование, AI-проекты и творческое сотрудничество.",
+                contact_name: "Ваше Имя",
+                contact_email: "Email",
+                contact_subject: "Тема",
+                contact_message: "Сообщение",
+                contact_send: "Отправить Сообщение",
+                contact_location: "Mосква, Россия · Доступно по всему миру",
+                contact_response: "Ответ в течение 24 часов",
+                footer_copyright: "© 2026 KurilenkoArt. Все права защищены.",
+                footer_brand: "KurilenkoArt",
+                footer_tagline: "Где Мастерство Встречает Интеллект",
+                footer_nav: "Навигация",
+                footer_home: "Главная",
+                footer_about: "Обо мне",
+                footer_portfolio: "Портфолио",
+                footer_shop: "Магазин",
+                footer_community: "Сообщество",
+                footer_news: "Новости",
+                footer_forum: "Форум",
+                footer_signin: "Вход",
+                footer_contact: "Контакты",
+                footer_contact_link: "Написать",
+                footer_email: "hello@creativesphere.art",
+                footer_location: "Mосква, Россия",
+                
+                // Portfolio page
+                portfolio_title: "Портфолио",
+                portfolio_subtitle: "Мои 3D модели и AI-контент",
+                portfolio_all: "Все",
+                portfolio_3d: "3D Модели",
+                portfolio_ai: "AI Арт",
+                portfolio_3d_title: "3D Барельефы и Медали",
+                portfolio_ai_title: "AI-Generated Арт",
+                portfolio_bronze_victory: "Бронзовый барельеф Победы",
+                portfolio_bronze_victory_cat: "3D Барельеф",
+                portfolio_numismatic: "Нумизматическое Наследие",
+                portfolio_numismatic_cat: "3D Монеты",
+                portfolio_commemorative: "Памятная Медаль",
+                portfolio_commemorative_cat: "Индивидуальный Заказ",
+                portfolio_cosmic: "Космическое Переплетение",
+                portfolio_cosmic_cat: "AI Генеративный",
+                portfolio_verdant: "Зелёная Машина",
+                portfolio_verdant_cat: "AI Изображение",
+                portfolio_surreal: "Сюрреалистический Пейзаж",
+                portfolio_surreal_cat: "AI Арт",
+                
+                // Shop page
+                shop_title: "Магазин",
+                shop_subtitle: "Цифровые загрузки, файлы 3D-моделей и эксклюзивные принты.",
+                shop_digital: "Цифровая Загрузка",
+                shop_3d_bundle: "3D Набор Моделей",
+                shop_fine_art: "Фото Искусства",
+                shop_add_cart: "В корзину",
+                
+                // News page
+                news_title: "Новости и Статьи",
+                news_subtitle: "Материалы о 3D-моделировании, AI-генерации контента и их взаимодействии.",
+                news_technique: "Техника",
+                news_ai: "AI",
+                news_industry: "Индустрия",
+                news_read_more: "Читать далее",
+                
+                // About page
+                about_title: "Мастерство и Интеллект",
+                about_subtitle: "Моя студия представляет слияние традиционного мастерства с передовым искусственным интеллектом. Более 12 лет я создаю детальные 3D модели медалей, монет и барельефов, одновременно исследуя границы AI-генерируемых изображений и видео.",
+                about_p2: "Моя работа соединяет классическое искусство и современные технологии. Каждая 3D-модель начинается с изучения исторического контекста и продолжается тщательной цифровой скульптурой. Параллельно AI-инструменты помогают визуализировать идеи и искать направления, которые трудно реализовать только традиционными методами.",
+                about_p3: "Нужна индивидуальная памятная медаль, AI-концепт-арт или творческий партнер для проекта - я помогу воплотить вашу идею в жизнь.",
+                about_cta: "Связаться",
+                about_years_exp: "Лет Опыта",
+                about_3d_created: "3D Моделей Создано",
+                about_ai_projects: "AI Проектов",
+                about_community: "Участников Сообщества",
+                about_response: "Время Ответа",
+                
+                // Forum page
+                forum_title: "Форум",
+                forum_subtitle: "Общайтесь с 3D-художниками и AI-энтузиастами",
+                forum_page_title: "Форум",
+                forum_page_subtitle: "Общайтесь с 3D-художниками и AI-энтузиастами",
+                forum_topics: "Тем",
+                forum_posts: "Сообщений",
+                forum_last_post: "Последнее сообщение",
+                forum_create: "Создать тему",
+                
+                // Auth page
+                auth_signin: "Вход",
+                auth_signup: "Регистрация",
+                auth_email: "Email",
+                auth_password: "Пароль",
+                auth_remember: "Запомнить меня",
+                auth_forgot: "Забыли пароль?",
+                auth_no_account: "Нет аккаунта?",
+                auth_have_account: "Уже есть аккаунт?",
+                
+                // Common
+                back: "Назад",
+                about_label: "Обо мне",
+                auth_welcome_back: "С возвращением",
+                auth_signin_account: "Войдите в аккаунт",
+                auth_email_or_username: "Email или имя пользователя",
+                auth_enter_email_or_username: "Введите email или имя пользователя",
+                auth_enter_password: "Введите пароль",
+                auth_sign_up_link: "Регистрация",
+                auth_or_continue: "Или продолжить через",
+                auth_google: "Google",
+                auth_github: "GitHub",
+                forum_3d_modeling_desc: "Обсуждение ZBrush, Blender и других 3D-инструментов",
+                forum_ai_content_desc: "Midjourney, Stable Diffusion и другие инструменты",
+                forum_business_desc: "Ценообразование, заказы и работа с клиентами",
+                forum_recent_discussions: "Последние обсуждения",
+                forum_replies: "ответов",
+                error_404_title: "Страница не найдена",
+                error_404_sub: "Страница, которую вы ищете, не существует.",
+                error_500_title: "Ошибка сервера",
+                error_500_sub: "На сервере произошла ошибка.",
+                go_home: "На главную",
+                news_back: "← Назад к новостям",
+                news_article_label: "Статья",
+                news_article_title: "Заголовок статьи",
+                news_article_meta: "14 марта 2026 · 8 мин чтения",
+                news_article_placeholder: "Содержимое статьи будет отображаться здесь. Это временный шаблон страницы статьи.",
+                forum_back: "← Назад на форум",
+                forum_topic_title: "Лучшие настройки для барельефа в Blender 4.3?",
+                forum_topic_author_meta: "от Mikhail Sorokin · 3D Моделирование · 2 часа назад",
+                forum_topic_body: "Я пробую печатать модели медалей дома на FDM-принтере и теряю много мелких деталей. У кого есть опыт по resin vs FDM для такой задачи? Какие настройки дают лучший результат?",
+                forum_reply_1: "Отличный вопрос! Для FDM рекомендую: 0.12мм слой, без поддержек для плоских поверхностей, PLA+ или PETG, низкая скорость печати (30мм/с).",
+                forum_reply_2: "Resin-принтер даст намного лучшую детализацию. Elegoo Saturn отлично подходит в этом ценовом диапазоне.",
+                forum_add_reply: "Добавить ответ",
+                forum_reply_placeholder: "Напишите ваш ответ...",
+                forum_post_reply: "Отправить ответ"
+            },
+            en: {
+                nav_home: "Home",
+                nav_about: "About",
+                nav_portfolio: "Portfolio",
+                nav_shop: "Shop",
+                nav_shop_btn: "Shop",
+                nav_news: "News",
+                nav_forum: "Forum",
+                nav_contact: "Contact",
+                nav_copyright: "Copyright",
+                nav_skip: "Skip to content",
+                nav_menu_open: "Open menu",
+                nav_menu_close: "Close menu",
+                nav_drawer_title: "Site sections",
+                sign_in: "Sign In",
+                hero_label: "Creative Portfolio",
+                hero_title1: "Where Craft",
+                hero_title2: "Meets",
+                hero_title3: "Intelligence",
+                hero_sub: "3D bas-reliefs, medals and coins combined with AI images and video — one creative universe.",
+                hero_cta1: "View Portfolio",
+                hero_cta2: "Visit Shop",
+                stats_3d: "3D Models",
+                stats_ai: "AI Projects",
+                stats_years: "Years Active",
+                featured_label: "Featured Works",
+                featured_title: "Dual Creative Practice",
+                featured_sub: "Handcrafted 3D models and AI content, each discipline enriches the other.",
+                news_label: "Updates",
+                news_title: "News & Articles",
+                news_sub: "Materials about 3D modeling, AI content generation and their interaction.",
+                news_read_more: "Read More",
+                news_view_all: "View All Articles",
+                shop_label: "Shop",
+                shop_title: "Purchase Work",
+                shop_sub: "Digital downloads, 3D model files and exclusive prints.",
+                shop_add_cart: "Add to Cart",
+                shop_view_all: "View Full Shop",
+                nav_cart: "Cart",
+                cart_title: "Cart",
+                cart_close: "Close",
+                cart_empty: "Your cart is empty",
+                cart_qty: "Qty",
+                cart_remove: "Remove",
+                cart_clear: "Clear",
+                cart_subtotal: "Subtotal",
+                cart_checkout: "Checkout",
+                cart_checkout_hint: "Payment integration coming soon.",
+                forum_label: "Community",
+                forum_title: "Join the Discussion",
+                forum_sub: "Connect with 3D artists and AI enthusiasts. Share your work, get feedback.",
+                forum_members: "Members",
+                forum_threads: "Threads",
+                forum_posts: "Posts",
+                forum_go: "Go to Forum",
+                carousel_3d_models: "3D Models",
+                carousel_bas_relief_collection: "Bas Relief Collection",
+                carousel_models_available: "200+ Models Available",
+                carousel_latest_commission: "Latest Commission",
+                carousel_silver_relief_panel: "Silver Relief Panel",
+                carousel_custom_order_progress: "Custom Order · In Progress",
+                carousel_ai_content: "AI Content",
+                carousel_generative_art_series: "Generative Art Series",
+                carousel_neural_landscapes: "Neural Landscapes Vol.3",
+                contact_label: "Contact",
+                contact_title: "Order or Collaboration",
+                contact_sub: "Accepting orders for 3D modeling, AI projects and creative collaboration.",
+                contact_name: "Your Name",
+                contact_email: "Email",
+                contact_subject: "Subject",
+                contact_message: "Message",
+                contact_send: "Send Message",
+                contact_location: "Moscow, Russia · Available worldwide",
+                contact_response: "Response within 24 hours",
+                footer_copyright: "© 2026 KurilenkoArt. All rights reserved.",
+                footer_brand: "KurilenkoArt",
+                footer_tagline: "Where Craft Meets Intelligence",
+                footer_nav: "Navigation",
+                footer_home: "Home",
+                footer_about: "About",
+                footer_portfolio: "Portfolio",
+                footer_shop: "Shop",
+                footer_community: "Community",
+                footer_news: "News",
+                footer_forum: "Forum",
+                footer_signin: "Sign In",
+                footer_contact: "Contact",
+                footer_contact_link: "Send Message",
+                footer_email: "hello@creativesphere.art",
+                footer_location: "Moscow, Russia",
+                
+                // Portfolio page
+                portfolio_title: "Portfolio",
+                portfolio_subtitle: "My 3D models and AI content",
+                portfolio_all: "All",
+                portfolio_3d: "3D Models",
+                portfolio_ai: "AI Art",
+                portfolio_3d_title: "3D Bas-Reliefs & Medals",
+                portfolio_ai_title: "AI-Generated Art",
+                portfolio_bronze_victory: "Bronze Victory Relief",
+                portfolio_bronze_victory_cat: "3D Bas Relief",
+                portfolio_numismatic: "Numismatic Heritage Set",
+                portfolio_numismatic_cat: "3D Coins",
+                portfolio_commemorative: "Gold Commemorative Medal",
+                portfolio_commemorative_cat: "Custom Commission",
+                portfolio_cosmic: "Cosmic Weave",
+                portfolio_cosmic_cat: "AI Generative",
+                portfolio_verdant: "Verdant Machine",
+                portfolio_verdant_cat: "AI Image",
+                portfolio_surreal: "Surreal Landscape",
+                portfolio_surreal_cat: "AI Art",
+                
+                // Shop page
+                shop_title: "Shop",
+                shop_subtitle: "Digital downloads, 3D model files and exclusive prints.",
+                shop_digital: "Digital Download",
+                shop_3d_bundle: "3D Model Bundle",
+                shop_fine_art: "Fine Art Print",
+                shop_add_cart: "Add to Cart",
+                
+                // News page
+                news_title: "News & Articles",
+                news_subtitle: "Materials about 3D modeling, AI content generation and their interaction.",
+                news_technique: "Technique",
+                news_ai: "AI",
+                news_industry: "Industry",
+                news_read_more: "Read More",
+                
+                // About page
+                about_title: "Craft & Intelligence",
+                about_subtitle: "My studio represents the fusion of traditional craftsmanship with cutting-edge artificial intelligence. For over 12 years, I've been creating detailed 3D models of medals, coins, and bas-reliefs, while simultaneously exploring the frontiers of AI-generated imagery and video.",
+                about_p2: "My work bridges the gap between classical artistry and modern technology. Each 3D model begins with careful research into historical context, followed by meticulous digital sculpting. Meanwhile, AI tools let me visualize concepts and explore directions that are hard to reach through traditional methods alone.",
+                about_p3: "Whether you need a custom commemorative medal, AI-generated concept art, or a collaborator for a creative project, I'm here to help bring your vision to life.",
+                about_cta: "Get in Touch",
+                about_years_exp: "Years of Experience",
+                about_3d_created: "3D Models Created",
+                about_ai_projects: "AI Projects",
+                about_community: "Community Members",
+                about_response: "Response Time",
+                
+                // Forum page
+                forum_title: "Forum",
+                forum_subtitle: "Connect with 3D artists and AI enthusiasts",
+                forum_page_title: "Forum",
+                forum_page_subtitle: "Connect with 3D artists and AI enthusiasts",
+                forum_topics: "Topics",
+                forum_posts: "Posts",
+                forum_last_post: "Last Post",
+                forum_create: "Create Topic",
+                
+                // Auth page
+                auth_signin: "Sign In",
+                auth_signup: "Sign Up",
+                auth_email: "Email",
+                auth_password: "Password",
+                auth_remember: "Remember me",
+                auth_forgot: "Forgot password?",
+                auth_no_account: "Don't have an account?",
+                auth_have_account: "Already have an account?",
+                
+                // Common
+                back: "Back",
+                about_label: "About",
+                auth_welcome_back: "Welcome Back",
+                auth_signin_account: "Sign in to your account",
+                auth_email_or_username: "Email or Username",
+                auth_enter_email_or_username: "Enter your email or username",
+                auth_enter_password: "Enter your password",
+                auth_sign_up_link: "Sign Up",
+                auth_or_continue: "Or continue with",
+                auth_google: "Google",
+                auth_github: "GitHub",
+                forum_3d_modeling_desc: "Discuss ZBrush, Blender, and other 3D tools",
+                forum_ai_content_desc: "Midjourney, Stable Diffusion, and more",
+                forum_business_desc: "Pricing, commissions, and client work",
+                forum_recent_discussions: "Recent Discussions",
+                forum_replies: "replies",
+                error_404_title: "Page Not Found",
+                error_404_sub: "The page you're looking for doesn't exist.",
+                error_500_title: "Server Error",
+                error_500_sub: "Something went wrong on our end.",
+                go_home: "Go Home",
+                news_back: "← Back to News",
+                news_article_label: "Article",
+                news_article_title: "Article Title",
+                news_article_meta: "March 14, 2026 · 8 min read",
+                news_article_placeholder: "Article content goes here. This is a placeholder for the news article page.",
+                forum_back: "← Back to Forum",
+                forum_topic_title: "Best settings for bas relief in Blender 4.3?",
+                forum_topic_author_meta: "by Mikhail Sorokin · 3D Modeling · 2 hours ago",
+                forum_topic_body: "I've been trying to print some of the medal models at home with my FDM printer and I'm losing a lot of the fine detail. Anyone have experience with resin vs FDM for this kind of work? What settings give the best results?",
+                forum_reply_1: "Great question! For FDM, I'd recommend: 0.12mm layer height, no supports needed for flat surfaces, PLA+ or PETG, and slow print speed (30mm/s).",
+                forum_reply_2: "Resin printer will give you much better results for fine detail. The Elegoo Saturn is great for this price range.",
+                forum_add_reply: "Add a Reply",
+                forum_reply_placeholder: "Write your reply...",
+                forum_post_reply: "Post Reply"
+            }
+        };
+        
+        let currentLang = 'ru';
+        
+        // Simple language switcher
+        function setLang(lang) {
+            console.log('Switching to:', lang);
+            currentLang = lang;
+            
+            const langRu = document.getElementById('lang-ru');
+            const langEn = document.getElementById('lang-en');
+            
+            if (langRu) langRu.classList.toggle('active', lang === 'ru');
+            if (langEn) langEn.classList.toggle('active', lang === 'en');
+            
+            localStorage.setItem('lang', lang);
+            
+            try {
+                updatePageTranslations();
+                console.log('Translations updated successfully');
+            } catch (e) {
+                console.error('Error updating translations:', e);
+            }
+        }
+        
+        function updatePageTranslations() {
+            const t = translations[currentLang];
+            if (!t) return;
+
+            // Update all elements with data-i18 attribute
+            document.querySelectorAll('[data-i18]').forEach(el => {
+                const key = el.getAttribute('data-i18');
+                if (key && t[key]) el.textContent = t[key];
+            });
+            document.querySelectorAll('.js-nav-drawer-open').forEach(function(btn) {
+                if (t.nav_menu_open) btn.setAttribute('aria-label', t.nav_menu_open);
+            });
+            const navClose = document.getElementById('nav-menu-close');
+            if (navClose && t.nav_menu_close) navClose.setAttribute('aria-label', t.nav_menu_close);
+            
+            // Hero section - use data attributes
+            document.querySelectorAll('[data-i18="hero_label"]').forEach(el => el.textContent = t.hero_label);
+            document.querySelectorAll('[data-i18="hero_title1"]').forEach(el => el.textContent = t.hero_title1);
+            document.querySelectorAll('[data-i18="hero_title2"]').forEach(el => el.textContent = t.hero_title2);
+            document.querySelectorAll('[data-i18="hero_title3"]').forEach(el => el.textContent = t.hero_title3);
+            document.querySelectorAll('[data-i18="hero_sub"]').forEach(el => el.textContent = t.hero_sub);
+            document.querySelectorAll('[data-i18="hero_cta1"]').forEach(el => el.textContent = t.hero_cta1);
+            document.querySelectorAll('[data-i18="hero_cta2"]').forEach(el => el.textContent = t.hero_cta2);
+            document.querySelectorAll('[data-i18="stats_3d"]').forEach(el => el.textContent = t.stats_3d);
+            document.querySelectorAll('[data-i18="stats_ai"]').forEach(el => el.textContent = t.stats_ai);
+            document.querySelectorAll('[data-i18="stats_years"]').forEach(el => el.textContent = t.stats_years);
+            
+            // Featured
+            document.querySelectorAll('[data-i18="featured_label"]').forEach(el => el.textContent = t.featured_label);
+            document.querySelectorAll('[data-i18="featured_title"]').forEach(el => el.textContent = t.featured_title);
+            document.querySelectorAll('[data-i18="featured_sub"]').forEach(el => el.textContent = t.featured_sub);
+            
+            // News
+            document.querySelectorAll('[data-i18="news_label"]').forEach(el => el.textContent = t.news_label);
+            document.querySelectorAll('[data-i18="news_title"]').forEach(el => el.textContent = t.news_title);
+            document.querySelectorAll('[data-i18="news_sub"]').forEach(el => el.textContent = t.news_sub);
+            document.querySelectorAll('[data-i18="news_view_all"]').forEach(el => el.textContent = t.news_view_all);
+            
+            // Shop
+            document.querySelectorAll('[data-i18="shop_label"]').forEach(el => el.textContent = t.shop_label);
+            document.querySelectorAll('[data-i18="shop_title"]').forEach(el => el.textContent = t.shop_title);
+            document.querySelectorAll('[data-i18="shop_sub"]').forEach(el => el.textContent = t.shop_sub);
+            document.querySelectorAll('[data-i18="shop_view_all"]').forEach(el => el.textContent = t.shop_view_all);
+            
+            // Forum
+            document.querySelectorAll('[data-i18="forum_label"]').forEach(el => el.textContent = t.forum_label);
+            document.querySelectorAll('[data-i18="forum_title"]').forEach(el => el.textContent = t.forum_title);
+            document.querySelectorAll('[data-i18="forum_sub"]').forEach(el => el.textContent = t.forum_sub);
+            document.querySelectorAll('[data-i18="forum_members"]').forEach(el => el.textContent = t.forum_members);
+            document.querySelectorAll('[data-i18="forum_threads"]').forEach(el => el.textContent = t.forum_threads);
+            document.querySelectorAll('[data-i18="forum_posts"]').forEach(el => el.textContent = t.forum_posts);
+            document.querySelectorAll('[data-i18="forum_go"]').forEach(el => el.textContent = t.forum_go);
+            document.querySelectorAll('[data-i18="carousel_3d_models"]').forEach(el => el.textContent = t.carousel_3d_models);
+            document.querySelectorAll('[data-i18="carousel_bas_relief_collection"]').forEach(el => el.textContent = t.carousel_bas_relief_collection);
+            document.querySelectorAll('[data-i18="carousel_models_available"]').forEach(el => el.textContent = t.carousel_models_available);
+            document.querySelectorAll('[data-i18="carousel_latest_commission"]').forEach(el => el.textContent = t.carousel_latest_commission);
+            document.querySelectorAll('[data-i18="carousel_silver_relief_panel"]').forEach(el => el.textContent = t.carousel_silver_relief_panel);
+            document.querySelectorAll('[data-i18="carousel_custom_order_progress"]').forEach(el => el.textContent = t.carousel_custom_order_progress);
+            document.querySelectorAll('[data-i18="carousel_ai_content"]').forEach(el => el.textContent = t.carousel_ai_content);
+            document.querySelectorAll('[data-i18="carousel_generative_art_series"]').forEach(el => el.textContent = t.carousel_generative_art_series);
+            document.querySelectorAll('[data-i18="carousel_neural_landscapes"]').forEach(el => el.textContent = t.carousel_neural_landscapes);
+            
+            // Contact
+            document.querySelectorAll('[data-i18="contact_label"]').forEach(el => el.textContent = t.contact_label);
+            document.querySelectorAll('[data-i18="contact_title"]').forEach(el => el.textContent = t.contact_title);
+            document.querySelectorAll('[data-i18="contact_sub"]').forEach(el => el.textContent = t.contact_sub);
+            document.querySelectorAll('[data-i18="contact_name"]').forEach(el => el.textContent = t.contact_name);
+            document.querySelectorAll('[data-i18="contact_email"]').forEach(el => el.textContent = t.contact_email);
+            document.querySelectorAll('[data-i18="contact_subject"]').forEach(el => el.textContent = t.contact_subject);
+            document.querySelectorAll('[data-i18="contact_message"]').forEach(el => el.textContent = t.contact_message);
+            document.querySelectorAll('[data-i18="contact_send"]').forEach(el => el.textContent = t.contact_send);
+            document.querySelectorAll('[data-i18="contact_response"]').forEach(el => el.textContent = t.contact_response);
+            
+            // Footer
+            document.querySelectorAll('[data-i18="footer_copyright"]').forEach(el => el.textContent = t.footer_copyright);
+            document.querySelectorAll('[data-i18="footer_brand"]').forEach(el => el.textContent = t.footer_brand);
+            document.querySelectorAll('[data-i18="footer_tagline"]').forEach(el => el.textContent = t.footer_tagline);
+            document.querySelectorAll('[data-i18="footer_nav"]').forEach(el => el.textContent = t.footer_nav);
+            document.querySelectorAll('[data-i18="footer_home"]').forEach(el => el.textContent = t.footer_home);
+            document.querySelectorAll('[data-i18="footer_about"]').forEach(el => el.textContent = t.footer_about);
+            document.querySelectorAll('[data-i18="footer_portfolio"]').forEach(el => el.textContent = t.footer_portfolio);
+            document.querySelectorAll('[data-i18="footer_shop"]').forEach(el => el.textContent = t.footer_shop);
+            document.querySelectorAll('[data-i18="footer_community"]').forEach(el => el.textContent = t.footer_community);
+            document.querySelectorAll('[data-i18="footer_news"]').forEach(el => el.textContent = t.footer_news);
+            document.querySelectorAll('[data-i18="footer_forum"]').forEach(el => el.textContent = t.footer_forum);
+            document.querySelectorAll('[data-i18="footer_signin"]').forEach(el => el.textContent = t.footer_signin);
+            document.querySelectorAll('[data-i18="footer_contact"]').forEach(el => el.textContent = t.footer_contact);
+            document.querySelectorAll('[data-i18="footer_email"]').forEach(el => el.textContent = t.footer_email);
+            document.querySelectorAll('[data-i18="footer_location"]').forEach(el => el.textContent = t.footer_location);
+            
+            // Portfolio page
+            document.querySelectorAll('[data-i18="portfolio_title"]').forEach(el => el.textContent = t.portfolio_title);
+            document.querySelectorAll('[data-i18="portfolio_subtitle"]').forEach(el => el.textContent = t.portfolio_subtitle);
+            document.querySelectorAll('[data-i18="portfolio_all"]').forEach(el => el.textContent = t.portfolio_all);
+            document.querySelectorAll('[data-i18="portfolio_3d"]').forEach(el => el.textContent = t.portfolio_3d);
+            document.querySelectorAll('[data-i18="portfolio_ai"]').forEach(el => el.textContent = t.portfolio_ai);
+            document.querySelectorAll('[data-i18="portfolio_3d_title"]').forEach(el => el.textContent = t.portfolio_3d_title);
+            document.querySelectorAll('[data-i18="portfolio_ai_title"]').forEach(el => el.textContent = t.portfolio_ai_title);
+            
+            // Shop page
+            document.querySelectorAll('[data-i18="shop_title"]').forEach(el => el.textContent = t.shop_title);
+            document.querySelectorAll('[data-i18="shop_subtitle"]').forEach(el => el.textContent = t.shop_subtitle);
+            document.querySelectorAll('[data-i18="shop_digital"]').forEach(el => el.textContent = t.shop_digital);
+            document.querySelectorAll('[data-i18="shop_3d_bundle"]').forEach(el => el.textContent = t.shop_3d_bundle);
+            document.querySelectorAll('[data-i18="shop_fine_art"]').forEach(el => el.textContent = t.shop_fine_art);
+            document.querySelectorAll('[data-i18="shop_add_cart"]').forEach(el => el.textContent = t.shop_add_cart);
+            
+            // News page
+            document.querySelectorAll('[data-i18="news_title"]').forEach(el => el.textContent = t.news_title);
+            document.querySelectorAll('[data-i18="news_subtitle"]').forEach(el => el.textContent = t.news_subtitle);
+            document.querySelectorAll('[data-i18="news_technique"]').forEach(el => el.textContent = t.news_technique);
+            document.querySelectorAll('[data-i18="news_ai"]').forEach(el => el.textContent = t.news_ai);
+            document.querySelectorAll('[data-i18="news_industry"]').forEach(el => el.textContent = t.news_industry);
+            document.querySelectorAll('[data-i18="news_read_more"]').forEach(el => el.textContent = t.news_read_more);
+            
+            // About page
+            document.querySelectorAll('[data-i18="about_title"]').forEach(el => el.textContent = t.about_title);
+            document.querySelectorAll('[data-i18="about_subtitle"]').forEach(el => el.textContent = t.about_subtitle);
+            document.querySelectorAll('[data-i18="about_p2"]').forEach(el => el.textContent = t.about_p2);
+            document.querySelectorAll('[data-i18="about_p3"]').forEach(el => el.textContent = t.about_p3);
+            document.querySelectorAll('[data-i18="about_cta"]').forEach(el => el.textContent = t.about_cta);
+            document.querySelectorAll('[data-i18="about_years_exp"]').forEach(el => el.textContent = t.about_years_exp);
+            document.querySelectorAll('[data-i18="about_3d_created"]').forEach(el => el.textContent = t.about_3d_created);
+            document.querySelectorAll('[data-i18="about_ai_projects"]').forEach(el => el.textContent = t.about_ai_projects);
+            document.querySelectorAll('[data-i18="about_community"]').forEach(el => el.textContent = t.about_community);
+            document.querySelectorAll('[data-i18="about_response"]').forEach(el => el.textContent = t.about_response);
+            
+            // Forum page
+            document.querySelectorAll('[data-i18="forum_title"]').forEach(el => el.textContent = t.forum_title);
+            document.querySelectorAll('[data-i18="forum_subtitle"]').forEach(el => el.textContent = t.forum_subtitle);
+            
+            // Auth page
+            document.querySelectorAll('[data-i18="auth_signin"]').forEach(el => el.textContent = t.auth_signin);
+            document.querySelectorAll('[data-i18="auth_signup"]').forEach(el => el.textContent = t.auth_signup);
+            document.querySelectorAll('[data-i18="auth_email"]').forEach(el => el.textContent = t.auth_email);
+            document.querySelectorAll('[data-i18="auth_password"]').forEach(el => el.textContent = t.auth_password);
+            document.querySelectorAll('[data-i18="auth_remember"]').forEach(el => el.textContent = t.auth_remember);
+            document.querySelectorAll('[data-i18="auth_forgot"]').forEach(el => el.textContent = t.auth_forgot);
+            document.querySelectorAll('[data-i18="auth_no_account"]').forEach(el => el.textContent = t.auth_no_account);
+            document.querySelectorAll('[data-i18="auth_have_account"]').forEach(el => el.textContent = t.auth_have_account);
+            document.querySelectorAll('[data-i18="auth_welcome_back"]').forEach(el => el.textContent = t.auth_welcome_back);
+            document.querySelectorAll('[data-i18="auth_signin_account"]').forEach(el => el.textContent = t.auth_signin_account);
+            document.querySelectorAll('[data-i18="auth_email_or_username"]').forEach(el => el.textContent = t.auth_email_or_username);
+            document.querySelectorAll('[data-i18="auth_enter_email_or_username"]').forEach(el => el.textContent = t.auth_enter_email_or_username);
+            document.querySelectorAll('[data-i18="auth_enter_password"]').forEach(el => el.textContent = t.auth_enter_password);
+            document.querySelectorAll('[data-i18="auth_sign_up_link"]').forEach(el => el.textContent = t.auth_sign_up_link);
+            document.querySelectorAll('[data-i18="auth_or_continue"]').forEach(el => el.textContent = t.auth_or_continue);
+            document.querySelectorAll('[data-i18="auth_google"]').forEach(el => el.textContent = t.auth_google);
+            document.querySelectorAll('[data-i18="auth_github"]').forEach(el => el.textContent = t.auth_github);
+            document.querySelectorAll('[data-i18="about_label"]').forEach(el => el.textContent = t.about_label);
+            document.querySelectorAll('[data-i18="forum_3d_modeling_desc"]').forEach(el => el.textContent = t.forum_3d_modeling_desc);
+            document.querySelectorAll('[data-i18="forum_ai_content_desc"]').forEach(el => el.textContent = t.forum_ai_content_desc);
+            document.querySelectorAll('[data-i18="forum_business_desc"]').forEach(el => el.textContent = t.forum_business_desc);
+            document.querySelectorAll('[data-i18="forum_recent_discussions"]').forEach(el => el.textContent = t.forum_recent_discussions);
+            document.querySelectorAll('[data-i18="forum_replies"]').forEach(el => el.textContent = t.forum_replies);
+            document.querySelectorAll('[data-i18="forum_page_title"]').forEach(el => el.textContent = t.forum_page_title);
+            document.querySelectorAll('[data-i18="forum_page_subtitle"]').forEach(el => el.textContent = t.forum_page_subtitle);
+            
+            // Placeholders
+            document.querySelectorAll('[data-i18-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18-placeholder');
+                if (key && t[key]) {
+                    el.setAttribute('placeholder', t[key]);
+                }
+            });
+
+            // Common
+            document.querySelectorAll('[data-i18="back"]').forEach(el => el.textContent = t.back);
+
+            window.__CART_I18N__ = {
+                title: t.cart_title,
+                close: t.cart_close,
+                empty: t.cart_empty,
+                qty: t.cart_qty,
+                remove: t.cart_remove,
+                clear: t.cart_clear,
+                subtotal: t.cart_subtotal,
+                checkout: t.cart_checkout,
+                checkoutHint: t.cart_checkout_hint,
+                navCart: t.nav_cart,
+            };
+            if (typeof window.applyCartI18n === 'function') window.applyCartI18n();
+        }
+
+        function setupMobileNav() {
+            const drawer = document.getElementById('nav-drawer');
+            const toggles = document.querySelectorAll('.js-nav-drawer-open');
+            const closeBtn = document.getElementById('nav-menu-close');
+            const backdrop = document.getElementById('nav-drawer-backdrop');
+            if (!drawer || !toggles.length) return;
+
+            function setTogglesExpanded(expanded) {
+                toggles.forEach(function(btn) {
+                    btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                });
+            }
+
+            function openNav() {
+                drawer.classList.remove('hidden');
+                drawer.classList.add('flex');
+                document.body.classList.add('nav-menu-open');
+                setTogglesExpanded(true);
+                drawer.setAttribute('aria-hidden', 'false');
+            }
+            function closeNav() {
+                drawer.classList.add('hidden');
+                drawer.classList.remove('flex');
+                document.body.classList.remove('nav-menu-open');
+                setTogglesExpanded(false);
+                drawer.setAttribute('aria-hidden', 'true');
+            }
+
+            toggles.forEach(function(toggle) {
+                toggle.addEventListener('click', function() {
+                    if (drawer.classList.contains('hidden')) openNav();
+                });
+            });
+            closeBtn && closeBtn.addEventListener('click', closeNav);
+            backdrop && backdrop.addEventListener('click', closeNav);
+            drawer.querySelectorAll('.nav-mobile-panel a[href]').forEach(function(a) {
+                a.addEventListener('click', closeNav);
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !drawer.classList.contains('hidden')) closeNav();
+            });
+        }
+        
+        // Load saved language on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setupMobileNav();
+            const savedLang = localStorage.getItem('lang') || 'ru';
+            setLang(savedLang);
+        });
+    </script>
+    
+    <!-- Main Content -->
+    <main id="main-content" class="relative z-10" tabindex="-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Cart drawer -->
+    <div id="cart-drawer" class="hidden fixed inset-0 z-[100] flex justify-end" role="dialog" aria-modal="true" aria-labelledby="cart-drawer-title">
+        <button type="button" id="cart-drawer-backdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm" aria-label="Close"></button>
+        <aside class="relative flex h-full w-full max-w-md flex-col border-l shadow-xl" style="background: var(--bg-card); border-color: var(--line); color: var(--text);">
+            <div class="flex items-center justify-between border-b px-5 py-4" style="border-color: var(--line);">
+                <h2 id="cart-drawer-title" class="font-display text-lg font-semibold">Cart</h2>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="cart-clear" class="hidden text-xs hover:opacity-80" style="color: var(--muted);">Clear</button>
+                    <button type="button" id="cart-drawer-close" class="rounded-lg p-2 hover:bg-white/10" style="color: var(--muted);" aria-label="Close">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto px-5 py-4">
+                <p id="cart-empty" class="text-sm {% if cart_total_items > 0 %}hidden{% endif %}" style="color: var(--muted);">Your cart is empty</p>
+                <ul id="cart-drawer-lines" class="space-y-4"></ul>
+            </div>
+            <div id="cart-drawer-footer" class="{% if cart_total_items == 0 %}hidden{% endif %} border-t px-5 py-4 space-y-3" style="border-color: var(--line); background: rgba(0,0,0,0.12);">
+                <div class="flex justify-between text-sm">
+                    <span id="cart-subtotal-label" style="color: var(--muted);">Subtotal</span>
+                    <span id="cart-subtotal-val" class="font-display font-semibold">${{ cart_subtotal_dollars }}</span>
+                </div>
+                <p id="cart-checkout-hint" class="text-[11px]" style="color: var(--muted);">Payment integration coming soon.</p>
+                <button type="button" id="cart-checkout-btn" class="btn-primary w-full justify-center opacity-90 cursor-not-allowed" disabled>Checkout</button>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="relative z-10 bg-[#1a2e1a]/90 text-white py-16 mt-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div>
+                    <h3 class="text-xl font-bold mb-4" data-i18="footer_brand">KurilenkoArt</h3>
+                    <p class="text-white/60 text-sm" data-i18="footer_tagline">Where Craft Meets Intelligence</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-i18="footer_nav">Navigation</h4>
+                    <ul class="space-y-2 text-white/60 text-sm">
+                        <li><a href="/homepage/" class="hover:text-white transition-colors" data-i18="footer_home">Home</a></li>
+                        <li><a href="/about/" class="hover:text-white transition-colors" data-i18="footer_about">About</a></li>
+                        <li><a href="/portfolio/" class="hover:text-white transition-colors" data-i18="footer_portfolio">Portfolio</a></li>
+                        <li><a href="/shop/" class="hover:text-white transition-colors" data-i18="footer_shop">Shop</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-i18="footer_community">Community</h4>
+                    <ul class="space-y-2 text-white/60 text-sm">
+                        <li><a href="/news/" class="hover:text-white transition-colors" data-i18="footer_news">News</a></li>
+                        <li><a href="/forum/" class="hover:text-white transition-colors" data-i18="footer_forum">Forum</a></li>
+                        <li><a href="/sign-up-login/" class="hover:text-white transition-colors" data-i18="footer_signin">Sign In</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-i18="footer_contact">Contact</h4>
+                    <p class="text-white/60 text-sm" data-i18="footer_email">hello@creativesphere.art</p>
+                    <p class="text-white/60 text-sm mt-2" data-i18="footer_location">Moscow, Russia</p>
+                    <a href="/homepage/#contact" class="text-white/60 text-sm mt-2 inline-block hover:text-white transition-colors" data-i18="footer_contact_link">Написать</a>
+                </div>
+            </div>
+            <div class="border-t border-white/10 mt-12 pt-8 text-center text-white/40 text-sm" data-i18="footer_copyright">
+                © 2026 KurilenkoArt. All rights reserved.
+            </div>
+        </div>
+    </footer>
+    
+    <script src="{% static 'js/enhancements.js' %}"></script>
+    <script src="{% static 'js/cart.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

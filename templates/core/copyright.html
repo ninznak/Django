@@ -1,0 +1,193 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pt-32 max-sm:pt-[9rem] pb-20">
+    <div class="max-w-4xl mx-auto px-6">
+        <div class="text-center mb-12">
+            <span class="section-label" data-i18="copyright_label">Правовая Информация</span>
+            <h1 class="font-display text-4xl md:text-5xl font-bold mt-4 text-gray-800" data-i18="copyright_title">Авторское Право в Российской Федерации</h1>
+            <p class="text-gray-500 mt-4 max-w-2xl mx-auto" data-i18="copyright_sub">Важная информация о защите интеллектуальной собственности и принципах использования контента</p>
+        </div>
+        
+        <!-- Основные положения -->
+        <div class="card p-8 mb-8">
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Основные положения законодательства РФ</h2>
+            
+            <div class="space-y-6 text-gray-600 leading-relaxed">
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#3d7a4f]/10 flex items-center justify-center">
+                        <span class="text-[#3d7a4f] font-bold">1</span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-2">Что охраняется авторским правом?</h3>
+                        <p>Согласно части 4 Гражданского кодекса Российской Федерации (статьи 1255-1302), объектами авторского права являются произведения науки, литературы и искусства, включая 3D-модели, изображения, видео, тексты и другие творческие результаты. Авторское право возникает автоматически при создании произведения — регистрация не требуется.</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#3d7a4f]/10 flex items-center justify-center">
+                        <span class="text-[#3d7a4f] font-bold">2</span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-2">Исключительные права</h3>
+                        <p>Автор или правообладатель обладает исключительным правом на использование произведения любым способом: воспроизведение, распространение, публичный показ, переработка и т.д. Другие лица могут использовать произведение только с согласия правообладателя или в случаях, прямо предусмотренных законом.</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#3d7a4f]/10 flex items-center justify-center">
+                        <span class="text-[#3d7a4f] font-bold">3</span>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-2">Срок действия авторских прав</h3>
+                        <p>В России авторские права действуют в течение всей жизни автора и 70 лет после его смерти, считая с 1 января года, следующего за годом смерти. После истечения срока произведение переходит в общественное достояние.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Принципы работы -->
+        <div class="card p-8 mb-8">
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Принципы работы с контентом</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white/50 rounded-2xl p-6">
+                    <div class="w-12 h-12 rounded-xl bg-[#a8c957]/20 flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-[#3d7a4f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-800 mb-2">Свободное использование</h3>
+                    <p class="text-gray-600 text-sm">Вы можете свободно просматривать, изучать и анализировать представленные работы для личных некоммерческих целей.</p>
+                </div>
+                
+                <div class="bg-white/50 rounded-2xl p-6">
+                    <div class="w-12 h-12 rounded-xl bg-[#a8c957]/20 flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-[#3d7a4f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-800 mb-2">Ограничения</h3>
+                    <p class="text-gray-600 text-sm">Запрещено копирование, распространение, переработка и коммерческое использование без письменного разрешения автора.</p>
+                </div>
+                
+                <div class="bg-white/50 rounded-2xl p-6">
+                    <div class="w-12 h-12 rounded-xl bg-[#a8c957]/20 flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-[#3d7a4f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-800 mb-2">Срок защиты</h3>
+                    <p class="text-gray-600 text-sm">Авторские права на все представленные работы действуют в течение жизни автора и 70 лет после смерти.</p>
+                </div>
+                
+                <div class="bg-white/50 rounded-2xl p-6">
+                    <div class="w-12 h-12 rounded-xl bg-[#a8c957]/20 flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-[#3d7a4f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-800 mb-2">Лицензия</h3>
+                    <p class="text-gray-600 text-sm">Для получения лицензии на коммерческое использование свяжитесь с автором через форму обратной связи.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Важные моменты -->
+        <div class="card p-8 mb-8">
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Важные моменты законодательства</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-start gap-3 p-4 bg-red-50 rounded-xl border border-red-100">
+                    <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <div>
+                        <h4 class="font-semibold text-gray-800">Нарушение авторских прав</h4>
+                        <p class="text-gray-600 text-sm mt-1">Незаконное использование объектов авторского права влечёт гражданскую, административную и уголовную ответственность (статьи 146, 1301 ГК РФ, статья 7.12 КоАП РФ).</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
+                    <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    <div>
+                        <h4 class="font-semibold text-gray-800">Добросовестное использование</h4>
+                        <p class="text-gray-600 text-sm mt-1">Цитирование допускается в научных, информационных и учебных целях с обязательным указанием автора и источника (статья 1274 ГК РФ).</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <div>
+                        <h4 class="font-semibold text-gray-800">AI-контент и авторское право</h4>
+                        <p class="text-gray-600 text-sm mt-1">Вопросы авторства AI-генерированного контента в РФ находятся в стадии правового регулирования. На данный момент рекомендуется указывать инструменты AI при создании работ.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Изображения -->
+        <div class="card p-8 mb-8">
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Визуальное представление</h2>
+            
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="relative aspect-[4/3] rounded-2xl overflow-hidden">
+                    <img src="{% static 'images/featured/bronze-victory-relief-1920x2400.jpg' %}" 
+                         alt="3D Барельеф" 
+                         class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <div class="absolute bottom-3 left-3 right-3">
+                        <p class="text-white text-sm font-medium">3D Модели</p>
+                        <p class="text-white/70 text-xs">Объекты авторского права</p>
+                    </div>
+                </div>
+                
+                <div class="relative aspect-[4/3] rounded-2xl overflow-hidden">
+                    <img src="{% static 'images/featured/cosmic-weave-1920x1080.png' %}" 
+                         alt="AI Арт" 
+                         class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <div class="absolute bottom-3 left-3 right-3">
+                        <p class="text-white text-sm font-medium">AI Генерации</p>
+                        <p class="text-white/70 text-xs">Творческие произведения</p>
+                    </div>
+                </div>
+                
+                <div class="relative aspect-[4/3] rounded-2xl overflow-hidden">
+                    <img src="{% static 'images/featured/numismatic-heritage-1920x1280.jpg' %}" 
+                         alt="Нумизматика" 
+                         class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <div class="absolute bottom-3 left-3 right-3">
+                        <p class="text-white text-sm font-medium">Медали и Монеты</p>
+                        <p class="text-white/70 text-xs">Дизайн и исполнение</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контакт для запросов -->
+        <div class="card p-8 text-center">
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-4">Вопросы по лицензированию</h2>
+            <p class="text-gray-600 mb-6">Для получения разрешения на использование работ, коммерческих запросов или вопросов об авторском праве свяжитесь с автором.</p>
+            <a href="/homepage/#contact" class="btn-primary inline-flex">
+                Связаться с Автором
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </div>
+        
+        <!-- Ссылки на законодательство -->
+        <div class="mt-8 text-center text-gray-500 text-sm">
+            <p>Информация основана на положениях Гражданского кодекса Российской Федерации (часть 4)</p>
+            <p class="mt-2">© 2026 KurilenkoArt. Все права защищены.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

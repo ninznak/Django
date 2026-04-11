@@ -1,0 +1,12 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20 flex items-center justify-center">
+    <div class="text-center">
+        <h1 class="font-display text-8xl font-bold text-[#3d7a4f]">404</h1>
+        <h2 class="font-display text-2xl font-semibold mt-4" data-i18="error_404_title">Page Not Found</h2>
+        <p class="text-gray-500 mt-4" data-i18="error_404_sub">The page you're looking for doesn't exist.</p>
+        <a href="/" class="btn-primary mt-8 inline-flex" data-i18="go_home">Go Home</a>
+    </div>
+</div>
+{% endblock %}
