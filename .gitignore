@@ -7,6 +7,5 @@ staticfiles/
 media/
 .idea/
 .gigaide/
-*.txt
 install.cmd
 SiteReplitVersion/
