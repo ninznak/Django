@@ -1,10 +1,11 @@
 #!/bin/bash
 # update.sh — скрипт быстрого обновления проекта на VPS
-# Использование: sudo bash scripts/update.sh
+# Использование: sudo bash scripts/update.sh [PROJECT_DIR]
+# По умолчанию: /var/www/Django
 
 set -e
 
-PROJECT_DIR="/var/www/Django"
+PROJECT_DIR="${1:-/var/www/Django}"
 VENV_DIR="$PROJECT_DIR/venv"
 LOG_FILE="/var/log/django-update.log"
 
