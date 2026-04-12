@@ -1,8 +1,10 @@
 import json
+import logging
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.core.mail import EmailMessage
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.templatetags.static import static
@@ -11,16 +13,58 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_http_methods
 
 from . import cart_utils
-from .forms import RegisterForm
+from .forms import ContactForm, RegisterForm
 from .seo import get_seo
 from .shop_data import get_product
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
+def _safe_contact_subject(raw: str, max_len: int = 200) -> str:
+    cleaned = " ".join((raw or "").splitlines()).strip()
+    if not cleaned:
+        return "(no subject)"
+    return cleaned[:max_len]
+
+
+def _send_contact_email(cleaned: dict) -> None:
+    site = settings.SEO_SITE_NAME
+    subj = _safe_contact_subject(cleaned["subject"])
+    body = (
+        f"Name: {cleaned['name']}\n"
+        f"From (form): {cleaned['email']}\n\n"
+        f"{cleaned['message']}"
+    )
+    msg = EmailMessage(
+        subject=f"[{site} contact] {subj}",
+        body=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[settings.CONTACT_FORM_RECIPIENT],
+        reply_to=[cleaned["email"]],
+    )
+    msg.send(fail_silently=False)
+
+
+@require_http_methods(["GET", "POST"])
 def homepage(request):
     """Главная страница — портфолио KurilenkoArt"""
-    return render(request, 'core/homepage.html')
+    if request.method == "POST" and request.POST.get("contact_form"):
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            try:
+                _send_contact_email(form.cleaned_data)
+            except Exception:
+                logger.exception("Contact form email failed")
+                messages.error(
+                    request,
+                    "We could not send your message. Please try again later or email us directly.",
+                )
+                return render(request, "core/homepage.html", {"contact_form": form})
+            messages.success(request, "Thank you — your message was sent.")
+            return redirect("core:homepage")
+        return render(request, "core/homepage.html", {"contact_form": form})
+    return render(request, "core/homepage.html", {"contact_form": ContactForm()})
 
 
 def about(request):

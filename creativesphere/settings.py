@@ -88,7 +88,22 @@ else:
 
 SEO_SITE_NAME = os.getenv('SEO_SITE_NAME', 'KurilenkoArt').strip() or 'KurilenkoArt'
 SEO_DEFAULT_OG_IMAGE = os.getenv('SEO_DEFAULT_OG_IMAGE', 'images/news/bas-relief-depth-1920x1200.png').strip()
-SEO_CONTACT_EMAIL = os.getenv('SEO_CONTACT_EMAIL', 'hello@creativesphere.art').strip()
+SEO_CONTACT_EMAIL = os.getenv('SEO_CONTACT_EMAIL', 'me@nobito.ru').strip() or 'me@nobito.ru'
+
+# Outbound email (SMTP or compatible transactional provider). Dev default: print to console.
+EMAIL_BACKEND = os.getenv(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend',
+).strip()
+EMAIL_HOST = os.getenv('EMAIL_HOST', '').strip()
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587').strip() or '587')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', '1').strip() != '0'
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', '0').strip() == '1'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '').strip()
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
+DEFAULT_FROM_EMAIL = (os.getenv('DEFAULT_FROM_EMAIL', '') or SEO_CONTACT_EMAIL).strip()
+# Where contact form submissions are delivered (inbox you monitor).
+CONTACT_FORM_RECIPIENT = (os.getenv('CONTACT_FORM_RECIPIENT', '') or SEO_CONTACT_EMAIL).strip()
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

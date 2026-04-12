@@ -1,10 +1,15 @@
+from django.conf import settings
+
 from .cart_utils import get_cart_summary
 from .seo import get_seo
 from .shop_data import SHOP_PREVIEW_PRODUCTS, SHOP_PRODUCTS
 
 
 def site_seo(request):
-    return {"seo": get_seo(request)}
+    return {
+        "seo": get_seo(request),
+        "contact_email": getattr(settings, "SEO_CONTACT_EMAIL", "me@nobito.ru"),
+    }
 
 
 def shop_cart(request):

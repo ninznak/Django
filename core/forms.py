@@ -6,6 +6,17 @@ from django.core.exceptions import ValidationError
 User = get_user_model()
 
 
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=120, required=True)
+    email = forms.EmailField(required=True)
+    subject = forms.CharField(max_length=200, required=True)
+    message = forms.CharField(
+        required=True,
+        max_length=5000,
+        widget=forms.Textarea(attrs={"rows": 5}),
+    )
+
+
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True, label="Email")
 

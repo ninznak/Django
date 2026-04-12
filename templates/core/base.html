@@ -462,7 +462,6 @@
                 footer_signin: "Вход",
                 footer_contact: "Контакты",
                 footer_contact_link: "Написать",
-                footer_email: "hello@creativesphere.art",
                 footer_location: "Mосква, Россия",
                 
                 // Portfolio page
@@ -668,7 +667,6 @@
                 footer_signin: "Sign In",
                 footer_contact: "Contact",
                 footer_contact_link: "Send Message",
-                footer_email: "hello@creativesphere.art",
                 footer_location: "Moscow, Russia",
                 
                 // Portfolio page
@@ -897,7 +895,6 @@
             document.querySelectorAll('[data-i18="footer_forum"]').forEach(el => el.textContent = t.footer_forum);
             document.querySelectorAll('[data-i18="footer_signin"]').forEach(el => el.textContent = t.footer_signin);
             document.querySelectorAll('[data-i18="footer_contact"]').forEach(el => el.textContent = t.footer_contact);
-            document.querySelectorAll('[data-i18="footer_email"]').forEach(el => el.textContent = t.footer_email);
             document.querySelectorAll('[data-i18="footer_location"]').forEach(el => el.textContent = t.footer_location);
             
             // Portfolio page
@@ -1117,7 +1114,7 @@
                 </div>
                 <div>
                     <h4 class="font-semibold mb-4" data-i18="footer_contact">Contact</h4>
-                    <p class="text-white/60 text-sm" data-i18="footer_email">hello@creativesphere.art</p>
+                    <p class="text-white/60 text-sm"><a href="mailto:{{ contact_email }}" class="hover:text-white transition-colors">{{ contact_email }}</a></p>
                     <p class="text-white/60 text-sm mt-2" data-i18="footer_location">Moscow, Russia</p>
                     <a href="/homepage/#contact" class="text-white/60 text-sm mt-2 inline-block hover:text-white transition-colors" data-i18="footer_contact_link">Написать</a>
                 </div>

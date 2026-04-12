@@ -127,7 +127,7 @@ def organization_json_ld(seo: dict[str, Any]) -> dict[str, Any]:
         "@type": "Organization",
         "name": seo.get("site_name", "KurilenkoArt"),
         "url": seo["canonical_url"],
-        "email": getattr(settings, "SEO_CONTACT_EMAIL", "hello@creativesphere.art"),
+        "email": getattr(settings, "SEO_CONTACT_EMAIL", "me@nobito.ru"),
     }
 
 
