@@ -292,7 +292,10 @@
                     <a href="/about/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_about">Обо мне</a>
                     <a href="/portfolio/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_portfolio">Портфолио</a>
                     <a href="/news/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_news">Новости</a>
+                    {% comment %}
+                    FORUM DISABLED — restore: uncomment <a> below + mobile nav + footer; core/urls.py forum paths; core/sitemaps.py; homepage CTA block.
                     <a href="/forum/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_forum">Форум</a>
+                    {% endcomment %}
                     <a href="/homepage/#contact" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_contact">Контакты</a>
                     <a href="/copyright/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_copyright">Авторское право</a>
                 </div>
@@ -363,7 +366,9 @@
                 <a href="/about/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_about">Обо мне</a>
                 <a href="/portfolio/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_portfolio">Портфолио</a>
                 <a href="/news/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_news">Новости</a>
+                {% comment %}
                 <a href="/forum/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_forum">Форум</a>
+                {% endcomment %}
                 <a href="/homepage/#contact" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_contact">Контакты</a>
                 <a href="/copyright/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_copyright">Авторское право</a>
             </nav>
@@ -503,9 +508,9 @@
                 
                 // About page
                 about_title: "Мастерство и Интеллект",
-                about_subtitle: "Моя студия представляет слияние традиционного мастерства с передовым искусственным интеллектом. Более 12 лет я создаю детальные 3D модели медалей, монет и барельефов, одновременно исследуя границы AI-генерируемых изображений и видео.",
-                about_p2: "Моя работа соединяет классическое искусство и современные технологии. Каждая 3D-модель начинается с изучения исторического контекста и продолжается тщательной цифровой скульптурой. Параллельно AI-инструменты помогают визуализировать идеи и искать направления, которые трудно реализовать только традиционными методами.",
-                about_p3: "Нужна индивидуальная памятная медаль, AI-концепт-арт или творческий партнер для проекта - я помогу воплотить вашу идею в жизнь.",
+                about_subtitle: "Более 12 лет я занимаюсь художественным трехмерным (3D) моделированием, имею за плечами 5 лет художественной школы, дополнительное индивидуальное дообучение по направлению скульптуры и низкого рельефа у профессионалов направления. Сейчас моё основное направление — это низкий рельеф (монеты, медали, знаки и значки), барельефы. Моя студия представляет слияние традиционного мастерства с внедрением в отдельные ступени рабочего процесса искусственного интеллекта.",
+                about_p2: "Долгое время я создаю детальные 3D-модели медалей, монет и барельефов, художественных узоров и скульптур, сувенирных изделий, одновременно исследуя границы AI-генерируемых изображений и элементов. Моя работа соединяет классическое искусство и современные технологии. Каждая 3D-модель начинается с изучения исторического контекста и продолжается тщательной цифровой скульптурой. Параллельно AI-инструменты помогают визуализировать идеи и искать направления, которые трудно реализовать только традиционными методами.",
+                about_p3: "Нужна индивидуальная памятная медаль, значок, сувенирная монета, просто консультация по услугам трёхмерного моделирования, творческий партнер для проекта — я помогу воплотить вашу идею в жизнь. Связь поддерживаю как по указанной почте, так и через форму обратной связи.",
                 about_cta: "Связаться",
                 about_years_exp: "Лет Опыта",
                 about_3d_created: "3D Моделей Создано",
@@ -560,6 +565,8 @@
                 forum_replies: "ответов",
                 error_404_title: "Страница не найдена",
                 error_404_sub: "Страница, которую вы ищете, не существует.",
+                error_404_fun: "Похоже, она укатилась под диван вместе с тестовым барельефом…",
+                error_404_portfolio: "В портфолио",
                 error_500_title: "Ошибка сервера",
                 error_500_sub: "На сервере произошла ошибка.",
                 go_home: "На главную",
@@ -708,9 +715,9 @@
                 
                 // About page
                 about_title: "Craft & Intelligence",
-                about_subtitle: "My studio represents the fusion of traditional craftsmanship with cutting-edge artificial intelligence. For over 12 years, I've been creating detailed 3D models of medals, coins, and bas-reliefs, while simultaneously exploring the frontiers of AI-generated imagery and video.",
-                about_p2: "My work bridges the gap between classical artistry and modern technology. Each 3D model begins with careful research into historical context, followed by meticulous digital sculpting. Meanwhile, AI tools let me visualize concepts and explore directions that are hard to reach through traditional methods alone.",
-                about_p3: "Whether you need a custom commemorative medal, AI-generated concept art, or a collaborator for a creative project, I'm here to help bring your vision to life.",
+                about_subtitle: "For over 12 years I have been engaged in artistic 3D modeling, with 5 years of art school behind me, plus additional individual training in sculpture and low relief from professionals in the field. Now my main focus is low relief (coins, medals, signs and badges), bas-reliefs. My studio represents a fusion of traditional craftsmanship with the integration of artificial intelligence into individual stages of the workflow.",
+                about_p2: "For a long time I have been creating detailed 3D models of medals, coins and bas-reliefs, artistic patterns and sculptures, souvenir items, while simultaneously exploring the boundaries of AI-generated images and elements. My work combines classical art and modern technologies. Each 3D model begins with studying the historical context and continues with meticulous digital sculpting. In parallel, AI tools help visualize ideas and find directions that are difficult to achieve using only traditional methods.",
+                about_p3: "Need a custom commemorative medal, badge, souvenir coin, just a consultation on 3D modeling services, a creative partner for a project — I will help bring your idea to life. I maintain contact both via the specified email and through the feedback form.",
                 about_cta: "Get in Touch",
                 about_years_exp: "Years of Experience",
                 about_3d_created: "3D Models Created",
@@ -765,6 +772,8 @@
                 forum_replies: "replies",
                 error_404_title: "Page Not Found",
                 error_404_sub: "The page you're looking for doesn't exist.",
+                error_404_fun: "Maybe it rolled under the couch with a stray bas-relief test piece…",
+                error_404_portfolio: "Browse portfolio",
                 error_500_title: "Server Error",
                 error_500_sub: "Something went wrong on our end.",
                 go_home: "Go Home",
@@ -1108,7 +1117,9 @@
                     <h4 class="font-semibold mb-4" data-i18="footer_community">Community</h4>
                     <ul class="space-y-2 text-white/60 text-sm">
                         <li><a href="/news/" class="hover:text-white transition-colors" data-i18="footer_news">News</a></li>
+                        {% comment %}
                         <li><a href="/forum/" class="hover:text-white transition-colors" data-i18="footer_forum">Forum</a></li>
+                        {% endcomment %}
                         <li><a href="/sign-up-login/" class="hover:text-white transition-colors" data-i18="footer_signin">Sign In</a></li>
                     </ul>
                 </div>

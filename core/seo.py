@@ -92,6 +92,7 @@ PAGE_SEO: dict[str, dict[str, Any]] = {
         "description": "Материал из раздела новостей KurilenkoArt о 3D и AI.",
         "keywords": "новости, статья, KurilenkoArt",
     },
+    # Inactive while forum URL patterns are commented out in core/urls.py.
     "forum": {
         "title": "Форум — KurilenkoArt | Сообщество 3D и AI",
         "description": (
@@ -166,8 +167,10 @@ def get_seo(request, **overrides: Any) -> dict[str, Any]:
     if data.get("no_json_ld"):
         data["json_ld"] = ""
     else:
-        data["json_ld"] = mark_safe(
-            json.dumps(organization_json_ld(data), ensure_ascii=False)
-        )
+        # Escape for safe embedding in HTML <script type="application/ld+json">
+        json_str = json.dumps(organization_json_ld(data), ensure_ascii=False)
+        # Escape </script> tags to prevent breaking out of the script element
+        json_str = json_str.replace("</", "<\\/")
+        data["json_ld"] = mark_safe(json_str)
 
     return data

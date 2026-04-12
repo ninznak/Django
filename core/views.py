@@ -14,6 +14,7 @@ from django.views.decorators.http import require_http_methods
 
 from . import cart_utils
 from .forms import ContactForm, RegisterForm
+from .models import ContactSubmission
 from .seo import get_seo
 from .shop_data import get_product
 
@@ -52,16 +53,26 @@ def homepage(request):
     if request.method == "POST" and request.POST.get("contact_form"):
         form = ContactForm(request.POST)
         if form.is_valid():
-            try:
-                _send_contact_email(form.cleaned_data)
-            except Exception:
-                logger.exception("Contact form email failed")
-                messages.error(
-                    request,
-                    "We could not send your message. Please try again later or email us directly.",
-                )
-                return render(request, "core/homepage.html", {"contact_form": form})
-            messages.success(request, "Thank you — your message was sent.")
+            data = form.cleaned_data
+            submission = ContactSubmission.objects.create(
+                name=data["name"],
+                email=data["email"],
+                subject=data["subject"],
+                message=data["message"],
+                email_sent=False,
+            )
+            if getattr(settings, "CONTACT_FORM_TRY_EMAIL", True):
+                try:
+                    _send_contact_email(data)
+                except Exception:
+                    logger.exception(
+                        "Contact form email failed (submission id=%s)", submission.pk
+                    )
+                else:
+                    ContactSubmission.objects.filter(pk=submission.pk).update(
+                        email_sent=True
+                    )
+            messages.success(request, "Thank you — your message was received.")
             return redirect("core:homepage")
         return render(request, "core/homepage.html", {"contact_form": form})
     return render(request, "core/homepage.html", {"contact_form": ContactForm()})
@@ -175,12 +186,12 @@ def cart_api(request):
 
 
 def forum(request):
-    """Страница форума"""
+    """Страница форума (маршруты отключены в core/urls.py — см. комментарий FORUM)."""
     return render(request, 'core/forum.html')
 
 
 def forum_topic(request, topic_id):
-    """Страница темы форума"""
+    """Страница темы форума (маршруты отключены в core/urls.py — см. комментарий FORUM)."""
     ctx = {
         "topic_id": topic_id,
         "seo": get_seo(
@@ -296,19 +307,32 @@ def robots_txt(request):
     return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")
 
 
-def handler404(request, exception):
-    """Обработчик 404 ошибки"""
+def page_not_found_response(request):
+    """HTML 404 page (shared by handler404 and URL catch-all)."""
     ctx = {
         "seo": get_seo(
             request,
             title="Страница не найдена — KurilenkoArt",
             description="Запрошенная страница не существует.",
-            canonical_path="/",
+            canonical_path=request.path,
             robots="noindex, follow",
             no_json_ld=True,
         ),
     }
     return render(request, "core/404.html", ctx, status=404)
+
+
+def handler404(request, exception):
+    """Вызывается для Http404 из view при DEBUG=False; см. также page_not_found_catchall."""
+    return page_not_found_response(request)
+
+
+def page_not_found_catchall(request, catchall):
+    """
+    Любой путь, не попавший в urlpatterns, попадает сюда (см. creativesphere/urls.py).
+    При DEBUG=True иначе Django показал бы жёлтую отладочную 404 без этого маршрута.
+    """
+    return page_not_found_response(request)
 
 
 def handler500(request):

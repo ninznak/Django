@@ -15,13 +15,14 @@ class CoreViewSitemap(Sitemap):
     def items(self):
         # Named URL patterns to expose to crawlers (no admin, no API).
         # Single home URL (/); /homepage/ is an alias and omitted to avoid duplicates.
+        # Forum: add "core:forum" back when forum routes are re-enabled in core/urls.py.
         return [
             "core:homepage",
             "core:about",
             "core:portfolio",
             "core:shop",
             "core:news",
-            "core:forum",
+            # "core:forum",
             "core:copyright",
         ]
 

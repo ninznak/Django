@@ -7,6 +7,7 @@ from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 
+from core import views as core_views
 from core.sitemaps import CoreViewSitemap
 
 # Получаем базовую директорию проекта
@@ -30,3 +31,9 @@ handler500 = "core.views.handler500"
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Must be last: unknown paths render templates/core/404.html with status 404.
+# With DEBUG=True, Django would otherwise show the yellow technical 404 (handler404 is not used then).
+urlpatterns.append(
+    path("<path:catchall>", core_views.page_not_found_catchall, name="page_not_found_catchall"),
+)

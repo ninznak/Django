@@ -104,6 +104,8 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
 DEFAULT_FROM_EMAIL = (os.getenv('DEFAULT_FROM_EMAIL', '') or SEO_CONTACT_EMAIL).strip()
 # Where contact form submissions are delivered (inbox you monitor).
 CONTACT_FORM_RECIPIENT = (os.getenv('CONTACT_FORM_RECIPIENT', '') or SEO_CONTACT_EMAIL).strip()
+# If true, also attempt SMTP/console notification after saving to the database (failures are logged only).
+CONTACT_FORM_TRY_EMAIL = os.getenv('CONTACT_FORM_TRY_EMAIL', '1').strip() == '1'
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
