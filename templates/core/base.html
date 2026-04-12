@@ -317,7 +317,14 @@
                         <span class="lang-btn" onclick="setLang('en')" id="lang-en">EN</span>
                     </div>
                     <a href="/shop/" class="hidden sm:inline-flex btn-outline text-xs sm:text-sm py-1.5 px-2 sm:py-2 sm:px-3 whitespace-nowrap shrink-0" data-i18="nav_shop_btn">Магазин</a>
-                    <a href="/sign-up-login/" class="hidden sm:inline-flex btn-primary text-xs sm:text-sm py-1.5 px-2 sm:py-2 sm:px-3 sm:px-4 whitespace-nowrap shrink-0" data-i18="sign_in">Вход</a>
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'core:logout' %}" class="hidden sm:inline-flex m-0 shrink-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-outline text-xs sm:text-sm py-1.5 px-2 sm:py-2 sm:px-3 sm:px-4 whitespace-nowrap" data-i18="sign_out">Выход</button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'core:sign_up_login' %}" class="hidden sm:inline-flex btn-primary text-xs sm:text-sm py-1.5 px-2 sm:py-2 sm:px-3 sm:px-4 whitespace-nowrap shrink-0" data-i18="sign_in">Вход</a>
+                    {% endif %}
                 </div>
             </div>
 
@@ -329,7 +336,14 @@
                     </svg>
                 </button>
                 <a href="/shop/" class="btn-outline text-sm py-2.5 px-5 whitespace-nowrap shrink-0" data-i18="nav_shop_btn">Магазин</a>
-                <a href="/sign-up-login/" class="btn-primary text-sm py-2.5 px-6 whitespace-nowrap shrink-0" data-i18="sign_in">Вход</a>
+                {% if user.is_authenticated %}
+                <form method="post" action="{% url 'core:logout' %}" class="inline-flex m-0 shrink-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-outline text-sm py-2.5 px-6 whitespace-nowrap" data-i18="sign_out">Выход</button>
+                </form>
+                {% else %}
+                <a href="{% url 'core:sign_up_login' %}" class="btn-primary text-sm py-2.5 px-6 whitespace-nowrap shrink-0" data-i18="sign_in">Вход</a>
+                {% endif %}
             </div>
         </nav>
     </header>
@@ -374,6 +388,7 @@
                 nav_menu_close: "Закрыть меню",
                 nav_drawer_title: "Разделы сайта",
                 sign_in: "Вход",
+                sign_out: "Выход",
                 hero_label: "Творческое Портфолио",
                 hero_title1: "Где Мастерство",
                 hero_title2: "Встречает",
@@ -528,6 +543,14 @@
                 auth_enter_email_or_username: "Введите email или имя пользователя",
                 auth_enter_password: "Введите пароль",
                 auth_sign_up_link: "Регистрация",
+                auth_join_title: "Создайте аккаунт",
+                auth_join_sub: "Заполните данные для регистрации",
+                auth_username: "Имя пользователя",
+                auth_enter_username: "Придумайте имя пользователя",
+                auth_enter_email: "Введите email",
+                auth_confirm_password: "Подтвердите пароль",
+                auth_enter_confirm_password: "Повторите пароль",
+                auth_sign_in_link: "Войти",
                 auth_or_continue: "Или продолжить через",
                 auth_google: "Google",
                 auth_github: "GitHub",
@@ -571,6 +594,7 @@
                 nav_menu_close: "Close menu",
                 nav_drawer_title: "Site sections",
                 sign_in: "Sign In",
+                sign_out: "Log out",
                 hero_label: "Creative Portfolio",
                 hero_title1: "Where Craft",
                 hero_title2: "Meets",
@@ -725,6 +749,14 @@
                 auth_enter_email_or_username: "Enter your email or username",
                 auth_enter_password: "Enter your password",
                 auth_sign_up_link: "Sign Up",
+                auth_join_title: "Create your account",
+                auth_join_sub: "Fill in your details to get started",
+                auth_username: "Username",
+                auth_enter_username: "Choose a username",
+                auth_enter_email: "Enter your email",
+                auth_confirm_password: "Confirm password",
+                auth_enter_confirm_password: "Repeat your password",
+                auth_sign_in_link: "Sign in",
                 auth_or_continue: "Or continue with",
                 auth_google: "Google",
                 auth_github: "GitHub",
@@ -924,6 +956,11 @@
             document.querySelectorAll('[data-i18="auth_enter_email_or_username"]').forEach(el => el.textContent = t.auth_enter_email_or_username);
             document.querySelectorAll('[data-i18="auth_enter_password"]').forEach(el => el.textContent = t.auth_enter_password);
             document.querySelectorAll('[data-i18="auth_sign_up_link"]').forEach(el => el.textContent = t.auth_sign_up_link);
+            document.querySelectorAll('[data-i18="auth_join_title"]').forEach(el => el.textContent = t.auth_join_title);
+            document.querySelectorAll('[data-i18="auth_join_sub"]').forEach(el => el.textContent = t.auth_join_sub);
+            document.querySelectorAll('[data-i18="auth_username"]').forEach(el => el.textContent = t.auth_username);
+            document.querySelectorAll('[data-i18="auth_confirm_password"]').forEach(el => el.textContent = t.auth_confirm_password);
+            document.querySelectorAll('[data-i18="auth_sign_in_link"]').forEach(el => el.textContent = t.auth_sign_in_link);
             document.querySelectorAll('[data-i18="auth_or_continue"]').forEach(el => el.textContent = t.auth_or_continue);
             document.querySelectorAll('[data-i18="auth_google"]').forEach(el => el.textContent = t.auth_google);
             document.querySelectorAll('[data-i18="auth_github"]').forEach(el => el.textContent = t.auth_github);
@@ -1015,6 +1052,13 @@
     
     <!-- Main Content -->
     <main id="main-content" class="relative z-10" tabindex="-1">
+        {% if messages %}
+        <div class="max-w-3xl mx-auto px-6 pt-24 max-sm:pt-28 pb-0 space-y-2" role="status" aria-live="polite">
+            {% for message in messages %}
+            <p class="rounded-xl border px-4 py-3 text-sm {% if message.tags == 'success' %}border-[#3d7a4f]/40 bg-[#3d7a4f]/10 text-[#2d5a3d]{% elif message.tags == 'error' %}border-red-200 bg-red-50 text-red-800{% else %}border-gray-200 bg-gray-50 text-gray-800{% endif %}">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 

@@ -16,5 +16,6 @@ urlpatterns = [
     path('forum/', views.forum, name='forum'),
     path('forum/<int:topic_id>/', views.forum_topic, name='forum_topic'),
     path('sign-up-login/', views.sign_up_login, name='sign_up_login'),
+    path('logout/', views.logout_view, name='logout'),
     path('copyright/', views.copyright, name='copyright'),
 ]
