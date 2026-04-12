@@ -59,9 +59,9 @@ sudo bash /var/www/Django/scripts/update.sh
 sudo bash /path/to/Django/scripts/update.sh /path/to/Django
 ```
 
-This runs: `git pull` → `chown www-data` → `pip install -r requirements.txt` → `migrate` → `collectstatic` → `systemctl restart creativesphere-gunicorn`, and appends to `/var/log/django-update.log`.
+This runs: `git pull origin main` (or the branch in **`GIT_BRANCH`**) → adds **`git config --global safe.directory`** for the app path if missing (avoids “dubious ownership” when root pulls a **www-data**-owned repo) → `chown www-data` → `pip install` → `migrate` → `collectstatic` → `systemctl restart creativesphere-gunicorn`. Logs append to **`deploy/update.log`** under the project root (writable without touching `/var/log`).
 
-**Before the first update on a new server:** ensure the repo remote and branch are correct (`git remote -v`, `git status`), and that `creativesphere-gunicorn` is the real unit name (`systemctl list-units 'creativesphere*'`).
+**Before the first update on a new server:** ensure the remote and default branch match (`git remote -v`, `git branch -a`). If your default branch is not `main`, run e.g. `sudo env GIT_BRANCH=master bash /var/www/Django/scripts/update.sh`. Confirm `creativesphere-gunicorn` exists (`systemctl list-units 'creativesphere*'`).
 
 **Without Git (SFTP / zip):** upload changed files into `/var/www/Django`, then run only:
 

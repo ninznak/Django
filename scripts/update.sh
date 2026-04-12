@@ -1,13 +1,15 @@
 #!/bin/bash
-# update.sh — скрипт быстрого обновления проекта на VPS
-# Использование: sudo bash scripts/update.sh [PROJECT_DIR]
-# По умолчанию: /var/www/Django
+# update.sh — quick deploy: git pull → deps → migrate → collectstatic → restart Gunicorn
+# Usage: sudo bash scripts/update.sh [PROJECT_DIR]
+# Default project: /var/www/Django
 
-set -e
+set -eo pipefail
 
 PROJECT_DIR="${1:-/var/www/Django}"
 VENV_DIR="$PROJECT_DIR/venv"
-LOG_FILE="/var/log/django-update.log"
+GIT_BRANCH="${GIT_BRANCH:-main}"
+mkdir -p "$PROJECT_DIR/deploy"
+LOG_FILE="$PROJECT_DIR/deploy/update.log"
 
 log() {
     local msg="[$(date '+%Y-%m-%d %H:%M:%S')] $1"
@@ -15,70 +17,86 @@ log() {
 }
 
 log "=========================================="
-log "🚀 Начало обновления CreativeSphere"
+log "Начало обновления CreativeSphere"
 log "=========================================="
 
-# Переход в директорию проекта
-cd "$PROJECT_DIR" || { log "❌ Ошибка: не удалось перейти в $PROJECT_DIR"; exit 1; }
+cd "$PROJECT_DIR" || { log "Ошибка: не удалось перейти в $PROJECT_DIR"; exit 1; }
 
-# 1. Получение свежих изменений из Git
-log "📥 Git pull..."
-if git pull 2>&1 | tee -a "$LOG_FILE"; then
-    log "✅ Git pull завершён успешно"
+# Git 2.35+: repo owned by www-data but pull runs as root → mark safe once per root
+if ! git config --global --get-all safe.directory | grep -Fxq "$PROJECT_DIR"; then
+    git config --global --add safe.directory "$PROJECT_DIR"
+    log "Добавлен safe.directory для $PROJECT_DIR"
+fi
+
+# 1. Git pull (pipefail: failure не маскируется tee)
+log "Git pull origin $GIT_BRANCH..."
+if git pull origin "$GIT_BRANCH" 2>&1 | tee -a "$LOG_FILE"; then
+    log "Git pull завершён успешно"
 else
-    log "❌ Ошибка Git pull"
+    log "Ошибка Git pull — обновление прервано"
     exit 1
 fi
 
-# 2. Исправление прав доступа
-log "🔐 Исправление прав доступа..."
+# 2. Права для веб-пользователя
+log "Права доступа www-data..."
 chown -R www-data:www-data "$PROJECT_DIR"
-log "✅ Права доступа обновлены"
+log "Права обновлены"
 
-# 3. Активация venv и применение изменений
-log "📦 Установка зависимостей..."
-sudo -u www-data bash -c "
-  cd $PROJECT_DIR
-  source $VENV_DIR/bin/activate
-  pip install -r requirements.txt 2>&1 | tee -a $LOG_FILE
-"
-log "✅ Зависимости обновлены"
-
-log "🗄️ Применение миграций БД..."
-sudo -u www-data bash -c "
-  cd $PROJECT_DIR
-  source $VENV_DIR/bin/activate
-  python manage.py migrate --noinput 2>&1 | tee -a $LOG_FILE
-"
-log "✅ Миграции применены"
-
-log "🖼️ Сбор статики..."
-sudo -u www-data bash -c "
-  cd $PROJECT_DIR
-  source $VENV_DIR/bin/activate
-  python manage.py collectstatic --noinput 2>&1 | tee -a $LOG_FILE
-"
-log "✅ Статика собрана"
-
-# 4. Перезапуск Gunicorn
-log "🔄 Перезапуск Gunicorn..."
-if systemctl restart creativesphere-gunicorn; then
-    log "✅ Gunicorn перезапущен"
+# 3. venv: pip / migrate / collectstatic (вывод в лог от имени root >>)
+log "Установка зависимостей..."
+if sudo -u www-data bash -c "
+    set -e
+    cd '$PROJECT_DIR'
+    source '$VENV_DIR/bin/activate'
+    pip install -r requirements.txt
+" >>"$LOG_FILE" 2>&1; then
+    log "Зависимости обновлены"
 else
-    log "❌ Ошибка перезапуска Gunicorn"
+    log "Ошибка pip install"
     exit 1
 fi
 
-# 5. Проверка статуса службы
-log "📊 Проверка статуса службы..."
-systemctl is-active creativesphere-gunicorn > /dev/null && log "✅ Служба активна" || log "⚠️ Служба неактивна"
+log "Миграции БД..."
+if sudo -u www-data bash -c "
+    set -e
+    cd '$PROJECT_DIR'
+    source '$VENV_DIR/bin/activate'
+    python manage.py migrate --noinput
+" >>"$LOG_FILE" 2>&1; then
+    log "Миграции применены"
+else
+    log "Ошибка migrate"
+    exit 1
+fi
+
+log "Collectstatic..."
+if sudo -u www-data bash -c "
+    set -e
+    cd '$PROJECT_DIR'
+    source '$VENV_DIR/bin/activate'
+    python manage.py collectstatic --noinput
+" >>"$LOG_FILE" 2>&1; then
+    log "Статика собрана"
+else
+    log "Ошибка collectstatic"
+    exit 1
+fi
+
+log "Перезапуск creativesphere-gunicorn..."
+if systemctl restart creativesphere-gunicorn; then
+    log "Gunicorn перезапущен"
+else
+    log "Ошибка systemctl restart"
+    exit 1
+fi
+
+systemctl is-active creativesphere-gunicorn >/dev/null && log "Служба активна" || log "Внимание: служба не active"
 
 log "=========================================="
-log "🎉 Обновление завершено успешно!"
+log "Обновление завершено успешно"
 log "=========================================="
-log "📄 Полный лог: $LOG_FILE"
-log "📊 Логи службы: sudo journalctl -u creativesphere-gunicorn -f"
+log "Лог: $LOG_FILE"
+log "Журнал: journalctl -u creativesphere-gunicorn -f"
 
 echo ""
-echo "✅ Обновление завершено!"
-echo "📄 Лог файл: $LOG_FILE"
+echo "Готово. Лог: $LOG_FILE"
