@@ -97,9 +97,23 @@ def news_article(request, slug):
         "slug": slug,
         "seo": get_seo(
             request,
-            title=f"{label} — KurilenkoArt | Новости",
-            description=f"Статья «{label}» в разделе новостей KurilenkoArt: 3D-моделирование и AI.",
+            title=f"{label} — KurilenkoArt | Новости: 3D, медали, барельефы",
+            description=(
+                f"Статья «{label}» — 3D-моделирование, медальерное дело, барельефы, цифровая скульптура и AI. "
+                "KurilenkoArt."
+            ),
+            keywords=(
+                f"{label}, новости 3D, медали моделирование, барельеф, скульптура, ZBrush, "
+                "медальерное искусство, KurilenkoArt"
+            ),
             canonical_path=request.path,
+            og_type="article",
+            article_ld={
+                "headline": label,
+                "description": f"Материал о 3D, медалях и творческих техниках: {label}",
+                "inLanguage": "ru-RU",
+                "keywords": "3D modeling, medals, bas-relief, digital sculpting, KurilenkoArt",
+            },
         ),
     }
     return render(request, "core/news_article.html", ctx)

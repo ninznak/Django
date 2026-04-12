@@ -2,7 +2,7 @@
 {# Registration block: toggled by AUTH_SHOW_REGISTRATION in settings (.env AUTH_SHOW_REGISTRATION=1 to show Sign up + register form again). #}
 
 {% block content %}
-<div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20" data-auth-tab="{{ auth_tab }}">
+<div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20" data-auth-tab="{{ auth_tab }}" data-show-registration="{{ show_registration|yesno:'true,false' }}">
     <div class="max-w-md mx-auto px-6">
         <div class="bg-white rounded-3xl p-8 border border-primary/10 shadow-xl">
             <div id="auth-panel-login">
@@ -102,55 +102,56 @@
     var registerPanel = document.getElementById('auth-panel-register');
     var root = document.querySelector('[data-auth-tab]');
     if (!loginPanel) return;
-    {% if show_registration %}
-    if (!registerPanel) return;
 
-    var showRegister = document.getElementById('auth-show-register');
-    var showLogin = document.getElementById('auth-show-login');
+    var showRegistration = root && root.getAttribute('data-show-registration') === 'true';
 
-    function goLogin() {
-        loginPanel.classList.remove('hidden');
-        registerPanel.classList.add('hidden');
-        if (window.history && window.history.replaceState) {
-            var base = window.location.pathname + window.location.search;
-            window.history.replaceState(null, '', base);
+    if (showRegistration) {
+        if (!registerPanel) return;
+
+        var showRegister = document.getElementById('auth-show-register');
+        var showLogin = document.getElementById('auth-show-login');
+
+        function goLogin() {
+            loginPanel.classList.remove('hidden');
+            registerPanel.classList.add('hidden');
+            if (window.history && window.history.replaceState) {
+                var base = window.location.pathname + window.location.search;
+                window.history.replaceState(null, '', base);
+            }
         }
-    }
-    function goRegister() {
-        registerPanel.classList.remove('hidden');
-        loginPanel.classList.add('hidden');
-        if (window.history && window.history.replaceState) {
-            window.history.replaceState(null, '', window.location.pathname + window.location.search + '#register');
+        function goRegister() {
+            registerPanel.classList.remove('hidden');
+            loginPanel.classList.add('hidden');
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.pathname + window.location.search + '#register');
+            }
         }
-    }
 
-    if (showRegister) {
-        showRegister.addEventListener('click', function (e) {
-            e.preventDefault();
+        if (showRegister) {
+            showRegister.addEventListener('click', function (e) {
+                e.preventDefault();
+                goRegister();
+            });
+        }
+        if (showLogin) {
+            showLogin.addEventListener('click', function (e) {
+                e.preventDefault();
+                goLogin();
+            });
+        }
+
+        window.addEventListener('hashchange', function () {
+            if (window.location.hash === '#register') goRegister();
+            else goLogin();
+        });
+
+        var serverTab = root && root.getAttribute('data-auth-tab');
+        if (window.location.hash === '#register' || serverTab === 'register') {
             goRegister();
-        });
-    }
-    if (showLogin) {
-        showLogin.addEventListener('click', function (e) {
-            e.preventDefault();
-            goLogin();
-        });
-    }
-
-    window.addEventListener('hashchange', function () {
-        if (window.location.hash === '#register') goRegister();
-        else goLogin();
-    });
-
-    var serverTab = root && root.getAttribute('data-auth-tab');
-    if (window.location.hash === '#register' || serverTab === 'register') {
-        goRegister();
-    }
-    {% else %}
-    if (root && window.history && window.history.replaceState && window.location.hash === '#register') {
+        }
+    } else if (root && window.history && window.history.replaceState && window.location.hash === '#register') {
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
     }
-    {% endif %}
 })();
 </script>
 {% endblock %}

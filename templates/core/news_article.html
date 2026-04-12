@@ -6,21 +6,103 @@
     <div class="max-w-3xl mx-auto px-6">
         <a href="/news/" class="text-[#3d7a4f] hover:underline mb-8 inline-block" data-i18="news_back">← Back to News</a>
         
-        <span class="tag-pill" data-i18="news_article_label">Article</span>
-        
-        <h1 class="font-display text-4xl md:text-5xl font-semibold mt-4" data-i18="news_article_title">Article Title</h1>
-        
-        <p class="text-gray-500 mt-4" data-i18="news_article_meta">March 14, 2026 · 8 min read</p>
-        
+        <span class="tag-pill">
+            {% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}Technique
+            {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}AI
+            {% elif slug == "the-2026-commemorative-medal-market" %}Industry
+            {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}AI
+            {% else %}Article{% endif %}
+        </span>
+
+        <h1 class="font-display text-4xl md:text-5xl font-semibold mt-4">
+            {% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}
+                Bas Relief Depth: Achieving Sub-Millimeter Precision in ZBrush
+            {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}
+                Midjourney v7 for Numismatic Concept Art
+            {% elif slug == "the-2026-commemorative-medal-market" %}
+                The 2026 Commemorative Medal Market
+            {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}
+                Sora & Kling: AI Video for 3D Presentations
+            {% else %}
+                Article Title
+            {% endif %}
+        </h1>
+
+        <p class="text-gray-500 mt-4">
+            {% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}March 14, 2026 · 8 min read
+            {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}March 8, 2026 · 6 min read
+            {% elif slug == "the-2026-commemorative-medal-market" %}February 28, 2026 · 5 min read
+            {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}February 20, 2026 · 7 min read
+            {% else %}8 min read{% endif %}
+        </p>
+
         <div class="mt-8 aspect-video rounded-3xl overflow-hidden">
-            <img src="{% static 'images/news/bas-relief-depth-1920x1200.png' %}" 
+            <img src="{% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}{% static 'images/news/bas-relief-depth-1920x1200.png' %}
+                      {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}{% static 'images/news/midjourney-1920x1200.png' %}
+                      {% elif slug == "the-2026-commemorative-medal-market" %}{% static 'images/news/medals-velvet-1920x1200.jpg' %}
+                      {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}{% static 'images/news/ai-video-1920x1200.png' %}
+                      {% else %}{% static 'images/news/bas-relief-depth-1920x1200.png' %}{% endif %}"
                  alt="Article Image" class="w-full h-full object-cover">
         </div>
         
         <div class="mt-8 prose max-w-none">
-            <p class="text-gray-600 leading-relaxed" data-i18="news_article_placeholder">
-                Article content goes here. This is a placeholder for the news article page.
-            </p>
+            {% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}
+                <p class="text-gray-600 leading-relaxed">
+                    Creating bas reliefs for numismatic applications requires exceptional precision. In this article, we explore the techniques for achieving sub-millimeter accuracy in ZBrush, ensuring your digital sculptures translate perfectly to physical casts.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Understanding ZBrush Subdivision Levels</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    The key to precision lies in understanding how ZBrush handles subdivision levels. Starting with a clean base mesh at the lowest subdivision level ensures that your fundamental forms are accurate before adding fine details.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Brush Calibration for Relief Work</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Standard brushes often lack the precision needed for numismatic work. Learn how to customize brush parameters, including focal shift, depth, and intensity, to achieve the exact relief heights required for minting.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Export Considerations for Casting</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Once your relief is complete, proper export settings are crucial. We cover STL export options, mesh repair techniques, and how to verify dimensional accuracy before sending files to production.
+                </p>
+            {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}
+                <p class="text-gray-600 leading-relaxed">
+                    Midjourney v7 introduces significant improvements for generating concept art in the numismatic space. This article explores prompt engineering techniques specifically for coin and medal design visualization.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Prompt Structure for Coin Design</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Effective prompts for numismatic art require specific terminology. Learn the key phrases and parameters that produce realistic coin renders with proper metallic properties and relief depth.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Metallic Material Rendering</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Midjourney's new material rendering engine excels at depicting precious metals. We explore settings for gold, silver, bronze, and bimetallic compositions.
+                </p>
+            {% elif slug == "the-2026-commemorative-medal-market" %}
+                <p class="text-gray-600 leading-relaxed">
+                    The commemorative medal market continues to evolve in 2026. This analysis covers emerging trends, collector preferences, and opportunities for independent artists and studios.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Market Growth Trends</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    The global commemorative medal market has shown steady growth, with particular strength in custom corporate awards and historical anniversary pieces.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Collector Preferences in 2026</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Modern collectors increasingly value unique designs with historical accuracy combined with contemporary artistic interpretation.
+                </p>
+            {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}
+                <p class="text-gray-600 leading-relaxed">
+                    AI video generation tools like Sora and Kling are transforming how 3D artists present their work. This article explores practical applications for portfolio presentations and client pitches.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">From Still Renders to Animated Presentations</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Learn how to transform static 3D renders into compelling video presentations using AI-powered animation tools.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Best Practices for 3D Model Videos</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Discover the optimal workflows for preparing your 3D models for AI video generation, including camera angles, lighting, and composition tips.
+                </p>
+            {% else %}
+                <p class="text-gray-600 leading-relaxed">
+                    Article content goes here. This is a placeholder for the news article page.
+                </p>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -9,17 +9,21 @@
     {% if seo.keywords %}
     <meta name="keywords" content="{{ seo.keywords }}">
     {% endif %}
+    <meta name="author" content="{{ seo.site_name }}">
+    <meta name="theme-color" content="#3d7a4f">
     <meta name="robots" content="{{ seo.robots }}">
     <link rel="canonical" href="{{ seo.canonical_url }}">
 
     <meta property="og:type" content="{{ seo.og_type }}">
     <meta property="og:site_name" content="{{ seo.site_name }}">
     <meta property="og:locale" content="ru_RU">
+    <meta property="og:locale:alternate" content="en_US">
     <meta property="og:title" content="{{ seo.title }}">
     <meta property="og:description" content="{{ seo.description }}">
     <meta property="og:url" content="{{ seo.canonical_url }}">
     {% if seo.og_image %}
     <meta property="og:image" content="{{ seo.og_image }}">
+    <meta property="og:image:alt" content="{{ seo.site_name }} — 3D медали, барельефы, цифровая скульптура">
     {% endif %}
 
     <meta name="twitter:card" content="summary_large_image">
@@ -514,6 +518,7 @@
                 about_subtitle: "Более 12 лет я занимаюсь художественным трехмерным (3D) моделированием, имею за плечами 5 лет художественной школы, дополнительное индивидуальное дообучение по направлению скульптуры и низкого рельефа у профессионалов направления. Сейчас моё основное направление — это низкий рельеф (монеты, медали, знаки и значки), барельефы. Моя студия представляет слияние традиционного мастерства с внедрением в отдельные ступени рабочего процесса искусственного интеллекта.",
                 about_p2: "Долгое время я создаю детальные 3D-модели медалей, монет и барельефов, художественных узоров и скульптур, сувенирных изделий, одновременно исследуя границы AI-генерируемых изображений и элементов. Моя работа соединяет классическое искусство и современные технологии. Каждая 3D-модель начинается с изучения исторического контекста и продолжается тщательной цифровой скульптурой. Параллельно AI-инструменты помогают визуализировать идеи и искать направления, которые трудно реализовать только традиционными методами.",
                 about_p3: "Нужна индивидуальная памятная медаль, значок, сувенирная монета, просто консультация по услугам трёхмерного моделирования, творческий партнер для проекта — я помогу воплотить вашу идею в жизнь. Связь поддерживаю как по указанной почте, так и через форму обратной связи.",
+                about_p4: "Среди моих клиентов и партнеров, есть такие компании как: Спецзнак, Московский музей Динамо, Городская Мэрия, государственные учреждения и ведомства, создание медалей для организаций Духовенства РПЦ, работы со соматологическими организациями и огромное количество частных заказчиков и подрядных клиентов. Выполнение работ производится на основании договора между ИП Куриленко А.А. и заказчиком, передача и использование авторских прав, так же осуществляется в соответствии с действующим законодательством России. С кратким описанием нюансов касающихся авторских прав и условием передачи можно познакомиться в соответствующем разделе сайта",
                 about_cta: "Связаться",
                 about_years_exp: "Лет Опыта",
                 about_3d_created: "3D Моделей Создано",
@@ -724,6 +729,7 @@
                 about_subtitle: "For over 12 years I have been engaged in artistic 3D modeling, with 5 years of art school behind me, plus additional individual training in sculpture and low relief from professionals in the field. Now my main focus is low relief (coins, medals, signs and badges), bas-reliefs. My studio represents a fusion of traditional craftsmanship with the integration of artificial intelligence into individual stages of the workflow.",
                 about_p2: "For a long time I have been creating detailed 3D models of medals, coins and bas-reliefs, artistic patterns and sculptures, souvenir items, while simultaneously exploring the boundaries of AI-generated images and elements. My work combines classical art and modern technologies. Each 3D model begins with studying the historical context and continues with meticulous digital sculpting. In parallel, AI tools help visualize ideas and find directions that are difficult to achieve using only traditional methods.",
                 about_p3: "Need a custom commemorative medal, badge, souvenir coin, just a consultation on 3D modeling services, a creative partner for a project — I will help bring your idea to life. I maintain contact both via the specified email and through the feedback form.",
+                about_p4: "Among my clients and partners are organisations such as Spetsznak, the Moscow Dynamo Museum, the city administration, government bodies, medals for Russian Orthodox Church institutions, work with dental organisations, and many private and corporate clients. Work is performed under a contract between sole proprietor Kurilenko A.A. and the client; assignment and use of copyright follow applicable Russian law. A short overview of copyright and transfer terms is available in the relevant section of the site.",
                 about_cta: "Get in Touch",
                 about_years_exp: "Years of Experience",
                 about_3d_created: "3D Models Created",
@@ -945,6 +951,7 @@
             document.querySelectorAll('[data-i18="about_subtitle"]').forEach(el => el.textContent = t.about_subtitle);
             document.querySelectorAll('[data-i18="about_p2"]').forEach(el => el.textContent = t.about_p2);
             document.querySelectorAll('[data-i18="about_p3"]').forEach(el => el.textContent = t.about_p3);
+            document.querySelectorAll('[data-i18="about_p4"]').forEach(el => el.textContent = t.about_p4);
             document.querySelectorAll('[data-i18="about_cta"]').forEach(el => el.textContent = t.about_cta);
             document.querySelectorAll('[data-i18="about_years_exp"]').forEach(el => el.textContent = t.about_years_exp);
             document.querySelectorAll('[data-i18="about_3d_created"]').forEach(el => el.textContent = t.about_3d_created);
@@ -1139,8 +1146,9 @@
                     <a href="/homepage/#contact" class="text-white/60 text-sm mt-2 inline-block hover:text-white transition-colors" data-i18="footer_contact_link">Написать</a>
                 </div>
             </div>
-            <div class="border-t border-white/10 mt-12 pt-8 text-center text-white/40 text-sm" data-i18="footer_copyright">
-                © 2026 KurilenkoArt. All rights reserved.
+            <div class="border-t border-white/10 mt-12 pt-8 text-center text-white/40 text-sm">
+                <p class="mb-2" data-i18="footer_copyright">© 2026 KurilenkoArt. All rights reserved.</p>
+                <p>ИП Куриленко А.А. ОГРНИП 324774600604502</p>
             </div>
         </div>
     </footer>
