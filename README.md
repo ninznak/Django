@@ -34,4 +34,33 @@ sudo bash scripts/deploy-vps.sh your-domain.com /path/to/project
 - `creativesphere/` — Django project settings  
 - `core/` — views and URLs  
 - `templates/core/` — HTML templates  
-- `static/` — CSS, images  
+- `static/` — CSS, images
+
+## Features
+
+### Internet Store
+- Session-based cart (no registration required)
+- Checkout with full delivery address and contact information
+- Order saved to database with email notification to admin
+- Order tracking via Django Admin panel
+
+### Admin Panel
+Access at `/admin/` (requires superuser):
+- View and manage orders with status tracking
+- View order items and customer details
+- Contact form submissions
+
+### Personal Data Compliance (152-ФЗ)
+- Explicit consent checkbox required for order submission
+- Personal Data Policy published on `/copyright/#pd-policy`
+- Consent recorded with timestamp and IP address
+- Users can request data deletion via contact form
+
+## Superuser Setup
+
+```bash
+python manage.py createsuperuser
+```
+
+Then access admin at `http://127.0.0.1:8000/admin/`  
+

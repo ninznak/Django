@@ -14,8 +14,15 @@
     return d.innerHTML;
   }
 
-  function formatMoney(cents) {
-    return '$' + (cents / 100).toFixed(2);
+  function formatRubKopecks(kopecks) {
+    var rub = kopecks / 100;
+    var whole = Math.abs(rub - Math.round(rub)) < 1e-9;
+    if (whole) {
+      var r = Math.round(rub);
+      var s = String(r).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      return s + ' ₽';
+    }
+    return rub.toFixed(2) + ' ₽';
   }
 
   function cartI18n() {
@@ -109,7 +116,7 @@
       })
       .join('');
     var subEl = document.getElementById('cart-subtotal-val');
-    if (subEl) subEl.textContent = formatMoney(data.subtotalCents);
+    if (subEl) subEl.textContent = formatRubKopecks(data.subtotalCents);
   }
 
   function applyDrawerLabels() {

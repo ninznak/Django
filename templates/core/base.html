@@ -388,6 +388,9 @@
                 nav_forum: "Форум",
                 nav_contact: "Контакты",
                 nav_copyright: "Авторское право",
+                copyright_label: "Правовая Информация",
+                copyright_title: "Авторское Право в Российской Федерации",
+                copyright_sub: "Важная информация о защите интеллектуальной собственности и принципах использования контента",
                 nav_skip: "Перейти к содержимому",
                 nav_menu_open: "Открыть меню",
                 nav_menu_close: "Закрыть меню",
@@ -426,7 +429,7 @@
                 cart_clear: "Очистить",
                 cart_subtotal: "Подытог",
                 cart_checkout: "Оформить заказ",
-                cart_checkout_hint: "Оплата скоро будет доступна.",
+                cart_checkout_hint: "Данные доставки и подтверждение — на следующей странице.",
                 forum_label: "Сообщество",
                 forum_title: "Присоединиться к Обсуждению",
                 forum_sub: "Общайтесь с 3D-художниками и AI-энтузиастами. Делитесь работами, получайте отзывы.",
@@ -595,6 +598,9 @@
                 nav_forum: "Forum",
                 nav_contact: "Contact",
                 nav_copyright: "Copyright",
+                copyright_label: "Legal information",
+                copyright_title: "Copyright in the Russian Federation",
+                copyright_sub: "Key points on intellectual property protection and how content may be used",
                 nav_skip: "Skip to content",
                 nav_menu_open: "Open menu",
                 nav_menu_close: "Close menu",
@@ -633,7 +639,7 @@
                 cart_clear: "Clear",
                 cart_subtotal: "Subtotal",
                 cart_checkout: "Checkout",
-                cart_checkout_hint: "Payment integration coming soon.",
+                cart_checkout_hint: "Delivery details and confirmation on the next page.",
                 forum_label: "Community",
                 forum_title: "Join the Discussion",
                 forum_sub: "Connect with 3D artists and AI enthusiasts. Share your work, get feedback.",
@@ -811,6 +817,9 @@
             
             try {
                 updatePageTranslations();
+                if (typeof window.applyCopyrightPageI18n === 'function') {
+                    window.applyCopyrightPageI18n(lang);
+                }
                 console.log('Translations updated successfully');
             } catch (e) {
                 console.error('Error updating translations:', e);
@@ -1088,10 +1097,10 @@
             <div id="cart-drawer-footer" class="{% if cart_total_items == 0 %}hidden{% endif %} border-t px-5 py-4 space-y-3" style="border-color: var(--line); background: rgba(0,0,0,0.12);">
                 <div class="flex justify-between text-sm">
                     <span id="cart-subtotal-label" style="color: var(--muted);">Subtotal</span>
-                    <span id="cart-subtotal-val" class="font-display font-semibold">${{ cart_subtotal_dollars }}</span>
+                    <span id="cart-subtotal-val" class="font-display font-semibold">{{ cart_subtotal_formatted }}</span>
                 </div>
-                <p id="cart-checkout-hint" class="text-[11px]" style="color: var(--muted);">Payment integration coming soon.</p>
-                <button type="button" id="cart-checkout-btn" class="btn-primary w-full justify-center opacity-90 cursor-not-allowed" disabled>Checkout</button>
+                <p id="cart-checkout-hint" class="text-[11px]" style="color: var(--muted);">Delivery details and confirmation on the next page.</p>
+                <a href="{% url 'core:checkout' %}" id="cart-checkout-btn" class="btn-primary inline-flex w-full justify-center py-3 text-center no-underline">Checkout</a>
             </div>
         </aside>
     </div>

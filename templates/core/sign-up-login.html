@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{# Registration block: toggled by AUTH_SHOW_REGISTRATION in settings (.env AUTH_SHOW_REGISTRATION=1 to show Sign up + register form again). #}
 
 {% block content %}
 <div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20" data-auth-tab="{{ auth_tab }}">
@@ -29,11 +30,14 @@
                     <button type="submit" class="btn-primary w-full justify-center" data-i18="auth_signin">Sign In</button>
                 </form>
 
+                {% if show_registration %}
                 <div class="mt-6 text-center">
                     <p class="text-gray-500"><span data-i18="auth_no_account">Don't have an account?</span> <a href="#register" id="auth-show-register" class="text-[#3d7a4f] font-semibold" data-i18="auth_sign_up_link">Sign Up</a></p>
                 </div>
+                {% endif %}
             </div>
 
+            {% if show_registration %}
             <div id="auth-panel-register" class="hidden">
                 <h1 class="font-display text-3xl font-semibold text-center" data-i18="auth_join_title">Create your account</h1>
                 <p class="text-gray-500 text-center mt-2" data-i18="auth_join_sub">Fill in your details to get started</p>
@@ -76,6 +80,7 @@
                     <p class="text-gray-500"><span data-i18="auth_have_account">Already have an account?</span> <a href="#login" id="auth-show-login" class="text-[#3d7a4f] font-semibold" data-i18="auth_sign_in_link">Sign in</a></p>
                 </div>
             </div>
+            {% endif %}
 
             <div class="mt-8 pt-6 border-t border-gray-100">
                 <p class="text-sm text-gray-500 text-center" data-i18="auth_or_continue">Or continue with</p>
@@ -95,10 +100,13 @@
 (function () {
     var loginPanel = document.getElementById('auth-panel-login');
     var registerPanel = document.getElementById('auth-panel-register');
+    var root = document.querySelector('[data-auth-tab]');
+    if (!loginPanel) return;
+    {% if show_registration %}
+    if (!registerPanel) return;
+
     var showRegister = document.getElementById('auth-show-register');
     var showLogin = document.getElementById('auth-show-login');
-    var root = document.querySelector('[data-auth-tab]');
-    if (!loginPanel || !registerPanel) return;
 
     function goLogin() {
         loginPanel.classList.remove('hidden');
@@ -138,6 +146,11 @@
     if (window.location.hash === '#register' || serverTab === 'register') {
         goRegister();
     }
+    {% else %}
+    if (root && window.history && window.history.replaceState && window.location.hash === '#register') {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+    {% endif %}
 })();
 </script>
 {% endblock %}

@@ -13,8 +13,9 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_http_methods
 
 from . import cart_utils
-from .forms import ContactForm, RegisterForm
-from .models import ContactSubmission
+from .forms import CheckoutForm, ContactForm, RegisterForm
+from .models import ContactSubmission, Order, OrderItem
+from .pricing import format_minor_as_rub
 from .seo import get_seo
 from .shop_data import get_product
 
@@ -237,18 +238,26 @@ def sign_up_login(request):
         return redirect(_safe_next_url(request, settings.LOGIN_REDIRECT_URL))
 
     next_param = (request.POST.get("next") or request.GET.get("next") or "").strip()
+    show_reg = getattr(settings, "AUTH_SHOW_REGISTRATION", False)
     ctx = {
         "auth_tab": "login",
         "next": next_param,
         "login_error": None,
         "register_form": None,
+        "show_registration": show_reg,
     }
 
     if request.method != "POST":
+        if not show_reg:
+            ctx["auth_tab"] = "login"
         return render(request, "core/sign-up-login.html", ctx)
 
     action = (request.POST.get("auth_action") or "").strip().lower()
     next_url = _safe_next_url(request, settings.LOGIN_REDIRECT_URL)
+
+    if action == "register" and not show_reg:
+        messages.info(request, "Registration is currently unavailable.")
+        return redirect("core:sign_up_login")
 
     if action == "login":
         identifier = request.POST.get("username", "")
@@ -262,7 +271,7 @@ def sign_up_login(request):
         ctx["login_error"] = "Invalid email, username, or password."
         return render(request, "core/sign-up-login.html", ctx)
 
-    if action == "register":
+    if action == "register" and show_reg:
         ctx["auth_tab"] = "register"
         data = request.POST.copy()
         data["password1"] = request.POST.get("password", "")
@@ -289,6 +298,144 @@ def logout_view(request):
 def copyright(request):
     """Страница авторского права"""
     return render(request, 'core/copyright.html')
+
+
+@require_http_methods(["GET", "POST"])
+def checkout(request):
+    """Страница оформления заказа (без регистрации)."""
+    summary = cart_utils.get_cart_summary(request)
+    lines = summary["cart_lines"]
+
+    # Если корзина пуста — перенаправляем в магазин
+    if not lines:
+        messages.warning(request, "Ваша корзина пуста. Добавьте товары для оформления заказа.")
+        return redirect("core:shop")
+
+    total_cents = summary["cart_subtotal_cents"]
+
+    if request.method == "POST":
+        form = CheckoutForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+
+            # Создаём заказ
+            order = Order.objects.create(
+                name=data["name"],
+                email=data["email"],
+                phone=data.get("phone", ""),
+                country=data["country"],
+                city=data["city"],
+                address=data["address"],
+                postal_code=data.get("postal_code", ""),
+                total_cents=total_cents,
+                notes=data.get("notes", ""),
+                pd_consent=data["pd_consent"],
+                ip_address=request.META.get("REMOTE_ADDR"),
+            )
+
+            # Добавляем позиции заказа
+            for line in lines:
+                product = line["product"]
+                OrderItem.objects.create(
+                    order=order,
+                    product_id=product["id"],
+                    product_name=product["title"],
+                    product_price_cents=product["price_cents"],
+                    quantity=line["qty"],
+                )
+
+            # Очищаем корзину
+            cart_utils.clear_cart(request.session)
+
+            # Отправляем уведомление администратору
+            if getattr(settings, "CONTACT_FORM_TRY_EMAIL", True):
+                try:
+                    _send_order_email(order, data)
+                except Exception:
+                    logger.exception("Order notification email failed (order id=%s)", order.pk)
+
+            messages.success(request, f"Заказ №{order.id} успешно оформлен! Мы свяжемся с вами в ближайшее время.")
+            return redirect("core:order_confirmation", order_id=order.id)
+
+        # Если форма невалидна — показываем ошибки
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(request, error)
+    else:
+        form = CheckoutForm()
+
+    ctx = {
+        "form": form,
+        "cart_lines": lines,
+        "total_cents": total_cents,
+        "total_formatted": format_minor_as_rub(total_cents),
+        "seo": get_seo(
+            request,
+            title="Оформление заказа — KurilenkoArt",
+            description="Оформите заказ на 3D-модели и цифровое искусство.",
+            canonical_path=request.path,
+        ),
+    }
+    return render(request, "core/checkout.html", ctx)
+
+
+def _send_order_email(order: Order, data: dict) -> None:
+    """Отправка уведомления о заказе администратору."""
+    site = settings.SEO_SITE_NAME
+
+    # Формируем список товаров
+    items_list = "\n".join(
+        f"  • {item.product_name} × {item.quantity} — {item.total_cents / 100:.2f} руб."
+        for item in order.items.all()
+    )
+
+    body = (
+        f"Новый заказ №{order.id} на сайте {site}\n\n"
+        f"=== Данные заказчика ===\n"
+        f"Имя: {order.name}\n"
+        f"Email: {order.email}\n"
+        f"Телефон: {order.phone or 'не указан'}\n\n"
+        f"=== Адрес доставки ===\n"
+        f"Страна: {order.country}\n"
+        f"Город: {order.city}\n"
+        f"Адрес: {order.address}\n"
+        f"Индекс: {order.postal_code or 'не указан'}\n\n"
+        f"=== Товары ===\n{items_list}\n\n"
+        f"=== Итого ===\nСумма: {order.total_cents / 100:.2f} руб.\n\n"
+        f"=== Комментарий ===\n{order.notes or 'нет'}\n\n"
+        f"Согласие на обработку ПДн: {'да' if order.pd_consent else 'нет'}\n"
+        f"Дата согласия: {order.pd_consent_date:%Y-%m-%d %H:%M:%S}\n"
+        f"IP-адрес: {order.ip_address or 'не определён'}\n"
+    )
+
+    msg = EmailMessage(
+        subject=f"[{site} заказ] Новый заказ №{order.id} от {order.name}",
+        body=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[settings.CONTACT_FORM_RECIPIENT],
+        reply_to=[order.email],
+    )
+    msg.send(fail_silently=False)
+
+
+def order_confirmation(request, order_id):
+    """Страница подтверждения заказа."""
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        messages.error(request, "Заказ не найден.")
+        return redirect("core:shop")
+
+    ctx = {
+        "order": order,
+        "seo": get_seo(
+            request,
+            title=f"Заказ №{order.id} подтверждён — KurilenkoArt",
+            description=f"Ваш заказ №{order.id} успешно оформлен.",
+            canonical_path=request.path,
+        ),
+    }
+    return render(request, "core/order_confirmation.html", ctx)
 
 
 def robots_txt(request):

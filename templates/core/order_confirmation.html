@@ -1,0 +1,168 @@
+{% extends 'core/base.html' %}
+{% load static pricing_extras %}
+
+{% block content %}
+<div class="pt-32 max-sm:pt-[9rem] pb-20">
+    <div class="max-w-3xl mx-auto px-6">
+        <!-- Успешное оформление -->
+        <div class="card p-8 mb-8 text-center">
+            <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+            
+            <h1 class="font-display text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+                Заказ №{{ order.id }} успешно оформлен!
+            </h1>
+            
+            <p class="text-gray-600 text-lg mb-8">
+                Спасибо за ваш заказ! Мы свяжемся с вами по указанному email в ближайшее время.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'core:shop' %}" class="btn-primary">
+                    Продолжить покупки
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                <a href="/" class="btn-outline">
+                    На главную
+                </a>
+            </div>
+        </div>
+
+        <!-- Детали заказа -->
+        <div class="card p-8 mb-8">
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Детали заказа</h2>
+            
+            <div class="space-y-6">
+                <!-- Номер и дата -->
+                <div class="flex flex-wrap gap-4 text-sm">
+                    <div class="bg-gray-50 rounded-lg px-4 py-2">
+                        <span class="text-gray-500">Номер заказа:</span>
+                        <span class="font-semibold text-gray-800 ml-2">#{{ order.id }}</span>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg px-4 py-2">
+                        <span class="text-gray-500">Дата:</span>
+                        <span class="font-semibold text-gray-800 ml-2">{{ order.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg px-4 py-2">
+                        <span class="text-gray-500">Статус:</span>
+                        <span class="font-semibold text-green-600 ml-2">{{ order.get_status_display }}</span>
+                    </div>
+                </div>
+
+                <!-- Контактные данные -->
+                <div class="border-t pt-6">
+                    <h3 class="font-semibold text-gray-800 mb-3">Контактные данные</h3>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500">Имя:</span>
+                            <p class="font-medium text-gray-800">{{ order.name }}</p>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Email:</span>
+                            <p class="font-medium text-gray-800">{{ order.email }}</p>
+                        </div>
+                        {% if order.phone %}
+                        <div>
+                            <span class="text-gray-500">Телефон:</span>
+                            <p class="font-medium text-gray-800">{{ order.phone }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Адрес доставки -->
+                <div class="border-t pt-6">
+                    <h3 class="font-semibold text-gray-800 mb-3">Адрес доставки</h3>
+                    <p class="text-gray-600 text-sm">
+                        {{ order.country }}, {{ order.city }}<br>
+                        {{ order.address }}<br>
+                        {% if order.postal_code %}Индекс: {{ order.postal_code }}{% endif %}
+                    </p>
+                </div>
+
+                <!-- Товары -->
+                <div class="border-t pt-6">
+                    <h3 class="font-semibold text-gray-800 mb-3">Товары в заказе</h3>
+                    <div class="space-y-3">
+                        {% for item in order.items.all %}
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                            <div>
+                                <p class="font-medium text-gray-800">{{ item.product_name }}</p>
+                                <p class="text-xs text-gray-500">Количество: {{ item.quantity }}</p>
+                            </div>
+                            <p class="font-semibold text-gray-800">{{ item.total_cents|rub_minor }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Итого -->
+                <div class="border-t pt-6">
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-semibold text-gray-800">Итого:</span>
+                        <span class="text-2xl font-bold text-[#3d7a4f]">{{ order.total_cents|rub_minor }}</span>
+                    </div>
+                </div>
+
+                <!-- Комментарий -->
+                {% if order.notes %}
+                <div class="border-t pt-6">
+                    <h3 class="font-semibold text-gray-800 mb-2">Комментарий к заказу</h3>
+                    <p class="text-gray-600 text-sm bg-gray-50 rounded-lg p-4">{{ order.notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Информация о следующих шагах -->
+        <div class="card p-8 mb-8 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+            <h2 class="font-display text-xl font-semibold text-gray-800 mb-4">Что дальше?</h2>
+            
+            <div class="space-y-4 text-sm text-gray-600">
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-blue-600 font-bold">1</span>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">Подтверждение заказа</p>
+                        <p>В течение 24 часов мы отправим вам письмо с подтверждением заказа и деталями оплаты.</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-blue-600 font-bold">2</span>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">Оплата</p>
+                        <p>После подтверждения вы получите инструкцию по оплате заказа (банковская карта, банковский перевод).</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-blue-600 font-bold">3</span>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">Доставка</p>
+                        <p>После оплаты мы отправим вам трек-номер для отслеживания доставки.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Контакты для вопросов -->
+        <div class="text-center">
+            <p class="text-gray-600 mb-4">Есть вопросы по заказу?</p>
+            <a href="mailto:{{ settings.CONTACT_FORM_RECIPIENT|default:'info@kurilenkoart.ru' }}" class="text-[#3d7a4f] font-semibold hover:underline">
+                {{ settings.CONTACT_FORM_RECIPIENT|default:'info@kurilenkoart.ru' }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

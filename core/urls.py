@@ -24,4 +24,6 @@ urlpatterns = [
     path('sign-up-login/', views.sign_up_login, name='sign_up_login'),
     path('logout/', views.logout_view, name='logout'),
     path('copyright/', views.copyright, name='copyright'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('order/<int:order_id>/confirmation/', views.order_confirmation, name='order_confirmation'),
 ]

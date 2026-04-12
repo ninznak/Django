@@ -199,3 +199,6 @@ SITE_ID = 1
 LOGIN_URL = '/sign-up-login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# Registration UI on /sign-up-login/ (Sign up link + form). Set AUTH_SHOW_REGISTRATION=1 in .env to show again.
+AUTH_SHOW_REGISTRATION = os.getenv('AUTH_SHOW_REGISTRATION', '0').strip() == '1'

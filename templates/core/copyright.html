@@ -1,6 +1,10 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
+{% block extra_js %}
+<script src="{% static 'js/copyright-page-i18n.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="pt-32 max-sm:pt-[9rem] pb-20">
     <div class="max-w-4xl mx-auto px-6">
@@ -9,48 +13,49 @@
             <h1 class="font-display text-4xl md:text-5xl font-bold mt-4 text-gray-800" data-i18="copyright_title">Авторское Право в Российской Федерации</h1>
             <p class="text-gray-500 mt-4 max-w-2xl mx-auto" data-i18="copyright_sub">Важная информация о защите интеллектуальной собственности и принципах использования контента</p>
         </div>
-        
+
+        <div data-copyright-page>
         <!-- Основные положения -->
         <div class="card p-8 mb-8">
-            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Основные положения законодательства РФ</h2>
-            
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6" data-i18="copyright_law_h2">Основные положения законодательства РФ</h2>
+
             <div class="space-y-6 text-gray-600 leading-relaxed">
                 <div class="flex gap-4">
                     <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#3d7a4f]/10 flex items-center justify-center">
                         <span class="text-[#3d7a4f] font-bold">1</span>
                     </div>
                     <div>
-                        <h3 class="font-semibold text-gray-800 mb-2">Что охраняется авторским правом?</h3>
-                        <p>Согласно части 4 Гражданского кодекса Российской Федерации (статьи 1255-1302), объектами авторского права являются произведения науки, литературы и искусства, включая 3D-модели, изображения, видео, тексты и другие творческие результаты. Авторское право возникает автоматически при создании произведения — регистрация не требуется.</p>
+                        <h3 class="font-semibold text-gray-800 mb-2" data-i18="copyright_law_1_h">Что охраняется авторским правом?</h3>
+                        <p data-i18="copyright_law_1_p">Согласно части 4 Гражданского кодекса Российской Федерации (статьи 1255-1302), объектами авторского права являются произведения науки, литературы и искусства, включая 3D-модели, изображения, видео, тексты и другие творческие результаты. Авторское право возникает автоматически при создании произведения — регистрация не требуется.</p>
                     </div>
                 </div>
-                
+
                 <div class="flex gap-4">
                     <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#3d7a4f]/10 flex items-center justify-center">
                         <span class="text-[#3d7a4f] font-bold">2</span>
                     </div>
                     <div>
-                        <h3 class="font-semibold text-gray-800 mb-2">Исключительные права</h3>
-                        <p>Автор или правообладатель обладает исключительным правом на использование произведения любым способом: воспроизведение, распространение, публичный показ, переработка и т.д. Другие лица могут использовать произведение только с согласия правообладателя или в случаях, прямо предусмотренных законом.</p>
+                        <h3 class="font-semibold text-gray-800 mb-2" data-i18="copyright_law_2_h">Исключительные права</h3>
+                        <p data-i18="copyright_law_2_p">Автор или правообладатель обладает исключительным правом на использование произведения любым способом: воспроизведение, распространение, публичный показ, переработка и т.д. Другие лица могут использовать произведение только с согласия правообладателя или в случаях, прямо предусмотренных законом.</p>
                     </div>
                 </div>
-                
+
                 <div class="flex gap-4">
                     <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#3d7a4f]/10 flex items-center justify-center">
                         <span class="text-[#3d7a4f] font-bold">3</span>
                     </div>
                     <div>
-                        <h3 class="font-semibold text-gray-800 mb-2">Срок действия авторских прав</h3>
-                        <p>В России авторские права действуют в течение всей жизни автора и 70 лет после его смерти, считая с 1 января года, следующего за годом смерти. После истечения срока произведение переходит в общественное достояние.</p>
+                        <h3 class="font-semibold text-gray-800 mb-2" data-i18="copyright_law_3_h">Срок действия авторских прав</h3>
+                        <p data-i18="copyright_law_3_p">В России авторские права действуют в течение всей жизни автора и 70 лет после его смерти, считая с 1 января года, следующего за годом смерти. После истечения срока произведение переходит в общественное достояние.</p>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Принципы работы -->
         <div class="card p-8 mb-8">
-            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Принципы работы с контентом</h2>
-            
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6" data-i18="copyright_pr_h2">Принципы работы с контентом</h2>
+
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="bg-white/50 rounded-2xl p-6">
                     <div class="w-12 h-12 rounded-xl bg-[#a8c957]/20 flex items-center justify-center mb-4">
@@ -58,135 +63,598 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
-                    <h3 class="font-semibold text-gray-800 mb-2">Свободное использование</h3>
-                    <p class="text-gray-600 text-sm">Вы можете свободно просматривать, изучать и анализировать представленные работы для личных некоммерческих целей.</p>
+                    <h3 class="font-semibold text-gray-800 mb-2" data-i18="copyright_pr_free_h">Свободное использование</h3>
+                    <p class="text-gray-600 text-sm" data-i18="copyright_pr_free_p">Вы можете свободно просматривать, изучать и анализировать представленные работы для личных некоммерческих целей.</p>
                 </div>
-                
+
                 <div class="bg-white/50 rounded-2xl p-6">
                     <div class="w-12 h-12 rounded-xl bg-[#a8c957]/20 flex items-center justify-center mb-4">
                         <svg class="w-6 h-6 text-[#3d7a4f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
                     </div>
-                    <h3 class="font-semibold text-gray-800 mb-2">Ограничения</h3>
-                    <p class="text-gray-600 text-sm">Запрещено копирование, распространение, переработка и коммерческое использование без письменного разрешения автора.</p>
+                    <h3 class="font-semibold text-gray-800 mb-2" data-i18="copyright_pr_lim_h">Ограничения</h3>
+                    <p class="text-gray-600 text-sm" data-i18="copyright_pr_lim_p">Запрещено копирование, распространение, переработка и коммерческое использование без письменного разрешения автора.</p>
                 </div>
-                
+
                 <div class="bg-white/50 rounded-2xl p-6">
                     <div class="w-12 h-12 rounded-xl bg-[#a8c957]/20 flex items-center justify-center mb-4">
                         <svg class="w-6 h-6 text-[#3d7a4f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
                     </div>
-                    <h3 class="font-semibold text-gray-800 mb-2">Срок защиты</h3>
-                    <p class="text-gray-600 text-sm">Авторские права на все представленные работы действуют в течение жизни автора и 70 лет после смерти.</p>
+                    <h3 class="font-semibold text-gray-800 mb-2" data-i18="copyright_pr_term_h">Срок защиты</h3>
+                    <p class="text-gray-600 text-sm" data-i18="copyright_pr_term_p">Авторские права на все представленные работы действуют в течение жизни автора и 70 лет после смерти.</p>
                 </div>
-                
+
                 <div class="bg-white/50 rounded-2xl p-6">
                     <div class="w-12 h-12 rounded-xl bg-[#a8c957]/20 flex items-center justify-center mb-4">
                         <svg class="w-6 h-6 text-[#3d7a4f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
                         </svg>
                     </div>
-                    <h3 class="font-semibold text-gray-800 mb-2">Лицензия</h3>
-                    <p class="text-gray-600 text-sm">Для получения лицензии на коммерческое использование свяжитесь с автором через форму обратной связи.</p>
+                    <h3 class="font-semibold text-gray-800 mb-2" data-i18="copyright_pr_lic_h">Лицензия</h3>
+                    <p class="text-gray-600 text-sm" data-i18="copyright_pr_lic_p">Для получения лицензии на коммерческое использование свяжитесь с автором через форму обратной связи.</p>
                 </div>
             </div>
         </div>
-        
+
+        <!-- Формирование стоимости произведения -->
+        <div class="card p-8 mb-8">
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6" data-i18="copyright_price_h2">Формирование стоимости финального произведения</h2>
+
+            <div class="space-y-6 text-gray-600 leading-relaxed">
+                <p data-i18="copyright_price_intro">Стоимость произведения при авторском заказе формируется на основе нескольких факторов и включает компенсацию за творческий труд, время разработки, а также передачу прав на использование. В соответствии со статьёй 1288 ГК РФ, договор авторского заказа является возмездным — автор получает вознаграждение за создание произведения.</p>
+
+                <div class="bg-[#3d7a4f]/5 rounded-2xl p-6 mt-6">
+                    <h3 class="font-semibold text-gray-800 mb-4" data-i18="copyright_price_factors_h">Основные факторы ценообразования:</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-white/50 rounded-xl p-4">
+                            <h4 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-[#3d7a4f] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span data-i18="copyright_price_fac_time_h">Сложность и время разработки</span>
+                            </h4>
+                            <p class="text-sm" data-i18="copyright_price_fac_time_p">Количество часов работы, уровень детализации, необходимость исследований (исторических, технических), количество правок и согласований.</p>
+                        </div>
+
+                        <div class="bg-white/50 rounded-xl p-4">
+                            <h4 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-[#3d7a4f] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <span data-i18="copyright_price_fac_scope_h">Объём прав на использование</span>
+                            </h4>
+                            <p class="text-sm" data-i18="copyright_price_fac_scope_p">Полное отчуждение прав стоит дороже лицензионного договора. Ограничения по тиражу, территории и срокам использования влияют на цену.</p>
+                        </div>
+
+                        <div class="bg-white/50 rounded-xl p-4">
+                            <h4 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-[#3d7a4f] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                <span data-i18="copyright_price_fac_rush_h">Срочность выполнения</span>
+                            </h4>
+                            <p class="text-sm" data-i18="copyright_price_fac_rush_p">Сжатые сроки могут увеличивать стоимость на 20-50% в зависимости от объёма работ и доступности автора.</p>
+                        </div>
+
+                        <div class="bg-white/50 rounded-xl p-4">
+                            <h4 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-[#3d7a4f] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                                <span data-i18="copyright_price_fac_excl_h">Эксклюзивность</span>
+                            </h4>
+                            <p class="text-sm" data-i18="copyright_price_fac_excl_p">Право автора использовать произведение в портфолио может снижать стоимость, эксклюзивное использование без упоминания автора — увеличивает.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6 mt-6">
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
+                        <h3 class="font-semibold text-gray-800 mb-3" data-i18="copyright_price_comm_h3">Авторский заказ (создание произведения)</h3>
+                        <p class="text-sm text-gray-600 mb-3" data-i18="copyright_price_comm_intro">Оплата за создание произведения включает:</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex gap-2">
+                                <span class="text-blue-600">•</span>
+                                <span data-i18="copyright_price_comm_li1">Предоплата (30-50%) для начала работы</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-blue-600">•</span>
+                                <span data-i18="copyright_price_comm_li2">Оплата за этапы работы (эскизы, черновики, финал)</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-blue-600">•</span>
+                                <span data-i18="copyright_price_comm_li3">Вознаграждение за творческий труд (не включает передачу прав)</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-blue-600">•</span>
+                                <span data-i18="copyright_price_comm_li4">Дополнительные правки сверх согласованного объёма</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                        <h3 class="font-semibold text-gray-800 mb-3" data-i18="copyright_price_rights_h3">Права на использование (лицензия/отчуждение)</h3>
+                        <p class="text-sm text-gray-600 mb-3" data-i18="copyright_price_rights_intro">Стоимость передачи прав определяется:</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex gap-2">
+                                <span class="text-green-600">•</span>
+                                <span data-i18="copyright_price_rights_li1">Способами использования (печать, веб, реклама и т.д.)</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-green-600">•</span>
+                                <span data-i18="copyright_price_rights_li2">Территорией действия (Россия, СНГ, мир)</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-green-600">•</span>
+                                <span data-i18="copyright_price_rights_li3">Сроком действия лицензии (1 год, 5 лет, бессрочно)</span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="text-green-600">•</span>
+                                <span data-i18="copyright_price_rights_li4">Тиражом/количеством копий (ограничено или без ограничений)</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 rounded-2xl p-6 border border-yellow-200 mt-6">
+                    <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span data-i18="copyright_price_ex_h3">Примеры формирования итоговой стоимости</span>
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="bg-white/60 rounded-xl p-4">
+                            <p class="font-semibold text-gray-800 mb-2" data-i18="copyright_price_ex1_t">Пример 1: Памятная медаль (полное отчуждение)</p>
+                            <p data-i18="copyright_price_ex1_l1"><strong>Создание 3D-модели:</strong> 50 000 руб. (30 часов работы, исторические исследования)</p>
+                            <p data-i18="copyright_price_ex1_l2"><strong>Полное отчуждение прав:</strong> 75 000 руб. (бессрочно, без ограничений тиража)</p>
+                            <p data-i18="copyright_price_ex1_l3"><strong>Итого:</strong> 125 000 руб.</p>
+                        </div>
+
+                        <div class="bg-white/60 rounded-xl p-4">
+                            <p class="font-semibold text-gray-800 mb-2" data-i18="copyright_price_ex2_t">Пример 2: Дизайн значка (лицензия на 5 лет)</p>
+                            <p data-i18="copyright_price_ex2_l1"><strong>Создание дизайна:</strong> 20 000 руб. (10 часов работы)</p>
+                            <p data-i18="copyright_price_ex2_l2"><strong>Лицензия на производство:</strong> 30 000 руб. + 5% роялти с продаж</p>
+                            <p data-i18="copyright_price_ex2_l3"><strong>Итого:</strong> 50 000 руб. аванс + отчисления</p>
+                        </div>
+
+                        <div class="bg-white/60 rounded-xl p-4">
+                            <p class="font-semibold text-gray-800 mb-2" data-i18="copyright_price_ex3_t">Пример 3: Барельеф для интерьера (ограниченная лицензия)</p>
+                            <p data-i18="copyright_price_ex3_l1"><strong>Создание рельефа:</strong> 80 000 руб. (сложная детализация, гипсовый слепок)</p>
+                            <p data-i18="copyright_price_ex3_l2"><strong>Лицензия на установку:</strong> 0 руб. (входит в стоимость)</p>
+                            <p data-i18="copyright_price_ex3_l3"><strong>Право на фото в портфолио:</strong> включено</p>
+                            <p data-i18="copyright_price_ex3_l4"><strong>Итого:</strong> 80 000 руб.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-green-50 rounded-2xl p-6 border border-green-200 mt-6">
+                    <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                        <span data-i18="copyright_price_contract_h3">Правовые требования к договору</span>
+                    </h3>
+                    <div class="space-y-2 text-sm">
+                        <p data-i18="copyright_price_contract_p">В соответствии со статьёй 1235 ГК РФ, в договоре об отчуждении или лицензионном договоре должны быть чётко указаны:</p>
+                        <ul class="list-disc list-inside space-y-1 ml-4 mt-2">
+                            <li data-i18="copyright_price_contract_li1">Предмет договора — конкретное произведение с описанием</li>
+                            <li data-i18="copyright_price_contract_li2">Способы использования произведения</li>
+                            <li data-i18="copyright_price_contract_li3">Территория действия договора</li>
+                            <li data-i18="copyright_price_contract_li4">Срок действия договора (при лицензионном договоре)</li>
+                            <li data-i18="copyright_price_contract_li5">Размер вознаграждения и порядок его выплаты</li>
+                        </ul>
+                        <p class="mt-3 font-semibold" data-i18="copyright_price_contract_note_h">Важно:</p>
+                        <p class="text-sm" data-i18="copyright_price_contract_note_p">Договор, в котором не указан размер вознаграждения, считается незаключённым (статья 1235 ГК РФ). Все условия должны быть прописаны в письменной форме.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Передача авторских прав -->
+        <div class="card p-8 mb-8">
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6" data-i18="copyright_xfer_h2">Передача авторских прав</h2>
+
+            <div class="space-y-6 text-gray-600 leading-relaxed">
+                <p data-i18="copyright_xfer_p">В соответствии со статьёй 1234 ГК РФ, исключительное право на произведение может быть передано от правообладателя к другому лицу по договору об отчуждении исключительного права. Также права могут передаваться по лицензионному договору (статья 1235 ГК РФ).</p>
+
+                <div class="grid md:grid-cols-2 gap-6 mt-6">
+                    <div class="bg-white/50 rounded-2xl p-6 border border-[#3d7a4f]/20">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-[#3d7a4f] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                            <span data-i18="copyright_xfer_assign_h">Договор об отчуждении</span>
+                        </h3>
+                        <p class="text-sm" data-i18="copyright_xfer_assign_p">Полная передача исключительных прав заказчику. После подписания акта приёма-передачи автор утрачивает право распоряжаться произведением, за исключением права авторства и права на имя.</p>
+                    </div>
+
+                    <div class="bg-white/50 rounded-2xl p-6 border border-[#3d7a4f]/20">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-[#3d7a4f] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <span data-i18="copyright_xfer_lic_h">Лицензионный договор</span>
+                        </h3>
+                        <p class="text-sm" data-i18="copyright_xfer_lic_p">Предоставление права использования произведения на определённых условиях (срок, территория, способы использования). Автор сохраняет исключительное право и может выдавать лицензии другим лицам.</p>
+                    </div>
+                </div>
+
+                <div class="bg-[#3d7a4f]/5 rounded-2xl p-6 mt-6">
+                    <h3 class="font-semibold text-gray-800 mb-3" data-i18="copyright_xfer_steps_h">Процесс передачи прав:</h3>
+                    <ol class="space-y-3 text-sm">
+                        <li class="flex gap-3">
+                            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#3d7a4f] text-white text-xs flex items-center justify-center font-bold">1</span>
+                            <span data-i18="copyright_xfer_s1">Подписание договора с указанием всех передаваемых прав, способов использования и территории действия</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#3d7a4f] text-white text-xs flex items-center justify-center font-bold">2</span>
+                            <span data-i18="copyright_xfer_s2">Создание и согласование произведения, внесение правок в рамках технического задания</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#3d7a4f] text-white text-xs flex items-center justify-center font-bold">3</span>
+                            <span data-i18="copyright_xfer_s3">Подписание акта приёма-передачи произведения — с этого момента права переходят к заказчику</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#3d7a4f] text-white text-xs flex items-center justify-center font-bold">4</span>
+                            <span data-i18="copyright_xfer_s4">Передача исходных файлов и материалов в согласованном формате</span>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Авторский заказ -->
+        <div class="card p-8 mb-8">
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6" data-i18="copyright_comm_h2">Авторский заказ (статья 1288 ГК РФ)</h2>
+
+            <div class="space-y-6 text-gray-600 leading-relaxed">
+                <p data-i18="copyright_comm_p">По договору авторского заказа автор обязуется по заказу заказчика создать обусловленные договором произведения науки, литературы или искусства. Заказчик обязуется принять и оплатить эти произведения.</p>
+
+                <div class="grid md:grid-cols-3 gap-4 mt-6">
+                    <div class="bg-gradient-to-br from-[#3d7a4f]/10 to-[#a8c957]/10 rounded-2xl p-5">
+                        <h3 class="font-semibold text-gray-800 mb-2" data-i18="copyright_comm_deadline_h">Срок создания</h3>
+                        <p class="text-sm text-gray-600" data-i18="copyright_comm_deadline_p">Определяется договором. При отсутствии прямого указания — определяется разумными пределами, исходя из характера произведения.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-[#3d7a4f]/10 to-[#a8c957]/10 rounded-2xl p-5">
+                        <h3 class="font-semibold text-gray-800 mb-2" data-i18="copyright_comm_transfer_h">Переход прав</h3>
+                        <p class="text-sm text-gray-600" data-i18="copyright_comm_transfer_p">Исключительные права переходят к заказчику только после подписания акта приёма-передачи и полной оплаты.</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-[#3d7a4f]/10 to-[#a8c957]/10 rounded-2xl p-5">
+                        <h3 class="font-semibold text-gray-800 mb-2" data-i18="copyright_comm_personal_h">Личное создание</h3>
+                        <p class="text-sm text-gray-600" data-i18="copyright_comm_personal_p">Произведение должно быть создано лично автором. Привлечение соавторов требует согласия заказчика.</p>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 rounded-2xl p-6 border border-yellow-200 mt-6">
+                    <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <span data-i18="copyright_comm_std_h3">Стандартные сроки передачи прав</span>
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <p data-i18="copyright_comm_std_p1"><strong>Момент перехода:</strong> Исключительные права переходят к заказчику в момент подписания акта приёма-передачи произведения, если договором не предусмотрено иное.</p>
+                        <p data-i18="copyright_comm_std_p2"><strong>Оплата:</strong> Полная оплата должна быть произведена до или в момент передачи прав. Возможна поэтапная оплата по соглашению сторон.</p>
+                        <p data-i18="copyright_comm_std_p3"><strong>Документальное оформление:</strong> Переход прав оформляется актом приёма-передачи с указанием всех передаваемых прав и способов использования.</p>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 rounded-2xl p-6 border border-blue-200 mt-6">
+                    <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span data-i18="copyright_comm_term_h3">Условия расторжения договора</span>
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <p data-i18="copyright_comm_term_p">Расторжение договора авторского заказа возможно по соглашению сторон или в судебном порядке при существенном нарушении условий одной из сторон (статья 450 ГК РФ).</p>
+                        <p class="font-semibold" data-i18="copyright_comm_term_note_h">Важно:</p>
+                        <ul class="list-disc list-inside space-y-1 ml-4">
+                            <li data-i18="copyright_comm_term_li1">Все условия расторжения должны быть чётко прописаны в договоре</li>
+                            <li data-i18="copyright_comm_term_li2">При одностороннем отказе от договора необходимо уведомить вторую сторону в письменной форме</li>
+                            <li data-i18="copyright_comm_term_li3">Возврат прав возможен только по соглашению сторон или решению суда</li>
+                            <li data-i18="copyright_comm_term_li4">Рекомендуется заранее определить условия возврата аванса при расторжении</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Авторский экземпляр и отчисления -->
+        <div class="card p-8 mb-8">
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6" data-i18="copyright_ar_h2">Авторский экземпляр и отчисления</h2>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[#3d7a4f] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        <span data-i18="copyright_ar_copy_h">Право на авторский экземпляр</span>
+                    </h3>
+                    <div class="space-y-4 text-gray-600 text-sm leading-relaxed">
+                        <p data-i18="copyright_ar_copy_p1">В соответствии со статьёй 1292 ГК РФ, автор оригинала произведения, у которого отчуждены исключительные права, имеет право требовать от владельца оригинала предоставления возможности для воспроизведения этого произведения (право доступа).</p>
+
+                        <div class="bg-[#3d7a4f]/5 rounded-xl p-4">
+                            <p class="font-semibold text-gray-800 mb-2" data-i18="copyright_ar_copy_box_h">Применительно к 3D-моделированию и дизайну:</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li data-i18="copyright_ar_copy_li1">Автор сохраняет право на создание авторских экземпляров (принтов, слепков, рендеров) для портфолио</li>
+                                <li data-i18="copyright_ar_copy_li2">Автор вправе демонстрировать произведение в профессиональном портфолио и на выставках</li>
+                                <li data-i18="copyright_ar_copy_li3">Автор может использовать изображения произведения для самопрезентации и маркетинга своих услуг</li>
+                                <li data-i18="copyright_ar_copy_li4">Коммерческое использование авторских экземпляров требует отдельного соглашения</li>
+                            </ul>
+                        </div>
+
+                        <p class="text-xs text-gray-500 mt-4" data-i18="copyright_ar_copy_note">Это право не может быть отчуждено по договору, но может быть ограничено соглашением сторон в разумных пределах.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[#3d7a4f] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span data-i18="copyright_ar_roy_h">Варианты авторских отчислений</span>
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="bg-white/50 rounded-xl p-4 border border-[#3d7a4f]/10">
+                            <h4 class="font-semibold text-gray-800 mb-2" data-i18="copyright_ar_roy1_h">Единовременное вознаграждение</h4>
+                            <p class="text-gray-600" data-i18="copyright_ar_roy1_p">Фиксированная сумма за создание и передачу прав. Наиболее распространённая форма для разовых заказов.</p>
+                        </div>
+
+                        <div class="bg-white/50 rounded-xl p-4 border border-[#3d7a4f]/10">
+                            <h4 class="font-semibold text-gray-800 mb-2" data-i18="copyright_ar_roy2_h">Процент от продаж (роялти)</h4>
+                            <p class="text-gray-600" data-i18="copyright_ar_roy2_p">Автор получает процент от каждого проданного экземпляра продукции с его дизайном. Стандартная ставка: 5-15% от оптовой цены.</p>
+                        </div>
+
+                        <div class="bg-white/50 rounded-xl p-4 border border-[#3d7a4f]/10">
+                            <h4 class="font-semibold text-gray-800 mb-2" data-i18="copyright_ar_roy3_h">Комбинированная модель</h4>
+                            <p class="text-gray-600" data-i18="copyright_ar_roy3_p">Сочетание фиксированного аванса и последующих отчислений. Например: 50% предоплаты + 5% роялти с продаж.</p>
+                        </div>
+
+                        <div class="bg-white/50 rounded-xl p-4 border border-[#3d7a4f]/10">
+                            <h4 class="font-semibold text-gray-800 mb-2" data-i18="copyright_ar_roy4_h">Паушальный платёж</h4>
+                            <p class="text-gray-600" data-i18="copyright_ar_roy4_p">Единовременная выплата за передачу всех прав без дальнейших отчислений. Права полностью переходят к заказчику.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 bg-gradient-to-r from-[#3d7a4f]/5 to-[#a8c957]/5 rounded-2xl p-6 border border-[#3d7a4f]/10">
+                <h3 class="font-semibold text-gray-800 mb-3" data-i18="copyright_ar_note_h">Важно знать:</h3>
+                <ul class="space-y-2 text-sm text-gray-600">
+                    <li class="flex gap-2">
+                        <span class="text-[#3d7a4f]">•</span>
+                        <span data-i18="copyright_ar_note_li1">Условия отчислений должны быть чётко прописаны в договоре с указанием процентной ставки, базы расчёта и периодичности выплат</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <span class="text-[#3d7a4f]">•</span>
+                        <span data-i18="copyright_ar_note_li2">Заказчик обязан предоставлять автору отчёты о продажах не реже одного раза в квартал (при роялти-модели)</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <span class="text-[#3d7a4f]">•</span>
+                        <span data-i18="copyright_ar_note_li3">При нарушении условий выплаты отчислений автор вправе расторгнуть договор и потребовать возврата прав</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <span class="text-[#3d7a4f]">•</span>
+                        <span data-i18="copyright_ar_note_li4">Минимальное гарантированное вознаграждение может быть установлено для защиты интересов автора</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
         <!-- Важные моменты -->
         <div class="card p-8 mb-8">
-            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Важные моменты законодательства</h2>
-            
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6" data-i18="copyright_imp_h2">Важные моменты законодательства</h2>
+
             <div class="space-y-4">
                 <div class="flex items-start gap-3 p-4 bg-red-50 rounded-xl border border-red-100">
                     <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                     </svg>
                     <div>
-                        <h4 class="font-semibold text-gray-800">Нарушение авторских прав</h4>
-                        <p class="text-gray-600 text-sm mt-1">Незаконное использование объектов авторского права влечёт гражданскую, административную и уголовную ответственность (статьи 146, 1301 ГК РФ, статья 7.12 КоАП РФ).</p>
+                        <h4 class="font-semibold text-gray-800" data-i18="copyright_imp_viol_h">Нарушение авторских прав</h4>
+                        <p class="text-gray-600 text-sm mt-1" data-i18="copyright_imp_viol_p">Незаконное использование объектов авторского права влечёт гражданскую, административную и уголовную ответственность (статьи 146, 1301 ГК РФ, статья 7.12 КоАП РФ).</p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-start gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
                     <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                     </svg>
                     <div>
-                        <h4 class="font-semibold text-gray-800">Добросовестное использование</h4>
-                        <p class="text-gray-600 text-sm mt-1">Цитирование допускается в научных, информационных и учебных целях с обязательным указанием автора и источника (статья 1274 ГК РФ).</p>
+                        <h4 class="font-semibold text-gray-800" data-i18="copyright_imp_good_h">Добросовестное использование</h4>
+                        <p class="text-gray-600 text-sm mt-1" data-i18="copyright_imp_good_p">Цитирование допускается в научных, информационных и учебных целях с обязательным указанием автора и источника (статья 1274 ГК РФ).</p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
                     <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <div>
-                        <h4 class="font-semibold text-gray-800">AI-контент и авторское право</h4>
-                        <p class="text-gray-600 text-sm mt-1">Вопросы авторства AI-генерированного контента в РФ находятся в стадии правового регулирования. На данный момент рекомендуется указывать инструменты AI при создании работ.</p>
+                        <h4 class="font-semibold text-gray-800" data-i18="copyright_imp_ai_h">AI-контент и авторское право</h4>
+                        <p class="text-gray-600 text-sm mt-1" data-i18="copyright_imp_ai_p">Вопросы авторства AI-генерированного контента в РФ находятся в стадии правового регулирования. На данный момент рекомендуется указывать инструменты AI при создании работ.</p>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Изображения -->
         <div class="card p-8 mb-8">
-            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Визуальное представление</h2>
-            
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6" data-i18="copyright_vis_h2">Визуальное представление</h2>
+
             <div class="grid md:grid-cols-3 gap-4">
                 <div class="relative aspect-[4/3] rounded-2xl overflow-hidden">
-                    <img src="{% static 'images/featured/bronze-victory-relief-1920x2400.jpg' %}" 
-                         alt="3D Барельеф" 
+                    <img src="{% static 'images/featured/bronze-victory-relief-1920x2400.jpg' %}"
+                         alt="3D Барельеф"
                          class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                     <div class="absolute bottom-3 left-3 right-3">
-                        <p class="text-white text-sm font-medium">3D Модели</p>
-                        <p class="text-white/70 text-xs">Объекты авторского права</p>
+                        <p class="text-white text-sm font-medium" data-i18="copyright_vis_3d_t">3D Модели</p>
+                        <p class="text-white/70 text-xs" data-i18="copyright_vis_3d_s">Объекты авторского права</p>
                     </div>
                 </div>
-                
+
                 <div class="relative aspect-[4/3] rounded-2xl overflow-hidden">
-                    <img src="{% static 'images/featured/cosmic-weave-1920x1080.png' %}" 
-                         alt="AI Арт" 
+                    <img src="{% static 'images/featured/cosmic-weave-1920x1080.png' %}"
+                         alt="AI Арт"
                          class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                     <div class="absolute bottom-3 left-3 right-3">
-                        <p class="text-white text-sm font-medium">AI Генерации</p>
-                        <p class="text-white/70 text-xs">Творческие произведения</p>
+                        <p class="text-white text-sm font-medium" data-i18="copyright_vis_ai_t">AI Генерации</p>
+                        <p class="text-white/70 text-xs" data-i18="copyright_vis_ai_s">Творческие произведения</p>
                     </div>
                 </div>
-                
+
                 <div class="relative aspect-[4/3] rounded-2xl overflow-hidden">
-                    <img src="{% static 'images/featured/numismatic-heritage-1920x1280.jpg' %}" 
-                         alt="Нумизматика" 
+                    <img src="{% static 'images/featured/numismatic-heritage-1920x1280.jpg' %}"
+                         alt="Нумизматика"
                          class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                     <div class="absolute bottom-3 left-3 right-3">
-                        <p class="text-white text-sm font-medium">Медали и Монеты</p>
-                        <p class="text-white/70 text-xs">Дизайн и исполнение</p>
+                        <p class="text-white text-sm font-medium" data-i18="copyright_vis_coin_t">Медали и Монеты</p>
+                        <p class="text-white/70 text-xs" data-i18="copyright_vis_coin_s">Дизайн и исполнение</p>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Контакт для запросов -->
         <div class="card p-8 text-center">
-            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-4">Вопросы по лицензированию</h2>
-            <p class="text-gray-600 mb-6">Для получения разрешения на использование работ, коммерческих запросов или вопросов об авторском праве свяжитесь с автором.</p>
-            <a href="/homepage/#contact" class="btn-primary inline-flex">
-                Связаться с Автором
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-4" data-i18="copyright_cta_h2">Вопросы по лицензированию</h2>
+            <p class="text-gray-600 mb-6" data-i18="copyright_cta_p">Для получения разрешения на использование работ, коммерческих запросов или вопросов об авторском праве свяжитесь с автором.</p>
+            <a href="/homepage/#contact" class="btn-primary inline-flex items-center gap-2">
+                <span data-i18="copyright_cta_btn">Связаться с Автором</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
             </a>
         </div>
-        
+
+        <!-- Политика обработки персональных данных -->
+        <div id="pd-policy" class="card p-8 mb-8">
+            <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6" data-i18="pd_policy_h2">Политика обработки персональных данных</h2>
+
+            <div class="space-y-6 text-gray-600 leading-relaxed">
+                <p data-i18="pd_policy_intro">
+                    Настоящая Политика обработки персональных данных (далее — Политика) действует в отношении всей информации,
+                    которую сайт <strong>KurilenkoArt</strong> (далее — Сайт) может получить о пользователе во время использования
+                    сайта, включая оформление заказа в интернет-магазине и отправку сообщений через форму обратной связи.
+                </p>
+
+                <div class="bg-[#3d7a4f]/5 rounded-2xl p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4" data-i18="pd_policy_1_h">1. Сбор персональных данных</h3>
+                    <p class="mb-3" data-i18="pd_policy_1_p">Мы собираем следующие персональные данные:</p>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li data-i18="pd_policy_1_li1"><strong>При оформлении заказа:</strong> имя, адрес электронной почты (email), номер телефона, адрес доставки (страна, город, улица, дом, квартира, почтовый индекс)</li>
+                        <li data-i18="pd_policy_1_li2"><strong>При отправке сообщения:</strong> имя, адрес электронной почты (email), тема и текст сообщения</li>
+                        <li data-i18="pd_policy_1_li3"><strong>Автоматически:</strong> IP-адрес, данные о браузере и времени доступа (в технических целях)</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#3d7a4f]/5 rounded-2xl p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4" data-i18="pd_policy_2_h">2. Цели обработки персональных данных</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li data-i18="pd_policy_2_li1">Оформление и выполнение заказов, включая доставку товаров</li>
+                        <li data-i18="pd_policy_2_li2">Связь с заказчиком для уточнения деталей заказа и информирования о статусе</li>
+                        <li data-i18="pd_policy_2_li3">Обработка запросов через форму обратной связи</li>
+                        <li data-i18="pd_policy_2_li4">Улучшение качества обслуживания и анализ статистики использования сайта</li>
+                        <li data-i18="pd_policy_2_li5">Выполнение требований законодательства Российской Федерации</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#3d7a4f]/5 rounded-2xl p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4" data-i18="pd_policy_3_h">3. Правовые основания обработки</h3>
+                    <p data-i18="pd_policy_3_p">
+                        Обработка персональных данных осуществляется в соответствии с
+                        <strong>Федеральным законом от 27.06.2006 № 152-ФЗ «О персональных данных»</strong>
+                        на основании:
+                    </p>
+                    <ul class="list-disc list-inside space-y-1 text-sm mt-2">
+                        <li data-i18="pd_policy_3_li1">Согласия субъекта персональных данных (при оформлении заказа и отправке сообщений)</li>
+                        <li data-i18="pd_policy_3_li2">Необходимости исполнения договора, стороной которого является субъект персональных данных</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#3d7a4f]/5 rounded-2xl p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4" data-i18="pd_policy_4_h">4. Способы и условия обработки</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li data-i18="pd_policy_4_li1"><strong>Способы обработки:</strong> сбор, запись, систематизация, накопление, хранение, уточнение, использование, передача (только в случаях, предусмотренных законом), блокирование, удаление персональных данных</li>
+                        <li data-i18="pd_policy_4_li2"><strong>Конфиденциальность:</strong> мы не передаём персональные данные третьим лицам, за исключением случаев, связанных с исполнением заказа (службы доставки) и требований законодательства</li>
+                        <li data-i18="pd_policy_4_li3"><strong>Безопасность:</strong> принимаем необходимые технические и организационные меры для защиты данных от неправомерного доступа</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#3d7a4f]/5 rounded-2xl p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4" data-i18="pd_policy_5_h">5. Срок обработки и хранения данных</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li data-i18="pd_policy_5_li1">Персональные данные хранятся до достижения целей обработки или до отзыва согласия субъектом</li>
+                        <li data-i18="pd_policy_5_li2">После отзыва согласия или достижения целей данные подлежат удалению или обезличиванию</li>
+                        <li data-i18="pd_policy_5_li3">Отдельные данные могут храниться в течение сроков, установленных законодательством РФ (например, для бухгалтерского учёта)</li>
+                    </ul>
+                </div>
+
+                <div class="bg-[#3d7a4f]/5 rounded-2xl p-6">
+                    <h3 class="font-semibold text-gray-800 mb-4" data-i18="pd_policy_6_h">6. Права субъекта персональных данных</h3>
+                    <p class="mb-3" data-i18="pd_policy_6_p">Вы имеете право:</p>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li data-i18="pd_policy_6_li1">Получить информацию о обработке своих персональных данных</li>
+                        <li data-i18="pd_policy_6_li2">Требовать уточнения, блокирования или уничтожения данных, если они являются неполными, устаревшими или полученными незаконно</li>
+                        <li data-i18="pd_policy_6_li3"><strong>Отозвать согласие</strong> на обработку персональных данных путём направления письменного уведомления на email Сайта</li>
+                        <li data-i18="pd_policy_6_li4">Защитить свои права в уполномоченном органе по защите прав субъектов персональных данных</li>
+                    </ul>
+                </div>
+
+                <div class="bg-yellow-50 rounded-2xl p-6 border border-yellow-200">
+                    <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2" data-i18="pd_policy_consent_h">
+                        <svg class="w-5 h-5 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Согласие на обработку ПДн при оформлении заказа
+                    </h3>
+                    <p class="text-sm" data-i18="pd_policy_consent_p">
+                        При оформлении заказа вы даёте <strong>конкретное, информированное и сознательное согласие</strong>
+                        на обработку указанных персональных данных в целях, описанных в настоящей Политике.
+                        Согласие действует до момента его отзыва или достижения целей обработки.
+                        Для отзыва согласия направьте письмо на электронную почту Сайта.
+                    </p>
+                </div>
+
+                <div class="bg-blue-50 rounded-2xl p-6 border border-blue-200">
+                    <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2" data-i18="pd_policy_contact_h">
+                        <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        Контакты для вопросов по ПДн
+                    </h3>
+                    <p class="text-sm" data-i18="pd_policy_contact_p">
+                        По вопросам, связанным с обработкой персональных данных, вы можете связаться с нами через
+                        <a href="/homepage/#contact" class="text-[#3d7a4f] hover:underline">форму обратной связи</a>
+                        или направив письмо на электронную почту Сайта.
+                    </p>
+                </div>
+
+                <div class="text-xs text-gray-500 mt-4">
+                    <p data-i18="pd_policy_foot">
+                        Политика основана на требованиях Федерального закона № 152-ФЗ «О персональных данных»
+                        (в редакции, действующей с 1 сентября 2025 года).
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <!-- Ссылки на законодательство -->
         <div class="mt-8 text-center text-gray-500 text-sm">
-            <p>Информация основана на положениях Гражданского кодекса Российской Федерации (часть 4)</p>
-            <p class="mt-2">© 2026 KurilenkoArt. Все права защищены.</p>
+            <p data-i18="copyright_foot_p1">Информация основана на положениях Гражданского кодекса Российской Федерации (часть 4)</p>
+            <p class="mt-2" data-i18="copyright_foot_p2">© 2026 KurilenkoArt. Все права защищены.</p>
+        </div>
         </div>
     </div>
 </div>

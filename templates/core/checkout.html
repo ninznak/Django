@@ -1,0 +1,232 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pt-32 max-sm:pt-[9rem] pb-20">
+    <div class="max-w-6xl mx-auto px-6">
+        <!-- Заголовок -->
+        <div class="text-center mb-12">
+            <span class="section-label" data-i18="checkout_label">Оформление заказа</span>
+            <h1 class="font-display text-4xl md:text-5xl font-bold mt-4 text-gray-800" data-i18="checkout_title">Оформление заказа</h1>
+            <p class="text-gray-500 mt-4 max-w-2xl mx-auto" data-i18="checkout_sub">Заполните форму для завершения покупки</p>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Левая колонка: Форма -->
+            <div class="lg:col-span-2 space-y-8">
+                <form method="post" action="{% url 'core:checkout' %}" class="space-y-8" id="checkout-form">
+                    {% csrf_token %}
+
+                    <!-- Контактные данные -->
+                    <div class="card p-8">
+                        <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Контактные данные</h2>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="id_name" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    {{ form.name.label }} <span class="text-red-500">*</span>
+                                </label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <p class="text-red-500 text-xs mt-1">{{ form.name.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label for="id_email" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    {{ form.email.label }} <span class="text-red-500">*</span>
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <p class="text-red-500 text-xs mt-1">{{ form.email.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <label for="id_phone" class="block text-sm font-semibold text-gray-700 mb-2">
+                                {{ form.phone.label }}
+                            </label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ form.phone.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Адрес доставки -->
+                    <div class="card p-8">
+                        <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Адрес доставки</h2>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="id_country" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    {{ form.country.label }} <span class="text-red-500">*</span>
+                                </label>
+                                {{ form.country }}
+                                {% if form.country.errors %}
+                                    <p class="text-red-500 text-xs mt-1">{{ form.country.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label for="id_city" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    {{ form.city.label }} <span class="text-red-500">*</span>
+                                </label>
+                                {{ form.city }}
+                                {% if form.city.errors %}
+                                    <p class="text-red-500 text-xs mt-1">{{ form.city.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <label for="id_address" class="block text-sm font-semibold text-gray-700 mb-2">
+                                {{ form.address.label }}
+                            </label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ form.address.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-6">
+                            <label for="id_postal_code" class="block text-sm font-semibold text-gray-700 mb-2">
+                                {{ form.postal_code.label }}
+                            </label>
+                            {{ form.postal_code }}
+                            {% if form.postal_code.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ form.postal_code.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Комментарий и согласие -->
+                    <div class="card p-8">
+                        <h2 class="font-display text-2xl font-semibold text-gray-800 mb-6">Дополнительно</h2>
+
+                        <div class="mb-6">
+                            <label for="id_notes" class="block text-sm font-semibold text-gray-700 mb-2">
+                                {{ form.notes.label }}
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ form.notes.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Согласие на обработку ПДн -->
+                        <div class="bg-blue-50 rounded-xl p-5 border border-blue-200">
+                            <div class="flex items-start gap-3">
+                                <div class="flex-shrink-0 mt-0.5">
+                                    {{ form.pd_consent }}
+                                </div>
+                                <div class="text-sm">
+                                    <label for="id_pd_consent" class="font-semibold text-gray-800 cursor-pointer">
+                                        Я даю согласие на обработку персональных данных <span class="text-red-500">*</span>
+                                    </label>
+                                    <p class="text-gray-600 mt-2 leading-relaxed">
+                                        Я подтверждаю, что все указанные мной данные принадлежат лично мне.
+                                        Даю <strong>конкретное, информированное и сознательное согласие</strong> на обработку моих персональных данных
+                                        (имя, email, телефон, адрес доставки) в следующих целях:
+                                    </p>
+                                    <ul class="text-gray-600 mt-2 space-y-1 text-xs list-disc list-inside">
+                                        <li>Оформление и выполнение заказа</li>
+                                        <li>Связь для уточнения деталей и информирования о статусе заказа</li>
+                                        <li>Доставка товара</li>
+                                    </ul>
+                                    <p class="text-gray-600 mt-2 leading-relaxed">
+                                        Обработка осуществляется в соответствии с
+                                        <a href="{% url 'core:copyright' %}#pd-policy" class="text-[#3d7a4f] hover:underline" target="_blank">Политикой обработки персональных данных</a>
+                                        и Федеральным законом № 152-ФЗ.
+                                        Согласие действует до момента его отзыва или исполнения обязательств.
+                                        <a href="{% url 'core:copyright' %}#pd-policy" class="text-[#3d7a4f] hover:underline" target="_blank">Подробнее о правах субъекта ПДн</a>.
+                                    </p>
+                                </div>
+                            </div>
+                            {% if form.pd_consent.errors %}
+                                <p class="text-red-500 text-xs mt-2 ml-7">{{ form.pd_consent.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Кнопка отправки -->
+                        <div class="mt-8">
+                            <button type="submit" id="checkout-submit-btn" class="btn-primary w-full justify-center py-3.5 text-base font-semibold transition-opacity">
+                                Оформить заказ
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </button>
+                            <p class="text-xs text-gray-500 text-center mt-3">
+                                После нажатия кнопки вы соглашаетесь с условиями обработки персональных данных
+                            </p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Правая колонка: Состав заказа -->
+            <div class="lg:col-span-1">
+                <div class="card p-6 sticky top-32">
+                    <h2 class="font-display text-xl font-semibold text-gray-800 mb-4">Ваш заказ</h2>
+
+                    <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                        {% for line in cart_lines %}
+                        <div class="flex gap-3 pb-3 border-b border-gray-200 last:border-0">
+                            <img src="{% static line.product.img %}"
+                                 alt="{{ line.product.alt }}"
+                                 class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold text-gray-800 truncate">{{ line.product.title }}</p>
+                                <p class="text-xs text-gray-500 mt-1">Количество: {{ line.qty }}</p>
+                                <p class="text-sm font-medium text-[#3d7a4f] mt-1">{{ line.product.price }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Итого:</span>
+                            <span class="text-2xl font-bold text-[#3d7a4f]">{{ total_formatted }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-4 bg-green-50 rounded-xl border border-green-200">
+                        <p class="text-xs text-gray-600">
+                            <strong class="text-green-700">✓ Без регистрации</strong><br>
+                            Оформление заказа доступно без создания аккаунта
+                        </p>
+                    </div>
+
+                    <div class="mt-3 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                        <p class="text-xs text-gray-600">
+                            <strong class="text-blue-700">📧 Email-уведомление</strong><br>
+                            После оформления вы получите подтверждение на указанный email
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var cb = document.getElementById('id_pd_consent');
+    var btn = document.getElementById('checkout-submit-btn');
+    if (!cb || !btn) return;
+    function sync() {
+        var ok = cb.checked;
+        btn.disabled = !ok;
+        btn.setAttribute('aria-disabled', ok ? 'false' : 'true');
+        btn.classList.toggle('opacity-60', !ok);
+        btn.classList.toggle('cursor-not-allowed', !ok);
+    }
+    cb.addEventListener('change', sync);
+    sync();
+})();
+</script>
+{% endblock %}
