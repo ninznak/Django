@@ -17,6 +17,7 @@ urlpatterns = [
     path('news/', views.news, name='news'),
     path('news/<slug:slug>/', views.news_article, name='news_article'),
     path('portfolio/', views.portfolio, name='portfolio'),
+    path('portfolio/<slug:slug>/', views.portfolio_gallery, name='portfolio_gallery'),
     path('shop/', views.shop, name='shop'),
     path('api/cart/', views.cart_api, name='cart_api'),
     # path('forum/', views.forum, name='forum'),

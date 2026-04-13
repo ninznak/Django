@@ -66,6 +66,13 @@ PAGE_SEO: dict[str, dict[str, Any]] = {
             + SEO_TOPIC_KEYWORDS
         ),
     },
+    "portfolio_gallery": {
+        "title": "Галерея портфолио — KurilenkoArt",
+        "description": (
+            "Подборка изображений из портфолио: 3D-барельефы, медали или AI-арт — отдельные страницы галереи."
+        ),
+        "keywords": "галерея 3D, галерея AI арт, портфолио изображения, " + SEO_TOPIC_KEYWORDS,
+    },
     "shop": {
         "title": "Магазин — KurilenkoArt | 3D-модели медалей и STL, принты",
         "description": (

@@ -5,14 +5,16 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.core.mail import EmailMessage
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.templatetags.static import static
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_http_methods
 
 from . import cart_utils
+from .portfolio_gallery_data import gallery_context
 from .forms import CheckoutForm, ContactForm, RegisterForm
 from .models import ContactSubmission, Order, OrderItem
 from .pricing import format_minor_as_rub
@@ -120,9 +122,40 @@ def news_article(request, slug):
 
 
 def portfolio(request):
-    """Страница портфолио"""
-    category = request.GET.get('category', 'all')
-    return render(request, 'core/portfolio.html', {'category': category})
+    """Страница портфолио (навигация по секциям — якоря #portfolio-intro / #portfolio-3d / #portfolio-ai)."""
+    cat = (request.GET.get("category") or "").strip().lower()
+    base = reverse("core:portfolio")
+    if cat == "3d":
+        return redirect(f"{base}#portfolio-3d")
+    if cat == "ai":
+        return redirect(f"{base}#portfolio-ai")
+    if cat == "all":
+        return redirect(base)
+    return render(request, "core/portfolio.html")
+
+
+def portfolio_gallery(request, slug):
+    """Отдельная страница-галерея для раздела 3D или AI (slug: 3d | ai)."""
+    ctx = gallery_context(slug)
+    if not ctx:
+        raise Http404()
+    meta = ctx["gallery"]
+    seo = ctx["gallery_seo"]
+    og_url = request.build_absolute_uri(static(meta["items"][0]["image"]))
+    return render(
+        request,
+        "core/portfolio_gallery.html",
+        {
+            **ctx,
+            "seo": get_seo(
+                request,
+                title=seo["title"],
+                description=seo["description"],
+                canonical_path=request.path,
+                og_image_url=og_url,
+            ),
+        },
+    )
 
 
 def shop(request):
