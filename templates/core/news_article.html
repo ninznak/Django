@@ -4,103 +4,289 @@
 {% block content %}
 <div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
     <div class="max-w-3xl mx-auto px-6">
-        <a href="/news/" class="text-[#3d7a4f] hover:underline mb-8 inline-block" data-i18="news_back">← Back to News</a>
+        <a href="/news/" class="text-[#3d7a4f] hover:underline mb-8 inline-block" data-i18="news_back">← Назад к новостям</a>
         
         <span class="tag-pill">
-            {% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}Technique
-            {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}AI
-            {% elif slug == "the-2026-commemorative-medal-market" %}Industry
-            {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}AI
-            {% else %}Article{% endif %}
+            {% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}Практика
+            {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}Тренды
+            {% elif slug == "the-2026-commemorative-medal-market" %}Технологии
+            {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}Скульптинг
+            {% elif slug == "artcam-vozmozhnosti-zadachi-i-praktika" %}CAD/CAM
+            {% else %}Статья{% endif %}
         </span>
 
         <h1 class="font-display text-4xl md:text-5xl font-semibold mt-4">
             {% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}
-                Bas Relief Depth: Achieving Sub-Millimeter Precision in ZBrush
+                3D-моделирование: путь от базовых форм к коммерческому уровню
             {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}
-                Midjourney v7 for Numismatic Concept Art
+                Ключевые тренды 3D-графики в 2026 году
             {% elif slug == "the-2026-commemorative-medal-market" %}
-                The 2026 Commemorative Medal Market
+                3D-печать без брака: от цифровой модели до готового изделия
             {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}
-                Sora & Kling: AI Video for 3D Presentations
+                ZBrush-скульптинг: как добиться выразительной формы и чистой детализации
+            {% elif slug == "artcam-vozmozhnosti-zadachi-i-praktika" %}
+                ArtCAM: возможности программы, ключевые задачи и практический workflow
             {% else %}
-                Article Title
+                Заголовок статьи
             {% endif %}
         </h1>
 
         <p class="text-gray-500 mt-4">
-            {% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}March 14, 2026 · 8 min read
-            {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}March 8, 2026 · 6 min read
-            {% elif slug == "the-2026-commemorative-medal-market" %}February 28, 2026 · 5 min read
-            {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}February 20, 2026 · 7 min read
-            {% else %}8 min read{% endif %}
+            {% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}14 апреля 2026 · 10 минут чтения
+            {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}10 апреля 2026 · 9 минут чтения
+            {% elif slug == "the-2026-commemorative-medal-market" %}5 апреля 2026 · 10 минут чтения
+            {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}1 апреля 2026 · 11 минут чтения
+            {% elif slug == "artcam-vozmozhnosti-zadachi-i-praktika" %}15 апреля 2026 · 12 минут чтения
+            {% else %}8 минут чтения{% endif %}
         </p>
 
         <div class="mt-8 aspect-video rounded-3xl overflow-hidden">
-            <img src="{% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}{% static 'images/news/bas-relief-depth-1920x1200.png' %}
+            <img src="{% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}{% static 'images/news/model11.JPEG' %}
                       {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}{% static 'images/news/midjourney-1920x1200.png' %}
                       {% elif slug == "the-2026-commemorative-medal-market" %}{% static 'images/news/medals-velvet-1920x1200.jpg' %}
                       {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}{% static 'images/news/ai-video-1920x1200.png' %}
-                      {% else %}{% static 'images/news/bas-relief-depth-1920x1200.png' %}{% endif %}"
+                      {% elif slug == "artcam-vozmozhnosti-zadachi-i-praktika" %}{% static 'images/news/artcam1.png' %}
+                      {% else %}{% static 'images/news/model11.JPEG' %}{% endif %}"
                  alt="Article Image" class="w-full h-full object-cover">
         </div>
         
         <div class="mt-8 prose max-w-none">
             {% if slug == "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush" %}
                 <p class="text-gray-600 leading-relaxed">
-                    Creating bas reliefs for numismatic applications requires exceptional precision. In this article, we explore the techniques for achieving sub-millimeter accuracy in ZBrush, ensuring your digital sculptures translate perfectly to physical casts.
+                    Сильная 3D-модель почти всегда начинается не с деталей, а с грамотной формы и продуманной структуры. 
+                    Новички часто пытаются сразу «украсить» объект мелочами, но в коммерческой работе ценится другое: чистая геометрия, 
+                    логичная организация сцены и предсказуемый результат на каждом этапе.
                 </p>
-                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Understanding ZBrush Subdivision Levels</h3>
                 <p class="text-gray-600 leading-relaxed">
-                    The key to precision lies in understanding how ZBrush handles subdivision levels. Starting with a clean base mesh at the lowest subdivision level ensures that your fundamental forms are accurate before adding fine details.
+                    В реальных проектах модель должна не только выглядеть эффектно на рендере, но и быть удобной для доработок, 
+                    передачи клиенту, печати или интеграции в другие пайплайны. Поэтому фундамент качества - это дисциплина процесса.
                 </p>
-                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Brush Calibration for Relief Work</h3>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Этап 1. Блокинг и пропорции</h3>
                 <p class="text-gray-600 leading-relaxed">
-                    Standard brushes often lack the precision needed for numismatic work. Learn how to customize brush parameters, including focal shift, depth, and intensity, to achieve the exact relief heights required for minting.
+                    На старте важно зафиксировать силуэт и крупные объёмы: высоту, ширину, баланс масс и читаемость формы в основных ракурсах. 
+                    Для этого достаточно простых примитивов и базовой low-poly сетки. Если пропорции неверные здесь, 
+                    последующая детализация только закрепит ошибку.
                 </p>
-                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Export Considerations for Casting</h3>
                 <p class="text-gray-600 leading-relaxed">
-                    Once your relief is complete, proper export settings are crucial. We cover STL export options, mesh repair techniques, and how to verify dimensional accuracy before sending files to production.
+                    Полезный приём - регулярно смотреть на модель издалека и в уменьшенном масштабе. 
+                    Если объект узнаваем и выразителен даже в маленьком превью, значит крупные формы собраны правильно.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Этап 2. Детализация без перегруза</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Детали работают только тогда, когда поддерживают главную идею формы. 
+                    Двигайтесь последовательно: сначала средние формы, затем локальные акценты, и лишь после этого микрофактура.
+                    Такой подход помогает сохранить структуру и не превратить модель в шум.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    На этом этапе полезно разделять элементы по приоритету: что видно сразу, что работает на втором плане, 
+                    и что проявляется только в крупном плане. Это упрощает согласование с заказчиком и ускоряет правки.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Этап 3. Техническая подготовка под продакшн</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Для анимации и игр нужна корректная топология с контролем плотности полигонов; для визуализации критична чистая UV-развёртка 
+                    и стабильные материалы. На финале проверьте нормали, отсутствие самопересечений и масштаб в реальных единицах.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Эти проверки часто кажутся «рутиной», но именно они экономят часы переделок на позднем этапе. 
+                    Коммерческий уровень 3D - это не только художественный вкус, но и надёжный, повторяемый workflow.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Что отличает профессиональную работу</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Профессионал всегда оставляет модель в состоянии, с которым удобно работать дальше: понятный нейминг, аккуратная сцена, 
+                    логичная структура, версии сохранений и внятная документация параметров. Это делает ваш результат ценным не только визуально, 
+                    но и технически, а значит повышает доверие клиента и вероятность долгосрочного сотрудничества.
                 </p>
             {% elif slug == "midjourney-v7-for-numismatic-concept-art" %}
                 <p class="text-gray-600 leading-relaxed">
-                    Midjourney v7 introduces significant improvements for generating concept art in the numismatic space. This article explores prompt engineering techniques specifically for coin and medal design visualization.
+                    В 2026 году рынок 3D-графики стал заметно более прикладным: заказчику нужен не просто красивый кадр, 
+                    а контент, который легко адаптировать под сайт, маркетплейс, соцсети, презентации и видео.
                 </p>
-                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Prompt Structure for Coin Design</h3>
                 <p class="text-gray-600 leading-relaxed">
-                    Effective prompts for numismatic art require specific terminology. Learn the key phrases and parameters that produce realistic coin renders with proper metallic properties and relief depth.
+                    Это изменило требования к специалистам. Теперь важны не только навыки моделинга, но и понимание полного продакшн-цикла: 
+                    как быстро собрать ассет, как подготовить вариации и как выдать результат в формате, удобном бизнесу.
                 </p>
-                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Metallic Material Rendering</h3>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Тренд 1. Реализм материалов и света</h3>
                 <p class="text-gray-600 leading-relaxed">
-                    Midjourney's new material rendering engine excels at depicting precious metals. We explore settings for gold, silver, bronze, and bimetallic compositions.
+                    Клиенты ожидают убедительное поведение поверхностей: металл должен «читать» микрорельеф, ткань - иметь правильный отклик, 
+                    пластик - выглядеть физически правдоподобно. Поэтому растёт спрос на художников, уверенно работающих с PBR-подходом.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Важным становится и качество освещения: «красивый» свет, скрывающий дефекты, больше не проходит. 
+                    Нужны сетапы, в которых модель выглядит честно в разных условиях, включая жёсткий контрастный свет.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Тренд 2. Модульные сцены и быстрые итерации</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Скорость согласования стала конкурентным преимуществом. Выигрывают те, кто строит сцены модульно: 
+                    отдельные ассеты, шаблоны камер, пресеты света и материалы, которые можно быстро переключать.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Такой подход позволяет выпускать несколько версий визуала за короткое время и держать качество на стабильном уровне. 
+                    Особенно это критично для e-commerce, где требуется много вариаций одного продукта.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Тренд 3. Гибридный workflow: 3D + AI + композитинг</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    AI всё чаще помогает на этапе поиска визуального направления и референсов, но финальное качество остаётся за 3D-базой 
+                    и ручной доработкой. Главный навык 2026 года - умение комбинировать инструменты, сохраняя контроль над результатом.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Сильный workflow выглядит так: быстрый концепт, точная 3D-реализация, аккуратный композитинг и адаптация под разные форматы вывода. 
+                    Именно эта связка даёт предсказуемый результат в сжатые сроки.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Куда развиваться специалисту</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Самая надёжная стратегия - развивать системность: работать по чек-листам, фиксировать удачные настройки, 
+                    собирать библиотеку ассетов и регулярно обновлять портфолио кейсами, где виден не только «красивый кадр», 
+                    но и ваша способность решать бизнес-задачу от брифа до финальной публикации.
                 </p>
             {% elif slug == "the-2026-commemorative-medal-market" %}
                 <p class="text-gray-600 leading-relaxed">
-                    The commemorative medal market continues to evolve in 2026. This analysis covers emerging trends, collector preferences, and opportunities for independent artists and studios.
+                    Качество 3D-печати определяется задолго до нажатия кнопки «Print». 
+                    Если модель не адаптирована под конкретную технологию, даже дорогое оборудование не спасёт от брака.
                 </p>
-                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Market Growth Trends</h3>
                 <p class="text-gray-600 leading-relaxed">
-                    The global commemorative medal market has shown steady growth, with particular strength in custom corporate awards and historical anniversary pieces.
+                    Для рендера допустимы условности, но для печати критичны толщина стенок, замкнутость меша, отсутствие самопересечений, 
+                    правильная ориентация и логика поддержек. Поэтому профессиональный процесс всегда включает отдельный этап print-ready подготовки.
                 </p>
-                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Collector Preferences in 2026</h3>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Подготовка модели: геометрия и ориентация</h3>
                 <p class="text-gray-600 leading-relaxed">
-                    Modern collectors increasingly value unique designs with historical accuracy combined with contemporary artistic interpretation.
+                    Перед экспортом проверьте минимальные толщины, закройте отверстия, устраните невалидные нормали и выберите ориентацию, 
+                    которая снижает количество поддержек на видимых зонах. Для FDM и SLA параметры отличаются, 
+                    поэтому универсальной настройки не существует.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    На практике лучше сделать тестовый прогон малого фрагмента, чем потерять материал и время на неудачной полной печати. 
+                    Такой шаг быстро выявляет критические ошибки до основного запуска.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Выбор технологии под задачу</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    FDM подходит для функциональных деталей и прототипов, где важны скорость и стоимость. 
+                    SLA/DLP дают высокую детализацию и лучше подходят для художественных объектов, миниатюр и сложного рельефа.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    При выборе учитывайте не только стоимость печати, но и постобработку, износ материалов, требования к прочности и допускам. 
+                    Часто оптимальный путь - комбинация технологий на разных этапах проекта.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Постобработка и контроль качества</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    После печати изделие проходит очистку, удаление поддержек, шлифовку, при необходимости полимеризацию и грунтовку. 
+                    На финальном контроле сравнивайте результат с исходной 3D-моделью: размеры, геометрию, качество поверхности и сохранность мелких элементов.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Стабильное качество строится на повторяемости процесса: фиксируйте параметры печати, отмечайте причины неудач и обновляйте чек-листы. 
+                    Именно это позволяет постепенно выйти на «безбраковый» режим и уверенно масштабировать производство.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Практический вывод</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Успешная 3D-печать - это не магия оборудования, а система. 
+                    Чем лучше вы документируете каждый этап и принимаете решения на основе тестов, 
+                    тем быстрее получаете предсказуемый результат в реальных коммерческих задачах.
                 </p>
             {% elif slug == "sora-and-kling-ai-video-for-3d-presentations" %}
                 <p class="text-gray-600 leading-relaxed">
-                    AI video generation tools like Sora and Kling are transforming how 3D artists present their work. This article explores practical applications for portfolio presentations and client pitches.
+                    ZBrush остаётся одним из самых мощных инструментов художественного 3D, потому что позволяет быстро искать форму, ритм и характер.
+                    Но качество скульпта зависит не от количества кистей, а от того, насколько вы контролируете последовательность работы.
                 </p>
-                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">From Still Renders to Animated Presentations</h3>
                 <p class="text-gray-600 leading-relaxed">
-                    Learn how to transform static 3D renders into compelling video presentations using AI-powered animation tools.
+                    Самая распространённая ошибка - попытка сразу перейти к микродеталям. 
+                    На практике это создаёт иллюзию прогресса, но ухудшает общий результат, потому что крупная форма остаётся слабой.
                 </p>
-                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Best Practices for 3D Model Videos</h3>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Шаг 1. Крупные массы и читаемый силуэт</h3>
                 <p class="text-gray-600 leading-relaxed">
-                    Discover the optimal workflows for preparing your 3D models for AI video generation, including camera angles, lighting, and composition tips.
+                    Начинайте с больших объёмов: общая пластика, ритм основных плоскостей, жест фигуры. 
+                    Если силуэт не читается в уменьшенном виде, значит база ещё не готова к детализации.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    На этом этапе полезно чаще вращать модель и проверять её в нейтральном материале - без эффектов, которые могут скрыть ошибки.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Шаг 2. Средние формы и характер материала</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Когда каркас устойчив, переходите к средним формам: переходам плоскостей, складкам, локальным акцентам. 
+                    Здесь формируется характер объекта и его «вес» - металл, камень, кожа или ткань должны читаться по-разному.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Работайте контрастом: рядом с мягкими зонами добавляйте более жёсткие переломы формы. 
+                    Это делает скульпт выразительным, но важно не перегружать всю поверхность одинаковой интенсивностью.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Шаг 3. Финальная детализация и экспорт</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Только после стабилизации формы переходите к микродеталям, полипейнту и финальной чистке поверхности. 
+                    Затем готовьте модель под задачу: для рендера, для геймдева или для печати требования будут отличаться.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Для игровых моделей добавьте ретопологию и bake-карты, для печати - проверьте watertight-сетку и масштаб. 
+                    Если работать по этому алгоритму, каждый новый проект становится более управляемым и предсказуемым.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Почему эта методика работает</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    По сути, ZBrush-скульптинг - это развитие формы по уровням важности. 
+                    Когда вы удерживаете правильный порядок «крупное -> среднее -> мелкое», результат выглядит профессионально 
+                    даже до финального рендера, а правки клиента проходят быстрее и спокойнее.
+                </p>
+            {% elif slug == "artcam-vozmozhnosti-zadachi-i-praktika" %}
+                <p class="text-gray-600 leading-relaxed">
+                    ArtCAM - это специализированная CAD/CAM-программа, которую часто используют в художественном производстве, 
+                    рекламной индустрии, ювелирном деле и на участках ЧПУ-обработки. Её ценят за удобную работу с рельефами, 
+                    орнаментами и декоративной графикой, которую затем можно передать на фрезеровку, гравировку или 3D-печать.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Главная сила ArtCAM в том, что дизайнер и технолог могут быстро пройти путь от идеи до готовой управляющей программы:
+                    создать художественную модель, адаптировать её под материал и инструмент, а затем подготовить траектории без лишних перескоков между программами.
+                </p>
+                <div class="mt-8 aspect-video rounded-3xl overflow-hidden">
+                    <img src="{% static 'images/news/Artcam2.jpg' %}" alt="Интерфейс и работа в ArtCAM" class="w-full h-full object-cover">
+                </div>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Какие задачи обычно решают в ArtCAM</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    В программе делают художественные рельефы, клише, таблички, вывески, декоративные панели, мебельные элементы, 
+                    формы для литья и многое другое. Часто ArtCAM используют там, где нужен выразительный барельеф и точный контроль глубины обработки.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Также ArtCAM удобен для подготовки проектов с текстом, векторным декором и повторяющимися узорами: 
+                    например, для сувенирной продукции, гербов, памятных медалей и декоративных изделий из дерева, пластика, воска и мягких металлов.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Ключевые возможности программы</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    В ArtCAM можно комбинировать векторы и рельеф, быстро формировать сложные формы через булевы и профильные операции, 
+                    редактировать высоты участков и управлять характером поверхности. Это особенно полезно при создании художественных моделей, 
+                    где важны пластика и нюанс рельефа.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Отдельный плюс - модуль подготовки УП (toolpaths): черновая выборка, чистовая обработка, гравировка, выборка по областям, 
+                    работа с разными типами фрез и стратегиям проходов. Благодаря этому проще добиться чистой поверхности и сократить время обработки на станке.
+                </p>
+                <div class="mt-8 aspect-video rounded-3xl overflow-hidden">
+                    <img src="{% static 'images/news/Artcam3.png' %}" alt="Подготовка рельефа и траекторий ArtCAM" class="w-full h-full object-cover">
+                </div>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Практический workflow: от эскиза к изделию</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Обычно процесс строится так: сначала подготавливают референсы и векторную основу, затем собирают рельефную модель, 
+                    проверяют высоты и технологичность, после чего настраивают черновые и чистовые траектории.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Перед запуском в работу важно учитывать материал, диаметр инструмента, шаг по Z, припуски и стратегию финишной проходки. 
+                    Чем точнее эти параметры заданы в ArtCAM, тем меньше ручной доводки потребуется после станка.
+                </p>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Где ArtCAM особенно эффективен</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    Программа особенно хорошо показывает себя в задачах декоративного и художественного производства:
+                    резные фасады, иконы и панно, медальерные заготовки, штампы, подарочная и брендированная продукция.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Когда проект требует сочетания художественной выразительности и технологической точности, ArtCAM помогает удерживать баланс:
+                    модель остаётся визуально сильной, а производственный цикл - предсказуемым.
+                </p>
+                <div class="mt-8 aspect-video rounded-3xl overflow-hidden">
+                    <img src="{% static 'images/news/Artcam4.png' %}" alt="Финальный результат после обработки в ArtCAM" class="w-full h-full object-cover">
+                </div>
+                <h3 class="font-display text-2xl font-semibold mt-8 mb-4">Итог</h3>
+                <p class="text-gray-600 leading-relaxed">
+                    ArtCAM остаётся одним из самых удобных инструментов для художественного CAD/CAM-производства. 
+                    Он закрывает полный цикл - от рельефного дизайна до управляющих программ для оборудования - и помогает решать реальные производственные задачи 
+                    быстрее, стабильнее и с высоким качеством детализации.
                 </p>
             {% else %}
                 <p class="text-gray-600 leading-relaxed">
-                    Article content goes here. This is a placeholder for the news article page.
+                    Материал готовится к публикации. Скоро здесь появится полная версия статьи.
                 </p>
             {% endif %}
         </div>
