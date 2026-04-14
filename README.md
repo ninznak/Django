@@ -24,6 +24,18 @@ See **[DEPLOY_VPS.md](./DEPLOY_VPS.md)** for full instructions and the automated
 sudo bash scripts/deploy-vps.sh your-domain.com /path/to/project
 ```
 
+### Автоматическое обновление с Git (cron, раз в сутки)
+
+После того как сайт на VPS развёрнут как **git clone**, обновления кода делаются скриптом **`scripts/update.sh`** (pull → pip → migrate → collectstatic → restart Gunicorn).
+
+Подробная инструкция: что настроить на сервере один раз, как повесить запуск на cron ночью, переменные `GIT_BRANCH` / `GUNICORN_SERVICE`, безопасность и чеклист — в **[scripts/AUTO_UPDATE.md](./scripts/AUTO_UPDATE.md)**. Пример строки для cron: **[scripts/crontab-daily.example](./scripts/crontab-daily.example)**.
+
+Ручной запуск на сервере:
+
+```bash
+sudo bash /var/www/Django/scripts/update.sh /var/www/Django
+```
+
 ## Configuration
 
 - Copy **`.env.example`** to **`.env`** and set variables (especially `DJANGO_SECRET_KEY` and `ALLOWED_HOSTS` in production).  

@@ -1,0 +1,18 @@
+# Пример файла для /etc/cron.d/creativesphere-update (имя файла произвольное).
+#
+# 1. Скопируйте содержимое ниже в новый файл, например:
+#    sudo nano /etc/cron.d/creativesphere-update
+# 2. Замените /var/www/Django на реальный путь к проекту на VPS.
+# 3. При ветке не main используйте строку с env (см. комментарий).
+# 4. Права: chmod 644 /etc/cron.d/creativesphere-update
+#
+# Логи: основной — deploy/update.log внутри проекта; дополнительно — deploy/cron.log
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Каждый день в 03:15 (время и путь поправьте под себя)
+15 3 * * * root /bin/bash /var/www/Django/scripts/update.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1
+
+# Альтернатива с явной веткой и именем службы Gunicorn:
+# 15 3 * * * root env GIT_BRANCH=main GUNICORN_SERVICE=creativesphere-gunicorn /bin/bash /var/www/Django/scripts/update.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1

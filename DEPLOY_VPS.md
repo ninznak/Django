@@ -75,6 +75,8 @@ sudo systemctl restart creativesphere-gunicorn
 
 **From your PC (push then pull on VPS):** commit and push to your remote, SSH to the VPS, then run `sudo bash .../scripts/update.sh`.
 
+**Nightly / scheduled updates (cron):** see **[scripts/AUTO_UPDATE.md](./scripts/AUTO_UPDATE.md)** for prerequisites (Git access from the server, branch name, one-time manual test) and a crontab example in **`scripts/crontab-daily.example`**.
+
 ## Manual deployment (overview)
 
 If you prefer not to use the script:
@@ -107,6 +109,9 @@ If you prefer not to use the script:
 ## Files for deployment
 
 - `scripts/deploy-vps.sh` — one-shot installer  
+- `scripts/update.sh` — pull + migrate + collectstatic + restart Gunicorn (manual or cron)  
+- `scripts/AUTO_UPDATE.md` — how to enable daily Git updates on the VPS (cron, checklist)  
+- `scripts/crontab-daily.example` — example cron entry  
 - `deploy/creativesphere-gunicorn.service` — reference unit file (script writes `/etc/systemd/system/creativesphere-gunicorn.service`)  
 - `.env.example` — template for environment variables  
 - `requirements.txt` — includes `gunicorn` and `python-dotenv`  

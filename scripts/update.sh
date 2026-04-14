@@ -2,12 +2,17 @@
 # update.sh — quick deploy: git pull → deps → migrate → collectstatic → restart Gunicorn
 # Usage: sudo bash scripts/update.sh [PROJECT_DIR]
 # Default project: /var/www/Django
+#
+# Env (optional):
+#   GIT_BRANCH          — ветка remote (по умолчанию main)
+#   GUNICORN_SERVICE    — имя systemd unit Gunicorn (по умолчанию creativesphere-gunicorn)
 
 set -eo pipefail
 
 PROJECT_DIR="${1:-/var/www/Django}"
 VENV_DIR="$PROJECT_DIR/venv"
 GIT_BRANCH="${GIT_BRANCH:-main}"
+GUNICORN_SERVICE="${GUNICORN_SERVICE:-creativesphere-gunicorn}"
 mkdir -p "$PROJECT_DIR/deploy"
 LOG_FILE="$PROJECT_DIR/deploy/update.log"
 
@@ -82,21 +87,21 @@ else
     exit 1
 fi
 
-log "Перезапуск creativesphere-gunicorn..."
-if systemctl restart creativesphere-gunicorn; then
+log "Перезапуск $GUNICORN_SERVICE..."
+if systemctl restart "$GUNICORN_SERVICE"; then
     log "Gunicorn перезапущен"
 else
     log "Ошибка systemctl restart"
     exit 1
 fi
 
-systemctl is-active creativesphere-gunicorn >/dev/null && log "Служба активна" || log "Внимание: служба не active"
+systemctl is-active "$GUNICORN_SERVICE" >/dev/null && log "Служба активна" || log "Внимание: служба не active"
 
 log "=========================================="
 log "Обновление завершено успешно"
 log "=========================================="
 log "Лог: $LOG_FILE"
-log "Журнал: journalctl -u creativesphere-gunicorn -f"
+log "Журнал: journalctl -u $GUNICORN_SERVICE -f"
 
 echo ""
 echo "Готово. Лог: $LOG_FILE"
