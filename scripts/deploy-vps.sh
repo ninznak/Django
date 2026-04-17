@@ -4,19 +4,20 @@ set -euo pipefail
 # One-shot deploy for CreativeSphere Django on Ubuntu/Debian VPS
 #
 # Usage:
-#   sudo bash scripts/deploy-vps.sh <primary-domain> <app-dir> [extra-apex ...]
+#   sudo bash scripts/deploy-vps.sh [<primary-domain>] [<app-dir>] [extra-apex ...]
 #
 # Examples:
-#   sudo bash scripts/deploy-vps.sh trally.ru /var/www/Django
-#       → also enables kurilenkoart.ru on the same VPS (Nginx, Certbot, .env)
-#   sudo env DEPLOY_SINGLE_DOMAIN=1 bash scripts/deploy-vps.sh trally.ru /var/www/Django
-#       → only trally.ru (no kurilenkoart.ru)
-#   sudo bash scripts/deploy-vps.sh kurilenkoart.ru /var/www/Django trally.ru
+#   sudo bash scripts/deploy-vps.sh
+#       → primary=kurilenkoart.ru, app=/var/www/Django
+#         (Let's Encrypt cert for kurilenkoart.ru + www.kurilenkoart.ru)
+#   sudo bash scripts/deploy-vps.sh kurilenkoart.ru /var/www/Django
+#       → same as above, explicit
+#   sudo bash scripts/deploy-vps.sh kurilenkoart.ru /var/www/Django another-apex.ru
+#       → Nginx + certbot also serve another-apex.ru (must resolve to this VPS)
 #
 # Env:
-#   LETSENCRYPT_EMAIL — optional, for Certbot expiry notices
-#   DEPLOY_EXTRA_DOMAINS — space-separated apices (optional)
-#   DEPLOY_SINGLE_DOMAIN=1 — with primary trally.ru, do not auto-add kurilenkoart.ru
+#   LETSENCRYPT_EMAIL    — optional, for Certbot expiry notices
+#   DEPLOY_EXTRA_DOMAINS — space-separated extra apices (optional)
 #
 # Prerequisites: DNS A records for every apex (and www) → this server; ports 22, 80, 443 open.
 
@@ -25,13 +26,13 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 1
 fi
 
-PRIMARY="${1:-}"
+PRIMARY="${1:-kurilenkoart.ru}"
 APP_DIR="${2:-/var/www/Django}"
-shift 2 || true
+shift $(( $# < 2 ? $# : 2 )) || true
 
 if [[ -z "${PRIMARY}" ]]; then
-  echo "Usage: sudo bash $0 <primary-domain> <app-dir> [extra-apex ...]"
-  echo "Example: sudo bash $0 trally.ru /var/www/Django"
+  echo "Usage: sudo bash $0 [<primary-domain>] [<app-dir>] [extra-apex ...]"
+  echo "Example: sudo bash $0 kurilenkoart.ru /var/www/Django"
   exit 1
 fi
 
@@ -40,11 +41,6 @@ if [[ -n "${DEPLOY_EXTRA_DOMAINS:-}" ]]; then
   # shellcheck disable=SC2206
   EXTRA_FROM_ENV=(${DEPLOY_EXTRA_DOMAINS})
   EXTRA_FROM_ARGS+=( "${EXTRA_FROM_ENV[@]}" )
-fi
-
-# Default second apex: kurilenkoart.ru when primary is trally.ru (prepare both on one VPS).
-if [[ ${#EXTRA_FROM_ARGS[@]} -eq 0 && "${PRIMARY}" == "trally.ru" && "${DEPLOY_SINGLE_DOMAIN:-0}" != "1" ]]; then
-  EXTRA_FROM_ARGS=( "kurilenkoart.ru" )
 fi
 
 ALL_APEX=( "${PRIMARY}" "${EXTRA_FROM_ARGS[@]}" )
@@ -201,7 +197,7 @@ nginx -t
 systemctl reload nginx
 systemctl enable nginx
 
-echo "==> Let's Encrypt SSL (HTTPS redirect)"
+echo "==> Let's Encrypt SSL (HTTPS redirect) for: ${ALL_APEX[*]}"
 CERT_EMAIL="${LETSENCRYPT_EMAIL:-admin@${PRIMARY}}"
 set +e
 certbot --nginx "${CERTBOT_DOMAINS[@]}" \
@@ -214,6 +210,10 @@ if [[ "${CERT_EXIT}" -ne 0 ]]; then
   exit 1
 fi
 
+# Certbot installs a systemd timer (certbot.timer) on Debian/Ubuntu that renews
+# certificates automatically. Verify it once for peace of mind:
+systemctl list-timers 'certbot*' --no-pager >/dev/null 2>&1 || true
+
 systemctl restart "${SITE_NAME}"
 
 echo "==> Done"
@@ -221,3 +221,4 @@ echo "Primary URL (canonical for SEO): https://${PRIMARY}"
 echo "Also accepted: ${ALL_APEX[*]}"
 echo "App logs: journalctl -u ${SITE_NAME} -f"
 echo "Restart app: sudo systemctl restart ${SITE_NAME}"
+echo "Renew check (auto via certbot.timer): sudo certbot renew --dry-run"

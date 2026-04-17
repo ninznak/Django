@@ -1,9 +1,28 @@
-"""Page-level SEO defaults and helpers for meta tags, Open Graph, and structured data."""
+"""Page-level SEO defaults and helpers for meta tags, Open Graph, and structured data.
+
+Public API (backwards compatible):
+
+* ``get_seo(request, **overrides)`` — build the per-page SEO context dict
+  consumed by ``templates/core/base.html``.
+* ``PAGE_SEO`` — mapping of ``url_name`` (``core:<name>``) to page-specific
+  defaults (title, description, keywords, robots, ``no_json_ld`` …).
+* ``SEO_TOPIC_KEYWORDS`` — shared keyword tail used across pages.
+
+Performance notes:
+
+* ``get_seo`` does only shallow dict copies; every PAGE_SEO value is a dict of
+  immutable primitives so deepcopy is unnecessary.
+* The expensive ``Organization`` + ``WebSite`` JSON-LD nodes depend only on
+  effectively-immutable site settings and are cached with ``lru_cache``.
+* The template context processor wraps the default ``seo`` dict in
+  ``SimpleLazyObject``; views that provide their own ``seo`` in the context
+  shadow it without ever triggering the default build.
+"""
 
 from __future__ import annotations
 
 import json
-from copy import deepcopy
+from functools import lru_cache
 from typing import Any
 from urllib.parse import urljoin
 
@@ -11,7 +30,7 @@ from django.conf import settings
 from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 
-# Topics for meta keywords and schema.org knowsAbout (3D, medals, sculpting, related craft).
+# Topics used for meta keywords and schema.org knowsAbout (3D, medals, sculpting, related craft).
 SEO_TOPIC_KEYWORDS = (
     "3D моделирование, 3D modeling, скульптурный рельеф, bas-relief, барельеф, низкий рельеф, "
     "медали, medals, медальерное искусство, medallic art, нумизматика, numismatics, монеты, coin design, "
@@ -19,30 +38,31 @@ SEO_TOPIC_KEYWORDS = (
     "чеканка, casting, памятные медали, commemorative medals, AI арт, generative art, KurilenkoArt"
 )
 
-_DEFAULT_PAGE = {
+_DEFAULT_DESCRIPTION = (
+    "Портфолио художника по 3D-моделированию медалей, монет и барельефов: цифровая скульптура, "
+    "медальерное дело, низкий рельеф, ZBrush и AI-визуализация. Магазин моделей, статьи и заказ работ."
+)
+
+_DEFAULT_PAGE: dict[str, Any] = {
     "title": "KurilenkoArt — 3D медали, барельефы и цифровая скульптура",
-    "description": (
-        "Портфолио художника по 3D-моделированию медалей, монет и барельефов: цифровая скульптура, "
-        "медальерное дело, низкий рельеф, ZBrush и AI-визуализация. Магазин моделей, статьи и заказ работ."
-    ),
+    "description": _DEFAULT_DESCRIPTION,
     "keywords": SEO_TOPIC_KEYWORDS,
     "og_type": "website",
     "robots": "index, follow",
     "no_json_ld": False,
 }
 
+# Home SEO is reused by both the ``/`` and ``/homepage/`` URL aliases.
+_HOMEPAGE_SEO: dict[str, Any] = {
+    "title": "KurilenkoArt — 3D медали, барельефы, скульптура | портфолио и магазин",
+    "description": _DEFAULT_DESCRIPTION,
+    "keywords": SEO_TOPIC_KEYWORDS,
+}
+
 # url_name from core.urls (core:…)
 PAGE_SEO: dict[str, dict[str, Any]] = {
-    "homepage": {
-        "title": "KurilenkoArt — 3D медали, барельефы, скульптура | портфолио и магазин",
-        "description": _DEFAULT_PAGE["description"],
-        "keywords": SEO_TOPIC_KEYWORDS,
-    },
-    "homepage_path": {
-        "title": "KurilenkoArt — 3D медали, барельефы, скульптура | портфолио и магазин",
-        "description": _DEFAULT_PAGE["description"],
-        "keywords": SEO_TOPIC_KEYWORDS,
-    },
+    "homepage": _HOMEPAGE_SEO,
+    "homepage_path": _HOMEPAGE_SEO,
     "about": {
         "title": "Обо мне — KurilenkoArt | 3D-художник, медали и барельефы",
         "description": (
@@ -147,7 +167,8 @@ PAGE_SEO: dict[str, dict[str, Any]] = {
     },
 }
 
-_KNOWS_ABOUT: list[str] = [
+# Tuple → immutable; cached JSON-LD nodes share a reference safely.
+_KNOWS_ABOUT: tuple[str, ...] = (
     "3D modeling",
     "Medallic art",
     "Numismatics",
@@ -161,15 +182,19 @@ _KNOWS_ABOUT: list[str] = [
     "CNC machining relief",
     "AI-assisted art",
     "ArtCAM",
-]
+)
+
+
+# ---------------------------------------------------------------------------
+# URL / image helpers
+# ---------------------------------------------------------------------------
 
 
 def _absolute_url(request, path: str) -> str:
     path = path or "/"
     if not path.startswith("/"):
         path = "/" + path
-    base = getattr(settings, "PUBLIC_SITE_URL", "") or ""
-    base = base.rstrip("/")
+    base = (getattr(settings, "PUBLIC_SITE_URL", "") or "").rstrip("/")
     if base:
         return urljoin(base + "/", path.lstrip("/"))
     return request.build_absolute_uri(path)
@@ -186,100 +211,120 @@ def _site_origin(request) -> str:
     return u if u.endswith("/") else u + "/"
 
 
-def _build_json_ld_graph(
-    request,
-    data: dict[str, Any],
-    article_ld: dict[str, Any] | None,
-) -> str:
-    site_origin = _site_origin(request)
+# ---------------------------------------------------------------------------
+# JSON-LD graph
+# ---------------------------------------------------------------------------
+
+
+@lru_cache(maxsize=8)
+def _static_graph_nodes(
+    site_origin: str,
+    site_name: str,
+    email: str,
+    logo_url: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Return cached ``(Organization, WebSite)`` nodes for the site.
+
+    The returned dicts are *shared* across requests — callers must never
+    mutate them. Arguments are strings so the result is safely hashable.
+    """
     base = site_origin.rstrip("/")
     org_id = f"{base}/#organization"
     web_id = f"{base}/#website"
 
-    site_name = data.get("site_name", "KurilenkoArt")
-    email = getattr(settings, "SEO_CONTACT_EMAIL", "me@nobito.ru")
-    logo_url = data.get("og_image") or _default_og_image_url(request)
-    desc = data.get("description") or _DEFAULT_PAGE["description"]
-
-    org: dict[str, Any] = {
+    org = {
         "@type": "Organization",
         "@id": org_id,
         "name": site_name,
         "url": site_origin,
         "email": email,
         "logo": {"@type": "ImageObject", "url": logo_url},
-        "description": desc,
-        "knowsAbout": _KNOWS_ABOUT,
+        "description": _DEFAULT_DESCRIPTION,
+        "knowsAbout": list(_KNOWS_ABOUT),
     }
-
-    website: dict[str, Any] = {
+    website = {
         "@type": "WebSite",
         "@id": web_id,
         "name": site_name,
         "url": site_origin,
         "inLanguage": ["ru-RU", "en-US"],
         "publisher": {"@id": org_id},
-        "description": _DEFAULT_PAGE["description"],
+        "description": _DEFAULT_DESCRIPTION,
     }
+    return org, website
 
+
+def _build_json_ld_graph(
+    request,
+    data: dict[str, Any],
+    article_ld: dict[str, Any] | None,
+) -> str:
+    """Render the JSON-LD ``@graph`` as a ``mark_safe`` JSON string.
+
+    ``get_seo`` always pre-populates ``data["og_image"]`` and ``data["canonical_url"]``
+    before calling this, so no fallbacks are needed here.
+    """
+    site_origin = _site_origin(request)
+    site_name = data["site_name"]
+    email = getattr(settings, "SEO_CONTACT_EMAIL", "me@nobito.ru")
+    logo_url = data["og_image"]
+
+    org, website = _static_graph_nodes(site_origin, site_name, email, logo_url)
     graph: list[dict[str, Any]] = [org, website]
 
     if article_ld:
         art = dict(article_ld)
-        art.setdefault("image", logo_url)
         art.setdefault("@type", "Article")
+        art.setdefault("image", logo_url)
+        art.setdefault("inLanguage", "ru-RU")
         art.setdefault("mainEntityOfPage", data["canonical_url"])
-        art["isPartOf"] = {"@id": web_id}
-        if "publisher" not in art:
-            art["publisher"] = {"@id": org_id}
+        art["isPartOf"] = {"@id": website["@id"]}
+        art.setdefault("publisher", {"@id": org["@id"]})
         graph.append(art)
 
     payload = {"@context": "https://schema.org", "@graph": graph}
-    json_str = json.dumps(payload, ensure_ascii=False)
-    json_str = json_str.replace("</", "<\\/")
+    json_str = json.dumps(payload, ensure_ascii=False).replace("</", "<\\/")
     return mark_safe(json_str)
 
 
+# ---------------------------------------------------------------------------
+# Public entry point
+# ---------------------------------------------------------------------------
+
+
 def get_seo(request, **overrides: Any) -> dict[str, Any]:
-    """
-    Build SEO context for the current request. View-specific values can be passed
-    as keyword overrides (title, description, keywords, canonical_path, og_image_url, robots, etc.).
+    """Build SEO context for the current request.
 
-    Optional override ``article_ld``: dict for schema.org Article appended to JSON-LD @graph
-    (used on news article pages). Populated fields may include headline, description, datePublished, etc.
-    """
-    match = getattr(request, "resolver_match", None)
-    url_name = match.url_name if match else None
-    key = url_name or ""
+    Any keyword override replaces the matching field in the merged
+    ``_DEFAULT_PAGE`` + ``PAGE_SEO[url_name]`` dict. Special overrides:
 
+    * ``canonical_path`` — path used for canonical and OG URLs; defaults
+      to ``request.path``.
+    * ``og_image_url`` — absolute image URL; defaults to the site's
+      ``SEO_DEFAULT_OG_IMAGE``.
+    * ``article_ld`` — dict merged into a schema.org ``Article`` node
+      appended to the JSON-LD ``@graph`` (news article pages).
+    * ``no_json_ld`` — when truthy, ``json_ld`` is emitted as an empty
+      string.
+    """
     article_ld = overrides.pop("article_ld", None)
+    canonical_path = overrides.pop("canonical_path", None) or request.path
+    og_image_url = overrides.pop("og_image_url", None) or _default_og_image_url(request)
 
-    data = deepcopy(_DEFAULT_PAGE)
-    page = PAGE_SEO.get(key)
+    match = getattr(request, "resolver_match", None)
+    url_name = match.url_name if match else ""
+
+    # Shallow copies are safe: every value in the base dicts is a string / bool / None.
+    data = dict(_DEFAULT_PAGE)
+    page = PAGE_SEO.get(url_name)
     if page:
-        data.update(deepcopy(page))
-
-    canonical_path = overrides.pop("canonical_path", None)
-    if canonical_path is None and match:
-        canonical_path = request.path
-    elif canonical_path is None:
-        canonical_path = request.path
-
-    og_image_url = overrides.pop("og_image_url", None)
-    if og_image_url is None:
-        og_image_url = _default_og_image_url(request)
-
+        data.update(page)
     data.update(overrides)
 
-    data["canonical_url"] = _absolute_url(request, canonical_path or "/")
+    data["canonical_url"] = _absolute_url(request, canonical_path)
     data["og_image"] = og_image_url
+    data.setdefault("site_name", getattr(settings, "SEO_SITE_NAME", "KurilenkoArt"))
 
-    site_name = getattr(settings, "SEO_SITE_NAME", "KurilenkoArt")
-    data.setdefault("site_name", site_name)
-
-    if data.get("no_json_ld"):
-        data["json_ld"] = ""
-    else:
-        data["json_ld"] = _build_json_ld_graph(request, data, article_ld)
+    data["json_ld"] = "" if data.get("no_json_ld") else _build_json_ld_graph(request, data, article_ld)
 
     return data

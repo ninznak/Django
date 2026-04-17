@@ -1,0 +1,45 @@
+---
+description: Bootstrap pointer that forces the agent to consult AGENTS.md before editing this Django project.
+alwaysApply: true
+---
+
+# Project bootstrap — read AGENTS.md
+
+This project maintains a living map at [`AGENTS.md`](mdc:AGENTS.md) in the
+repository root.
+
+**Before answering any question that involves project structure, module
+responsibilities, data models, URL routes, SEO, deployment, or where to make a
+change — consult `AGENTS.md` first** rather than re-exploring the tree with
+broad `Glob` / `Grep` / `Read` calls.
+
+`AGENTS.md` contains:
+
+- directory layout with a one-line purpose for every first-party file,
+- the full URL map (`core:*` names → paths → views),
+- public signatures of `core/pricing.py`, `core/shop_data.py`,
+  `core/cart_utils.py`, `core/seo.py`, `core/forms.py`,
+- data-model field list for `Order`, `OrderItem`, `ContactSubmission`,
+- env-var reference for `creativesphere/settings.py`,
+- deploy + SSL summary for `scripts/deploy-vps.sh` and `DEPLOY_VPS.md`,
+- a "which test pins this behavior" table,
+- a "I need to change X → edit Y" cheat sheet.
+
+Use it as an index: read the relevant section, then open only the specific
+source file you need to edit. Only fall back to a full-tree exploration when
+`AGENTS.md` is genuinely missing the answer — and in that case, **update
+`AGENTS.md`** as part of your change so the next agent session benefits.
+
+Hard rules from `AGENTS.md` you must honor:
+
+- Money is stored as **integer kopecks** in `*_cents` fields.
+- URLs are built with `reverse("core:<name>")`; never hard-code paths.
+- Meta tags go through `core/seo.py` (`PAGE_SEO` or `get_seo(**overrides)`),
+  never inlined in templates.
+- Cart mutations go through `core/cart_utils.py` helpers (they set
+  `session.modified`).
+- `CheckoutForm.pd_consent` must stay required (152-ФЗ).
+- Don't regress `core/seo.py` performance: shallow copies and
+  `_static_graph_nodes` `lru_cache` are intentional.
+- Canonical production domain is **`kurilenkoart.ru`**; there is no legacy
+  `trally.ru` in this repo.

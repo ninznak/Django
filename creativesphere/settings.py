@@ -19,8 +19,7 @@ def _parse_domain_list(raw: str) -> list[str]:
 
 
 # Production apex hostnames (comma-separated). Used for ALLOWED_HOSTS / CSRF when not overridden.
-# Default serves trally.ru now and kurilenkoart.ru when DNS points here.
-_DEFAULT_SITE_DOMAINS = 'trally.ru,kurilenkoart.ru'
+_DEFAULT_SITE_DOMAINS = 'kurilenkoart.ru'
 
 _site_domains_raw = os.getenv('DJANGO_SITE_DOMAINS', '').strip()
 if _site_domains_raw:
@@ -30,14 +29,14 @@ elif DEBUG:
 else:
     SITE_DOMAINS = _parse_domain_list(os.getenv('DJANGO_SITE_DOMAINS_DEFAULT', _DEFAULT_SITE_DOMAINS))
 
-# Primary apex: canonical URLs / legacy PRIMARY_DOMAIN. Prefer DJANGO_CANONICAL_DOMAIN, else first in SITE_DOMAINS, else trally.ru.
+# Primary apex: canonical URLs / legacy PRIMARY_DOMAIN. Prefer DJANGO_CANONICAL_DOMAIN, else first in SITE_DOMAINS, else kurilenkoart.ru.
 _canonical_apex = os.getenv('DJANGO_CANONICAL_DOMAIN', '').strip().lower()
 if _canonical_apex:
     PRIMARY_DOMAIN = _canonical_apex
 elif SITE_DOMAINS:
     PRIMARY_DOMAIN = SITE_DOMAINS[0]
 else:
-    PRIMARY_DOMAIN = os.getenv('DJANGO_PRIMARY_DOMAIN', 'trally.ru').strip().lower() or 'trally.ru'
+    PRIMARY_DOMAIN = os.getenv('DJANGO_PRIMARY_DOMAIN', 'kurilenkoart.ru').strip().lower() or 'kurilenkoart.ru'
 
 WWW_HOST = os.getenv('DJANGO_WWW_HOST', f'www.{PRIMARY_DOMAIN}').strip() or f'www.{PRIMARY_DOMAIN}'
 
