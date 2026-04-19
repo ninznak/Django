@@ -86,7 +86,7 @@ else:
     PUBLIC_SITE_URL = ''
 
 SEO_SITE_NAME = os.getenv('SEO_SITE_NAME', 'KurilenkoArt').strip() or 'KurilenkoArt'
-SEO_DEFAULT_OG_IMAGE = os.getenv('SEO_DEFAULT_OG_IMAGE', 'images/news/bas-relief-depth-1920x1200.png').strip()
+SEO_DEFAULT_OG_IMAGE = os.getenv('SEO_DEFAULT_OG_IMAGE', 'images/news/model5.jpg').strip()
 SEO_CONTACT_EMAIL = os.getenv('SEO_CONTACT_EMAIL', 'me@nobito.ru').strip() or 'me@nobito.ru'
 
 # Outbound email (SMTP or compatible transactional provider). Dev default: print to console.

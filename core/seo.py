@@ -427,7 +427,7 @@ def _absolute_url(request, path: str) -> str:
 
 
 def _default_og_image_url(request) -> str:
-    rel = static(getattr(settings, "SEO_DEFAULT_OG_IMAGE", "images/news/bas-relief-depth-1920x1200.png"))
+    rel = static(getattr(settings, "SEO_DEFAULT_OG_IMAGE", "images/news/model5.jpg"))
     return _absolute_url(request, rel)
 
 
