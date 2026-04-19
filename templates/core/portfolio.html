@@ -11,9 +11,10 @@
         </div>
         
         <!-- Category Tabs: hash links scroll to sections (see extra_js) -->
-        <div class="flex justify-center gap-4 mb-12">
+        <div class="flex flex-wrap justify-center gap-4 mb-12">
             <a href="{% url 'core:portfolio' %}#portfolio-intro" class="btn-primary" data-portfolio-tab="all" data-i18="portfolio_all">All</a>
             <a href="{% url 'core:portfolio' %}#portfolio-3d" class="btn-outline" data-portfolio-tab="3d" data-i18="portfolio_3d">3D Models</a>
+            <a href="{% url 'core:portfolio' %}#portfolio-products" class="btn-outline" data-portfolio-tab="products" data-i18="portfolio_products">Finished Products</a>
             <a href="{% url 'core:portfolio' %}#portfolio-ai" class="btn-outline" data-portfolio-tab="ai" data-i18="portfolio_ai">AI Art</a>
         </div>
         
@@ -28,20 +29,19 @@
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="group relative overflow-hidden rounded-3xl cursor-pointer">
                     <div class="aspect-square overflow-hidden bg-gray-100">
-                        <img src="{% static 'images/featured/bronze-victory-relief-1920x2400.jpg' %}" 
-                             alt="Bronze Victory Relief" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                        <img src="{% static 'images/news/model9.PNG' %}"
+                             alt="3D модель портрет" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                     </div>
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                         <div class="absolute bottom-0 left-0 right-0 p-6">
-                            <p class="text-white font-semibold" data-i18="portfolio_bronze_victory">Bronze Victory Relief</p>
-                            <p class="text-white/60 text-sm" data-i18="portfolio_bronze_victory_cat">3D Bas Relief</p>
+                            <p class="text-white font-semibold" data-i18="portfolio_model9_title">3D модель портрет</p>
                         </div>
                     </div>
                 </div>
                 
                 <div class="group relative overflow-hidden rounded-3xl cursor-pointer">
                     <div class="aspect-square overflow-hidden bg-gray-100">
-                        <img src="{% static 'images/featured/numismatic-heritage-1920x1280.jpg' %}" 
+                        <img src="{% static 'images/featured/numismatic-heritage-1920x1280.jpg' %}"
                              alt="Numismatic Heritage" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                     </div>
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
@@ -54,7 +54,7 @@
                 
                 <div class="group relative overflow-hidden rounded-3xl cursor-pointer">
                     <div class="aspect-square overflow-hidden bg-gray-100">
-                        <img src="{% static 'images/shop/eagle-relief-stl-1920x1440.png' %}" 
+                        <img src="{% static 'images/shop/eagle-relief-stl-1920x1440.png' %}"
                              alt="Commemorative Medal" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                     </div>
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
@@ -67,6 +67,62 @@
             </div>
         </div>
         
+        <!-- Finished Products (medals) -->
+        <div id="portfolio-products" class="mb-16 scroll-mt-28">
+            <h2 class="font-display text-3xl font-semibold mb-8">
+                <a href="{% url 'core:portfolio_gallery' slug='products' %}"
+                   class="text-inherit no-underline decoration-[var(--primary)] decoration-2 underline-offset-[0.35em] transition-colors hover:underline hover:text-[var(--primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]">
+                    <span data-i18="portfolio_products_title">Finished Products</span>
+                </a>
+            </h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <a href="{% url 'core:portfolio_gallery' slug='products' %}" class="group relative overflow-hidden rounded-3xl block">
+                    <div class="aspect-square overflow-hidden bg-gray-100">
+                        <img src="{% static 'images/medals/medal5.JPEG' %}"
+                             alt="Церковь Преображения, Кижи" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                             loading="lazy" width="960" height="960">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <p class="text-white font-semibold" data-i18="portfolio_medal_5">Церковь Преображения, Кижи</p>
+                            <p class="text-white/60 text-sm" data-i18="portfolio_products_item_cat">Медаль / частный заказ</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'core:portfolio_gallery' slug='products' %}" class="group relative overflow-hidden rounded-3xl block">
+                    <div class="aspect-square overflow-hidden bg-gray-100">
+                        <img src="{% static 'images/medals/medal1.JPEG' %}"
+                             alt="Медаль герб Санкт-Петербурга" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                             loading="lazy" width="960" height="960">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <p class="text-white font-semibold" data-i18="portfolio_medal_1">Медаль герб Санкт-Петербурга</p>
+                            <p class="text-white/60 text-sm" data-i18="portfolio_products_item_cat">Медаль / частный заказ</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'core:portfolio_gallery' slug='products' %}" class="group relative overflow-hidden rounded-3xl block">
+                    <div class="aspect-square overflow-hidden bg-gray-100">
+                        <img src="{% static 'images/medals/medal6.JPEG' %}"
+                             alt="Святой Даниил Московский" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                             loading="lazy" width="960" height="960">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <p class="text-white font-semibold" data-i18="portfolio_medal_6">Святой Даниил Московский</p>
+                            <p class="text-white/60 text-sm" data-i18="portfolio_products_item_cat">Медаль / частный заказ</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="mt-8 text-center">
+                <a href="{% url 'core:portfolio_gallery' slug='products' %}" class="btn-outline inline-flex items-center gap-2" data-i18="portfolio_products_view_all">View all medals</a>
+            </div>
+        </div>
+
         <!-- AI Works -->
         <div id="portfolio-ai" class="scroll-mt-28">
             <h2 class="font-display text-3xl font-semibold mb-8">
@@ -126,6 +182,7 @@
   function portfolioTabFromHash() {
     var h = (window.location.hash || '').replace(/^#/, '');
     if (h === 'portfolio-3d') return '3d';
+    if (h === 'portfolio-products') return 'products';
     if (h === 'portfolio-ai') return 'ai';
     return 'all';
   }

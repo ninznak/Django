@@ -481,8 +481,27 @@
                 portfolio_subtitle: "Мои 3D модели и AI-контент",
                 portfolio_all: "Все",
                 portfolio_3d: "3D Модели",
+                portfolio_products: "Готовые изделия",
                 portfolio_ai: "AI Арт",
                 portfolio_3d_title: "3D Барельефы и Медали",
+                portfolio_products_title: "Готовые изделия",
+                portfolio_products_item: "Готовое изделие",
+                portfolio_products_item_cat: "Медаль / частный заказ",
+                portfolio_products_view_all: "Смотреть все медали",
+                portfolio_medal_1: "Медаль герб Санкт-Петербурга",
+                portfolio_medal_2: "Шлюп «Надежда»",
+                portfolio_medal_3: "Великомученик Пантелеймон",
+                portfolio_medal_4: "Шлюп «Диана»",
+                portfolio_medal_5: "Церковь Преображения, Кижи",
+                portfolio_medal_6: "Святой Даниил Московский",
+                portfolio_medal_7: "Герб города Кижи",
+                portfolio_medal_8: "Шлюп «Надежда»",
+                portfolio_medal_9: "Св. Великомученица Екатерина",
+                portfolio_medal_10: "Исаакиевский собор",
+                portfolio_medal_11: "Церковь Благовещения",
+                portfolio_medal_12: "Герб Фороса",
+                portfolio_medal_13: "Храм Воскресения Христова",
+                portfolio_medal_sofia: "Собор Святой Софии",
                 portfolio_ai_title: "AI-Generated Арт",
                 portfolio_bronze_victory: "Бронзовый барельеф Победы",
                 portfolio_bronze_victory_cat: "3D Барельеф",
@@ -496,6 +515,10 @@
                 portfolio_verdant_cat: "AI Изображение",
                 portfolio_surreal: "Сюрреалистический Пейзаж",
                 portfolio_surreal_cat: "AI Арт",
+                portfolio_3d_model_piece: "3D работа",
+                portfolio_3d_model_piece_cat: "Барельеф / медаль",
+                portfolio_model9_title: "3D модельпортрет (барельеф)",
+                portfolio_model9_cat: "Барельеф",
                 portfolio_gallery_back: "Назад к портфолио",
                 
                 // Shop page
@@ -693,8 +716,27 @@
                 portfolio_subtitle: "My 3D models and AI content",
                 portfolio_all: "All",
                 portfolio_3d: "3D Models",
+                portfolio_products: "Finished Products",
                 portfolio_ai: "AI Art",
                 portfolio_3d_title: "3D Bas-Reliefs & Medals",
+                portfolio_products_title: "Finished Products",
+                portfolio_products_item: "Finished piece",
+                portfolio_products_item_cat: "Medal / private commission",
+                portfolio_products_view_all: "View all medals",
+                portfolio_medal_1: "Saint Petersburg Coat of Arms Medal",
+                portfolio_medal_2: "Sloop Nadezhda",
+                portfolio_medal_3: "Great Martyr Panteleimon",
+                portfolio_medal_4: "Sloop Diana",
+                portfolio_medal_5: "Church of the Transfiguration, Kizhi",
+                portfolio_medal_6: "Saint Daniel of Moscow",
+                portfolio_medal_7: "Kizhi Coat of Arms",
+                portfolio_medal_8: "Sloop Nadezhda",
+                portfolio_medal_9: "Great Martyr Catherine",
+                portfolio_medal_10: "Saint Isaac's Cathedral",
+                portfolio_medal_11: "Church of the Annunciation",
+                portfolio_medal_12: "Foros Coat of Arms",
+                portfolio_medal_13: "Church of the Resurrection of Christ",
+                portfolio_medal_sofia: "Hagia Sophia Cathedral",
                 portfolio_ai_title: "AI-Generated Art",
                 portfolio_bronze_victory: "Bronze Victory Relief",
                 portfolio_bronze_victory_cat: "3D Bas Relief",
@@ -708,6 +750,10 @@
                 portfolio_verdant_cat: "AI Image",
                 portfolio_surreal: "Surreal Landscape",
                 portfolio_surreal_cat: "AI Art",
+                portfolio_3d_model_piece: "3D work",
+                portfolio_3d_model_piece_cat: "Bas-relief / medal",
+                portfolio_model9_title: "3D portrait model (bas-relief)",
+                portfolio_model9_cat: "Bas-relief",
                 portfolio_gallery_back: "Back to portfolio",
                 
                 // Shop page
@@ -928,8 +974,16 @@
             document.querySelectorAll('[data-i18="portfolio_subtitle"]').forEach(el => el.textContent = t.portfolio_subtitle);
             document.querySelectorAll('[data-i18="portfolio_all"]').forEach(el => el.textContent = t.portfolio_all);
             document.querySelectorAll('[data-i18="portfolio_3d"]').forEach(el => el.textContent = t.portfolio_3d);
+            document.querySelectorAll('[data-i18="portfolio_products"]').forEach(el => el.textContent = t.portfolio_products);
             document.querySelectorAll('[data-i18="portfolio_ai"]').forEach(el => el.textContent = t.portfolio_ai);
             document.querySelectorAll('[data-i18="portfolio_3d_title"]').forEach(el => el.textContent = t.portfolio_3d_title);
+            document.querySelectorAll('[data-i18="portfolio_products_title"]').forEach(el => el.textContent = t.portfolio_products_title);
+            document.querySelectorAll('[data-i18="portfolio_products_item"]').forEach(el => el.textContent = t.portfolio_products_item);
+            document.querySelectorAll('[data-i18="portfolio_products_item_cat"]').forEach(el => el.textContent = t.portfolio_products_item_cat);
+            document.querySelectorAll('[data-i18="portfolio_products_view_all"]').forEach(el => el.textContent = t.portfolio_products_view_all);
+            ["portfolio_medal_1","portfolio_medal_2","portfolio_medal_3","portfolio_medal_4","portfolio_medal_5","portfolio_medal_6","portfolio_medal_7","portfolio_medal_8","portfolio_medal_9","portfolio_medal_10","portfolio_medal_11","portfolio_medal_12","portfolio_medal_13","portfolio_medal_sofia"].forEach(function(key){
+                document.querySelectorAll('[data-i18="' + key + '"]').forEach(el => el.textContent = t[key]);
+            });
             document.querySelectorAll('[data-i18="portfolio_ai_title"]').forEach(el => el.textContent = t.portfolio_ai_title);
             
             // Shop page

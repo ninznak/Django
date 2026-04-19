@@ -21,6 +21,7 @@ class CoreViewSitemap(Sitemap):
             "core:about",
             "core:portfolio",
             ("core:portfolio_gallery", {"slug": "3d"}),
+            ("core:portfolio_gallery", {"slug": "products"}),
             ("core:portfolio_gallery", {"slug": "ai"}),
             "core:shop",
             "core:news",
