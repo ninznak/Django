@@ -24,14 +24,18 @@
                     {% endif %}
                 </div>
                 <div class="p-5 flex-1 flex flex-col">
-                    <p class="text-xs uppercase tracking-widest text-gray-400" data-i18="{{ product.type_i18 }}">Digital Download</p>
+                    <p class="text-xs uppercase tracking-widest text-gray-400" data-i18="{{ product.type_i18 }}">3D Модель</p>
                     <h4 class="font-semibold mt-2">{{ product.title }}</h4>
                     {% if product.description %}
                     <p class="text-sm text-gray-500 mt-2 flex-1">{{ product.description }}</p>
                     {% endif %}
-                    <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
+                    <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100 gap-3">
+                        {% if product.not_for_sale %}
+                        <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider" data-i18="shop_not_for_sale">Нет в продаже</span>
+                        {% else %}
                         <span class="text-xl font-bold text-[#3d7a4f]">{{ product.price }}</span>
                         <button type="button" class="btn-primary text-sm py-2 px-4" data-add-to-cart data-product-id="{{ product.id }}" data-i18="shop_add_cart">Add to Cart</button>
+                        {% endif %}
                     </div>
                 </div>
             </div>

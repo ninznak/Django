@@ -1,6 +1,196 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<style>
+    /* Personal-use license disclaimer — soft amber, subtle pulse to grab
+       attention without screaming. Uses box-shadow (not transform) so text
+       inside stays crisp and layout doesn't shift. */
+    .checkout-license {
+        position: relative;
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        padding: 20px 22px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #fff8e6 0%, #fff2d1 100%);
+        border: 1.5px solid #eab308;
+        box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.55);
+        animation: checkoutLicensePulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .checkout-license-icon {
+        flex-shrink: 0;
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        background: #eab308;
+        color: #1a2e1a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px -2px rgba(234, 179, 8, 0.55);
+    }
+    .checkout-license-body { min-width: 0; flex: 1; }
+    .checkout-license-title {
+        font-family: var(--font-display, inherit);
+        font-size: 17px;
+        font-weight: 700;
+        color: #78501a;
+        margin: 0 0 6px;
+        letter-spacing: 0.01em;
+    }
+    .checkout-license-text {
+        font-size: 14px;
+        line-height: 1.55;
+        color: #5f4414;
+        margin: 0;
+    }
+    .checkout-license-text strong { color: #8a2020; }
+    .checkout-license-ack {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+        padding: 8px 14px 8px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1.5px solid #d4a017;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .checkout-license-ack:hover { background: #ffffff; }
+    .checkout-license-ack-input {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #b8870a;
+        border-radius: 5px;
+        background: #ffffff;
+        cursor: pointer;
+        display: inline-block;
+        position: relative;
+        flex-shrink: 0;
+        transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .checkout-license-ack-input:checked {
+        background: #3d7a4f;
+        border-color: #3d7a4f;
+    }
+    .checkout-license-ack-input:checked::after {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: 0;
+        width: 5px;
+        height: 10px;
+        border: solid #ffffff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+    .checkout-license-ack-input:focus-visible {
+        outline: 2px solid #3d7a4f;
+        outline-offset: 2px;
+    }
+    .checkout-license-ack:has(.checkout-license-ack-input:checked) {
+        background: #ecfdf5;
+        border-color: #3d7a4f;
+    }
+    .checkout-license-ack-text {
+        font-size: 14px;
+        font-weight: 600;
+        color: #5f4414;
+        letter-spacing: 0.01em;
+    }
+    @keyframes checkoutLicensePulse {
+        0%   { box-shadow: 0 0 0 0   rgba(234, 179, 8, 0.55); }
+        60%  { box-shadow: 0 0 0 14px rgba(234, 179, 8, 0);    }
+        100% { box-shadow: 0 0 0 0   rgba(234, 179, 8, 0);    }
+    }
+    /* Once the user has acknowledged the license, stop drawing attention. */
+    .checkout-license:has(.checkout-license-ack-input:checked) {
+        animation: none;
+        border-color: #3d7a4f;
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .checkout-license { animation: none; }
+    }
+
+    /* ── Payment & delivery notice ─────────────────────────────────────────
+       A quiet, outlined info card — different visual from the pulsing amber
+       license banner so buyers perceive it as helpful information, not a
+       warning they must acknowledge. Uses the site's green accent. */
+    .checkout-process {
+        position: relative;
+        display: flex;
+        gap: 18px;
+        align-items: flex-start;
+        padding: 22px 26px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #f0fdf4 0%, #e9f6ec 100%);
+        border: 1.5px solid #3d7a4f;
+        box-shadow: 0 10px 28px -18px rgba(61, 122, 79, 0.45);
+    }
+    .checkout-process-icon {
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #3d7a4f;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px -3px rgba(61, 122, 79, 0.55);
+    }
+    .checkout-process-body { min-width: 0; flex: 1; }
+    .checkout-process-title {
+        font-family: var(--font-display, inherit);
+        font-size: 19px;
+        font-weight: 700;
+        color: #1f3b26;
+        margin: 0 0 12px;
+        letter-spacing: 0.01em;
+    }
+    .checkout-process-steps {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: process-step;
+        display: grid;
+        gap: 10px;
+    }
+    .checkout-process-steps li {
+        counter-increment: process-step;
+        position: relative;
+        padding-left: 36px;
+        font-size: 14px;
+        line-height: 1.55;
+        color: #2c4a32;
+    }
+    .checkout-process-steps li::before {
+        content: counter(process-step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: #3d7a4f;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+    .checkout-process-steps strong { color: #8a2020; font-weight: 600; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="pt-32 max-sm:pt-[9rem] pb-20">
     <div class="max-w-6xl mx-auto px-6">
@@ -9,6 +199,36 @@
             <span class="section-label" data-i18="checkout_label">Оформление заказа</span>
             <h1 class="font-display text-4xl md:text-5xl font-bold mt-4 text-gray-800" data-i18="checkout_title">Оформление заказа</h1>
             <p class="text-gray-500 mt-4 max-w-2xl mx-auto" data-i18="checkout_sub">Заполните форму для завершения покупки</p>
+        </div>
+
+        {# Pulsing personal-use license disclaimer — must be seen before payment. #}
+        <div class="checkout-license mb-10" role="alert" aria-live="polite">
+            <div class="checkout-license-icon" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 9v4"/>
+                    <path d="M12 17h.01"/>
+                    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                </svg>
+            </div>
+            <div class="checkout-license-body">
+                <p class="checkout-license-title" data-i18="checkout_license_title">Только для личного использования</p>
+                <p class="checkout-license-text" data-i18="checkout_license_body">
+                    Приобретение модели даёт право использовать её исключительно в личных, индивидуальных целях.
+                    Покупка <strong>НЕ ДАЁТ права на коммерческое использование</strong>, тиражирование, перепродажу
+                    или публичный показ с извлечением прибыли.
+                </p>
+
+                {# Acknowledgement checkbox — lives inside the form via `form` attribute. #}
+                <label class="checkout-license-ack" for="license-ack">
+                    <input type="checkbox"
+                           id="license-ack"
+                           name="license_ack"
+                           form="checkout-form"
+                           class="checkout-license-ack-input"
+                           required>
+                    <span class="checkout-license-ack-text" data-i18="checkout_license_ack">Ознакомлен</span>
+                </label>
+            </div>
         </div>
 
         <div class="grid lg:grid-cols-3 gap-8">
@@ -51,6 +271,29 @@
                             {% if form.phone.errors %}
                                 <p class="text-red-500 text-xs mt-1">{{ form.phone.errors.0 }}</p>
                             {% endif %}
+                        </div>
+                    </div>
+
+                    {# Payment & delivery process — purely informational, not part of the form submission. #}
+                    <div class="checkout-process" role="note">
+                        <div class="checkout-process-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <path d="M14 14h3v3h-3z"/>
+                                <path d="M20 14v3"/>
+                                <path d="M14 20h3"/>
+                                <path d="M20 20v1"/>
+                            </svg>
+                        </div>
+                        <div class="checkout-process-body">
+                            <h2 class="checkout-process-title" data-i18="checkout_process_title">Порядок оплаты и получения модели</h2>
+                            <ol class="checkout-process-steps">
+                                <li data-i18="checkout_process_step_1">После отправки заказа на оформление, в течение максимум 5 часов будет сформирован QR-код на оплату и выслан на указанный при заказе адрес электронной почты.</li>
+                                <li data-i18="checkout_process_step_2">После получения оплаты, ссылка на файл будет отправлена на указанный при заказе адрес электронной почты.</li>
+                                <li data-i18="checkout_process_step_3">В случае ошибки в адресе, продавец <strong>НЕ НЕСЁТ ОТВЕТСТВЕННОСТИ</strong> за неполучение ссылки для скачивания оплаченных файлов.</li>
+                             </ol>
                         </div>
                     </div>
 
@@ -215,17 +458,19 @@
 {% block extra_js %}
 <script>
 (function () {
-    var cb = document.getElementById('id_pd_consent');
+    var pdConsent = document.getElementById('id_pd_consent');
+    var licenseAck = document.getElementById('license-ack');
     var btn = document.getElementById('checkout-submit-btn');
-    if (!cb || !btn) return;
+    if (!btn || !pdConsent || !licenseAck) return;
     function sync() {
-        var ok = cb.checked;
+        var ok = pdConsent.checked && licenseAck.checked;
         btn.disabled = !ok;
         btn.setAttribute('aria-disabled', ok ? 'false' : 'true');
         btn.classList.toggle('opacity-60', !ok);
         btn.classList.toggle('cursor-not-allowed', !ok);
     }
-    cb.addEventListener('change', sync);
+    pdConsent.addEventListener('change', sync);
+    licenseAck.addEventListener('change', sync);
     sync();
 })();
 </script>

@@ -2,6 +2,24 @@
 {% load static %}
 
 {% block content %}
+{% comment %}
+═══════════════════════════════════════════════════════════════════════════
+  «ЗАНЯТОСТЬ СКУЛЬПТОРА»  —  ЗНАЧЕНИЕ ОТ 0 ДО 100
+═══════════════════════════════════════════════════════════════════════════
+  Кнопка «Занятость: XX%» в hero-блоке (третья в ряду с «Смотреть
+  Портфолио» и «В Магазин»). Цвет подложки и текст модального окна
+  подбираются автоматически по значению:
+
+     0 – 29   →  зелёная,  «Скульптор слабо загружен работой»
+    30 – 59   →  жёлтая,   «Скульптор загружен работой»
+    60 – 100  →  красная,  «Скульптор очень занят»
+
+  Чтобы изменить показатель — поменяйте ЧИСЛО в строке `sculptor_busy=XX`
+  ниже и обновите страницу. Перезапуск Gunicorn и collectstatic НЕ нужны —
+  Django перечитывает шаблон при каждом запросе.
+═══════════════════════════════════════════════════════════════════════════
+{% endcomment %}
+{% with sculptor_busy=95 %}
 <!-- Hero Section -->
 <section class="pt-24 max-sm:pt-[8.5rem] pb-20">
     <div class="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-12 gap-8 items-start">
@@ -16,6 +34,7 @@
             <p class="text-base md:text-lg mt-6 max-w-md mx-auto lg:mx-0" style="color: var(--muted);" data-i18="hero_sub">
                 3D барельефы, медали и монеты вместе с AI-изображениями и видео — одна творческая вселенная.
             </p>
+
             <div class="flex flex-wrap gap-4 justify-center lg:justify-start mt-8">
                 <a href="/portfolio/" class="btn-primary" data-i18="hero_cta1">
                     Смотреть Портфолио
@@ -26,6 +45,14 @@
                 <a href="/shop/" class="btn-outline" data-i18="hero_cta2">
                     В Магазин
                 </a>
+                {% comment %}Busyness button (tier + message computed from sculptor_busy).{% endcomment %}
+                <button type="button"
+                        class="btn-busy"
+                        data-busy-tier="{% if sculptor_busy < 30 %}low{% elif sculptor_busy < 60 %}mid{% else %}high{% endif %}"
+                        aria-haspopup="dialog"
+                        aria-controls="busyModal">
+                    <span data-i18="hero_busy_label">Занятость</span>:&nbsp;<span class="btn-busy-pct">{{ sculptor_busy }}%</span>
+                </button>
             </div>
             <div class="flex gap-8 md:gap-10 pt-6 mt-6 border-t justify-center lg:justify-start" style="border-color: var(--line);">
                 <div>
@@ -34,7 +61,7 @@
                 </div>
                 <div>
                     <p class="font-display text-2xl md:text-3xl font-semibold text-shadow">50+</p>
-                    <p class="text-xs mt-1 uppercase tracking-widest" style="color: var(--muted);" data-i18="stats_ai">AI Проектов</p>
+                    <p class="text-xs mt-1 uppercase tracking-widest" style="color: var(--muted);" data-i18="stats_ai">Проектов Отчеканено</p>
                 </div>
                 <div>
                     <p class="font-display text-2xl md:text-3xl font-semibold text-shadow">12</p>
@@ -98,7 +125,28 @@
             </div>
         </div>
     </div>
+
+    {% comment %}
+      Busyness modal — initial message corresponds to the current tier
+      (`data-i18` makes it follow the language switcher in base.html).
+    {% endcomment %}
+    <div id="busyModal" class="busy-modal" role="dialog" aria-modal="true" aria-labelledby="busyModalTitle" aria-hidden="true">
+        <div class="busy-modal-backdrop" data-busy-close></div>
+        <div class="busy-modal-card" role="document">
+            <button type="button" class="busy-modal-close" data-busy-close aria-label="Закрыть">×</button>
+            <div class="busy-modal-dot busy-modal-dot--{% if sculptor_busy < 30 %}low{% elif sculptor_busy < 60 %}mid{% else %}high{% endif %}"></div>
+            <p id="busyModalTitle" class="busy-modal-percent">{{ sculptor_busy }}%</p>
+            {% if sculptor_busy < 30 %}
+                <p class="busy-modal-text" data-i18="hero_busy_low">Скульптор слабо загружен работой</p>
+            {% elif sculptor_busy < 60 %}
+                <p class="busy-modal-text" data-i18="hero_busy_mid">Скульптор загружен работой</p>
+            {% else %}
+                <p class="busy-modal-text" data-i18="hero_busy_high">Скульптор очень занят</p>
+            {% endif %}
+        </div>
+    </div>
 </section>
+{% endwith %}
 
 <style>
 /* ── Carousel deck ─────────────────────────────────────────────────────── */
@@ -234,7 +282,150 @@
     left: 16px;
     right: 16px;
 }
+
+/* ── Sculptor busyness button (third CTA) ──────────────────────────────── */
+.btn-busy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #ffffff;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        filter 0.25s ease;
+    box-shadow: 0 6px 18px -6px rgba(26, 46, 26, 0.35);
+    white-space: nowrap;
+}
+.btn-busy:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 10px 24px -8px rgba(26, 46, 26, 0.45);
+}
+.btn-busy:active { transform: translateY(0); }
+.btn-busy:focus-visible {
+    outline: 2px solid rgba(168, 201, 87, 0.7);
+    outline-offset: 2px;
+}
+.btn-busy-pct { font-variant-numeric: tabular-nums; }
+.btn-busy[data-busy-tier="low"]  { background: #3d7a4f; border-color: #2f5f3d; }
+.btn-busy[data-busy-tier="mid"]  { background: #eab308; border-color: #b8870a; color: #1a2e1a; }
+.btn-busy[data-busy-tier="high"] { background: #dc2626; border-color: #a61b1b; }
+
+/* ── Busyness modal ────────────────────────────────────────────────────── */
+.busy-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.busy-modal.is-open { display: flex; }
+.busy-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 46, 26, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: busyFade 0.2s ease-out;
+}
+.busy-modal-card {
+    position: relative;
+    max-width: 360px;
+    width: 100%;
+    padding: 32px 28px 26px;
+    border-radius: 22px;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    box-shadow:
+        0 30px 60px -15px rgba(26, 46, 26, 0.45),
+        0 8px 20px -8px rgba(26, 46, 26, 0.25);
+    text-align: center;
+    animation: busyPop 0.25s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.busy-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.busy-modal-close:hover { background: rgba(26, 46, 26, 0.08); color: #1a2e1a; }
+.busy-modal-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    margin: 0 auto 14px;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.04);
+}
+.busy-modal-dot--low  { background: #3d7a4f; }
+.busy-modal-dot--mid  { background: #eab308; }
+.busy-modal-dot--high { background: #dc2626; }
+.busy-modal-percent {
+    font-family: var(--font-display, inherit);
+    font-size: 40px;
+    font-weight: 700;
+    color: #1a2e1a;
+    margin: 0 0 8px;
+    font-variant-numeric: tabular-nums;
+}
+.busy-modal-text {
+    font-size: 15px;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+}
+@keyframes busyFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes busyPop  {
+    from { opacity: 0; transform: translateY(8px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
 </style>
+
+<script>
+    (function () {
+        const modal = document.getElementById('busyModal');
+        const openBtn = document.querySelector('.btn-busy');
+        if (!modal || !openBtn) return;
+
+        const openModal = () => {
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        };
+        const closeModal = () => {
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        };
+
+        openBtn.addEventListener('click', openModal);
+        modal.querySelectorAll('[data-busy-close]').forEach(el => {
+            el.addEventListener('click', closeModal);
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+                closeModal();
+            }
+        });
+    })();
+</script>
 
 <!-- Featured Works Section -->
 <section class="py-20 bg-[#1a2e1a] relative">
@@ -253,42 +444,28 @@
             <!-- Card 1 -->
             <a href="/portfolio/" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block">
                 <div class="aspect-[4/5] overflow-hidden">
-                    <img src="{% static 'images/featured/bronze-victory-relief-1920x2400.jpg' %}" 
-                         alt="Bronze victory relief" 
+                    <img src="{% static 'images/news/modelmid.JPEG' %}"
+                         alt="Здание МИД Российской Федерации"
                          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/90 via-[#1a2e1a]/20 to-transparent"></div>
                 </div>
                 <div class="absolute bottom-0 left-0 right-0 p-7">
-                    <span class="text-[10px] uppercase tracking-widest font-medium text-[#a8c957]">3D Bas Relief</span>
-                    <p class="font-display text-xl font-semibold text-white mt-2">Bronze Victory Relief</p>
+                    <span class="text-[10px] uppercase tracking-widest font-medium text-[#a8c957]" data-i18="featured_mid_cat">3D Барельеф</span>
+                    <p class="font-display text-xl font-semibold text-white mt-2" data-i18="featured_mid_title">Здание МИД Российской Федерации</p>
                 </div>
             </a>
-            
+
             <!-- Card 2 -->
             <a href="/portfolio/" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block">
                 <div class="aspect-[4/5] overflow-hidden">
-                    <img src="{% static 'images/featured/cosmic-weave-1920x1080.png' %}" 
-                         alt="Cosmic Weave" 
+                    <img src="{% static 'images/news/jimm.PNG' %}"
+                         alt="Трехмерная модель персонажа Червяк Джимм"
                          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/90 via-[#1a2e1a]/20 to-transparent"></div>
                 </div>
                 <div class="absolute bottom-0 left-0 right-0 p-7">
-                    <span class="text-[10px] uppercase tracking-widest font-medium text-[#a8c957]">AI Generative</span>
-                    <p class="font-display text-xl font-semibold text-white mt-2">Cosmic Weave</p>
-                </div>
-            </a>
-            
-            <!-- Card 3 -->
-            <a href="/portfolio/" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block">
-                <div class="aspect-[4/5] overflow-hidden">
-                    <img src="{% static 'images/featured/numismatic-heritage-1920x1280.jpg' %}" 
-                         alt="Numismatic Heritage" 
-                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/90 via-[#1a2e1a]/20 to-transparent"></div>
-                </div>
-                <div class="absolute bottom-0 left-0 right-0 p-7">
-                    <span class="text-[10px] uppercase tracking-widest font-medium text-[#a8c957]">3D Coins</span>
-                    <p class="font-display text-xl font-semibold text-white mt-2">Numismatic Heritage Set</p>
+                    <span class="text-[10px] uppercase tracking-widest font-medium text-[#a8c957]" data-i18="featured_jimm_cat">3D Скульптинг</span>
+                    <p class="font-display text-xl font-semibold text-white mt-2" data-i18="featured_jimm_title">Трехмерная модель персонажа Червяк Джимм</p>
                 </div>
             </a>
             
@@ -303,6 +480,20 @@
                 <div class="absolute bottom-0 left-0 right-0 p-7">
                     <span class="text-[10px] uppercase tracking-widest font-medium text-[#a8c957]">AI Image</span>
                     <p class="font-display text-xl font-semibold text-white mt-2">Verdant Machine</p>
+                </div>
+            </a>
+
+            <!-- Card 5 — 3D Scanning -->
+            <a href="/portfolio/" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block">
+                <div class="aspect-[4/5] overflow-hidden">
+                    <img src="{% static 'images/shop/tolst.png' %}"
+                         alt="Трехмерное сканирование барельефов"
+                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/90 via-[#1a2e1a]/20 to-transparent"></div>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 p-7">
+                    <span class="text-[10px] uppercase tracking-widest font-medium text-[#a8c957]" data-i18="featured_scan_cat">3D Сканирование</span>
+                    <p class="font-display text-xl font-semibold text-white mt-2" data-i18="featured_scan_title">Трехмерное сканирование барельефов</p>
                 </div>
             </a>
         </div>
@@ -321,51 +512,58 @@
         </div>
         
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {% comment %}
+              Карточки отражают реальные статьи из раздела /news/.
+              Featured — обзорная статья по 3D-моделированию; боковые — три
+              свежие: ArtCAM, Генеративный дизайн, Тренды 3D-графики.
+              Пятая статья (ZBrush-скульптинг) доступна по ссылке «Все Статьи».
+            {% endcomment %}
+
             <!-- Featured Article -->
-            <div class="lg:col-span-7 group cursor-pointer">
+            <a href="/news/bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush/" class="lg:col-span-7 group block">
                 <div class="relative overflow-hidden rounded-3xl bg-white border border-primary/10 shadow-lg h-full">
                     <div class="aspect-[16/10] overflow-hidden">
-                        <img src="{% static 'images/news/bas-relief-depth-1920x1200.png' %}" 
-                             alt="Bas Relief Depth" 
+                        <img src="{% static 'images/news/model11.JPEG' %}"
+                             alt="3D-моделирование"
                              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                         <div class="absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/80 via-[#1a2e1a]/10 to-transparent"></div>
                     </div>
                     <div class="absolute bottom-0 left-0 right-0 p-8">
                         <div class="flex items-center gap-3 mb-4">
-                            <span class="tag-pill">Technique</span>
-                            <span class="text-[10px] text-white/60">8 min read</span>
+                            <span class="tag-pill" data-i18="news_technique">Практика</span>
+                            <span class="text-[10px] text-white/60">10 минут чтения</span>
                         </div>
                         <h3 class="font-display text-2xl md:text-3xl font-semibold text-white mb-3">
-                            Bas Relief Depth: Achieving Sub-Millimeter Precision in ZBrush
+                            3D-моделирование: путь от базовых форм к коммерческому уровню
                         </h3>
-                        <p class="text-sm text-white/70 mb-5 max-w-lg">How to calibrate your ZBrush brushes and subdivision levels to produce production-ready bas relief geometry for casting.</p>
-                        <span class="text-[11px] text-white/40 uppercase tracking-widest">March 14, 2026</span>
+                        <p class="text-sm text-white/70 mb-5 max-w-lg">О последовательной работе с формой, деталями и технической подготовкой модели под реальный продакшн.</p>
+                        <span class="text-[11px] text-white/40 uppercase tracking-widest">14 апреля 2026</span>
                     </div>
                 </div>
-            </div>
-            
+            </a>
+
             <!-- Secondary Articles -->
             <div class="lg:col-span-5 flex flex-col gap-5">
-                <!-- Article 1 -->
-                <div class="group cursor-pointer flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
+                <!-- Article 1 — ArtCAM -->
+                <a href="/news/artcam-vozmozhnosti-zadachi-i-praktika/" class="group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
                     <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
-                        <img src="{% static 'images/news/midjourney-1920x1200.png' %}" 
-                             alt="Midjourney" 
+                        <img src="{% static 'images/news/artcam1.png' %}"
+                             alt="ArtCAM"
                              class="w-full h-full object-cover">
                     </div>
                     <div class="flex flex-col justify-center gap-1.5 min-w-0">
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]">AI</span>
+                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]" data-i18="news_industry">CAD/CAM</span>
                             <span class="text-[10px] text-gray-400">·</span>
-                            <span class="text-[10px] text-gray-400">6 min read</span>
+                            <span class="text-[10px] text-gray-400">12 минут чтения</span>
                         </div>
-                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2">Midjourney v7 for Numismatic Concept Art</h4>
-                        <span class="text-[11px] text-gray-400">March 8, 2026</span>
+                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-[#3d7a4f] transition-colors">ArtCAM: возможности программы, ключевые задачи и практический workflow</h4>
+                        <span class="text-[11px] text-gray-400">15 апреля 2026</span>
                     </div>
-                </div>
-                
-                <!-- Article 2 -->
-                <a href="/news/generative-design-technologies/" class="group cursor-pointer flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
+                </a>
+
+                <!-- Article 2 — Generative design -->
+                <a href="/news/generative-design-technologies/" class="group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
                     <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                         <img src="{% static 'images/news/gener1.jpg' %}"
                              alt="Генеративный дизайн"
@@ -373,33 +571,33 @@
                     </div>
                     <div class="flex flex-col justify-center gap-1.5 min-w-0">
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]">Технологии</span>
+                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]" data-i18="news_industry">Технологии</span>
                             <span class="text-[10px] text-gray-400">·</span>
-                            <span class="text-[10px] text-gray-400">14 min read</span>
+                            <span class="text-[10px] text-gray-400">14 минут чтения</span>
                         </div>
-                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2">Технологии генеративного дизайна изделий</h4>
+                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-[#3d7a4f] transition-colors">Технологии генеративного дизайна изделий</h4>
                         <span class="text-[11px] text-gray-400">5 апреля 2026</span>
                     </div>
                 </a>
-                
-                <!-- Article 3 -->
-                <div class="group cursor-pointer flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
+
+                <!-- Article 3 — 3D trends 2026 -->
+                <a href="/news/midjourney-v7-for-numismatic-concept-art/" class="group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
                     <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
-                        <img src="{% static 'images/news/ai-video-1920x1200.png' %}" 
-                             alt="AI Video" 
+                        <img src="{% static 'images/news/midjourney-1920x1200.png' %}"
+                             alt="Тренды 3D-графики"
                              class="w-full h-full object-cover">
                     </div>
                     <div class="flex flex-col justify-center gap-1.5 min-w-0">
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]">AI</span>
+                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]" data-i18="news_ai">Тренды</span>
                             <span class="text-[10px] text-gray-400">·</span>
-                            <span class="text-[10px] text-gray-400">7 min read</span>
+                            <span class="text-[10px] text-gray-400">9 минут чтения</span>
                         </div>
-                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2">Sora & Kling: AI Video for 3D Presentations</h4>
-                        <span class="text-[11px] text-gray-400">Feb 20, 2026</span>
+                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-[#3d7a4f] transition-colors">Ключевые тренды 3D-графики в 2026 году</h4>
+                        <span class="text-[11px] text-gray-400">10 апреля 2026</span>
                     </div>
-                </div>
-                
+                </a>
+
                 <a href="/news/" class="btn-outline w-full justify-center mt-2" data-i18="news_view_all">
                     Все Статьи
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -424,7 +622,7 @@
         
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {% for product in shop_preview_products %}
-            <div class="group bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg">
+            <div class="group bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col">
                 <div class="relative aspect-[4/3] overflow-hidden">
                     <img src="{% static product.img %}"
                          alt="{{ product.alt }}"
@@ -434,6 +632,7 @@
                         <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-[#a8c957] text-[#1a2e1a]">{{ product.badge }}</span>
                     </div>
                     {% endif %}
+                    {% if not product.not_for_sale %}
                     <div class="absolute inset-x-0 bottom-0 p-4 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                         <button type="button"
                                 class="pointer-events-auto w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md hover:bg-[#a8c957] transition-colors"
@@ -445,13 +644,21 @@
                             </svg>
                         </button>
                     </div>
+                    {% endif %}
                 </div>
-                <div class="p-5">
-                    <p class="text-[10px] uppercase tracking-widest text-gray-400 font-medium" data-i18="{{ product.type_i18 }}">Digital Download</p>
+                <div class="p-5 flex-1 flex flex-col">
+                    <p class="text-[10px] uppercase tracking-widest text-gray-400 font-medium" data-i18="{{ product.type_i18 }}">3D Модель</p>
                     <h4 class="font-display text-base font-semibold text-gray-800 mt-1">{{ product.title }}</h4>
-                    <div class="flex items-center justify-between mt-3">
+                    {% if product.description %}
+                    <p class="text-sm text-gray-500 mt-2 flex-1">{{ product.description }}</p>
+                    {% endif %}
+                    <div class="flex items-center justify-between mt-3 gap-3">
+                        {% if product.not_for_sale %}
+                        <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider" data-i18="shop_not_for_sale">Нет в продаже</span>
+                        {% else %}
                         <span class="font-display text-xl font-semibold text-[#3d7a4f]">{{ product.price }}</span>
                         <button type="button" class="btn-primary text-xs py-2 px-4" data-add-to-cart data-product-id="{{ product.id }}" data-i18="shop_add_cart">Add to Cart</button>
+                        {% endif %}
                     </div>
                 </div>
             </div>

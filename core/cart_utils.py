@@ -30,7 +30,8 @@ def _save(session, q: dict[str, int]) -> None:
 
 
 def add_item(session, product_id: int, qty: int = 1) -> None:
-    if not get_product(product_id):
+    product = get_product(product_id)
+    if not product or product.get("not_for_sale"):
         return
     q = _quantities(session)
     key = str(int(product_id))
@@ -44,7 +45,8 @@ def add_item(session, product_id: int, qty: int = 1) -> None:
 
 
 def set_qty(session, product_id: int, qty: int) -> None:
-    if not get_product(product_id):
+    product = get_product(product_id)
+    if not product or product.get("not_for_sale"):
         return
     q = _quantities(session)
     key = str(int(product_id))

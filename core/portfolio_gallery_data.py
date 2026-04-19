@@ -74,46 +74,121 @@ def news_ai_gallery_items() -> list[GalleryItem]:
 
 _PORTFOLIO_3D_BASE: list[GalleryItem] = [
     {
-        "image": "images/featured/bronze-victory-relief-1920x2400.jpg",
-        "title_i18": "portfolio_bronze_victory",
-        "subtitle_i18": "portfolio_bronze_victory_cat",
-        "alt": "Bronze Victory Relief",
-    },
-    {
-        "image": "images/featured/numismatic-heritage-1920x1280.jpg",
-        "title_i18": "portfolio_numismatic",
-        "subtitle_i18": "portfolio_numismatic_cat",
-        "alt": "Numismatic Heritage",
-    },
-    {
-        "image": "images/shop/eagle-relief-stl-1920x1440.png",
-        "title_i18": "portfolio_commemorative",
-        "subtitle_i18": "portfolio_commemorative_cat",
-        "alt": "Commemorative Medal",
+        "image": "images/news/zdanie.png",
+        "title_i18": "portfolio_moscow_building",
+        "subtitle_i18": "portfolio_moscow_building_cat",
+        "alt": "Moscow Building Bas-Relief",
     },
 ]
 
 
+# Явный порядок работ, которые должны идти первыми в галерее 3D.
+# Имена — нормализованные stem'ы файлов (без расширения, в нижнем регистре).
+_PORTFOLIO_3D_TOP_ORDER: tuple[str, ...] = (
+    "model9",
+    "model8",
+    "model99",
+    "efrosyn777",
+    "georg777",
+    "ushak777",
+    "model4",
+    "model00",
+    "modelmid",
+    "model10",
+    "jimm",
+    "model000",
+)
+
+
+# Работы (по stem'у), которые НЕ должны появляться в 3D-галерее.
+_PORTFOLIO_3D_EXCLUDED: frozenset[str] = frozenset({
+    "model6",
+    "model11",
+})
+
+
+# Особые подписи для приоритетных работ. Ключ — stem файла (lower-case).
+_PORTFOLIO_3D_CAPTIONS: dict[str, tuple[str, str, str]] = {
+    "model9": (
+        "portfolio_model9_title",
+        "portfolio_model9_cat",
+        "3D модель портрет (барельеф)",
+    ),
+    "jimm": (
+        "featured_jimm_title",
+        "featured_jimm_cat",
+        "Трехмерная модель персонажа Червяк Джимм",
+    ),
+    "efrosyn777": (
+        "portfolio_efrosyn_title",
+        "portfolio_efrosyn_cat",
+        "Святая Евфросиния Полоцкая",
+    ),
+    "georg777": (
+        "portfolio_georg_title",
+        "portfolio_georg_cat",
+        "Святой Георгий Победоносец",
+    ),
+    "ushak777": (
+        "portfolio_ushak_title",
+        "portfolio_ushak_cat",
+        "Святой праведный воин Феодор Ушаков",
+    ),
+}
+
+
+def _news_3d_items() -> list[GalleryItem]:
+    """Все 3D-иллюстрации из ``static/images/news`` (``model*``, ``*777*``, ``jimm``), отсортированные по имени."""
+    if not _NEWS_IMAGES_DIR.is_dir():
+        return []
+    items: list[GalleryItem] = []
+    for path in sorted(_NEWS_IMAGES_DIR.iterdir(), key=lambda p: p.name.lower()):
+        if not path.is_file():
+            continue
+        name_lower = path.name.lower()
+        stem = path.stem.lower()
+        if (
+            "model" not in name_lower
+            and "777" not in name_lower
+            and stem != "jimm"
+        ):
+            continue
+        if stem in _PORTFOLIO_3D_EXCLUDED:
+            continue
+        alt_default = path.stem.replace("_", " ").replace("-", " ")
+        title_i18, subtitle_i18, alt = _PORTFOLIO_3D_CAPTIONS.get(
+            stem,
+            ("portfolio_3d_model_piece", "portfolio_3d_model_piece_cat", alt_default),
+        )
+        items.append(
+            {
+                "image": f"images/news/{path.name}",
+                "title_i18": title_i18,
+                "subtitle_i18": subtitle_i18,
+                "alt": alt,
+            }
+        )
+    return items
+
+
 def portfolio_3d_gallery_items() -> list[GalleryItem]:
-    """Сначала model9 из news (если есть), затем три основных работы, затем остальные model*."""
-    extras = news_model_gallery_items()
-    model9_lead: list[GalleryItem] = []
-    rest: list[GalleryItem] = []
-    for item in extras:
-        stem = Path(item["image"]).stem.lower()
-        if stem == "model9":
-            if not model9_lead:
-                model9_lead.append(
-                    {
-                        **item,
-                        "title_i18": "portfolio_model9_title",
-                        "subtitle_i18": "portfolio_model9_cat",
-                        "alt": "3D модельпортрет (барельеф)",
-                    }
-                )
-        else:
-            rest.append(item)
-    return model9_lead + _PORTFOLIO_3D_BASE + rest
+    """Приоритетные работы (``_PORTFOLIO_3D_TOP_ORDER``) в заданном порядке,
+    затем курируемая база (``_PORTFOLIO_3D_BASE``), затем остальные ``model*``
+    из папки news в алфавитном порядке. Для каждого приоритетного имени берётся
+    первый подходящий файл (на случай ``.jpg``/``.jpeg``-дубликатов)."""
+    pool = _news_3d_items()
+    used_paths: set[str] = set()
+    top: list[GalleryItem] = []
+    for stem in _PORTFOLIO_3D_TOP_ORDER:
+        for item in pool:
+            if item["image"] in used_paths:
+                continue
+            if Path(item["image"]).stem.lower() == stem:
+                top.append(item)
+                used_paths.add(item["image"])
+                break
+    rest = [item for item in pool if item["image"] not in used_paths]
+    return top + _PORTFOLIO_3D_BASE + rest
 
 
 # Per-file captions for готовые изделия (медали). Keys are the lowercased

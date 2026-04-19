@@ -249,6 +249,7 @@ class FormTests(TestCase):
             "postal_code": "101000",
             "notes": "",
             "pd_consent": True,
+            "license_ack": True,
         }
         data.update(overrides)
         return data
@@ -272,6 +273,11 @@ class FormTests(TestCase):
         form = CheckoutForm(data=self._valid_checkout_data(pd_consent=False))
         self.assertFalse(form.is_valid())
         self.assertIn("pd_consent", form.errors)
+
+    def test_checkout_form_requires_license_ack(self):
+        form = CheckoutForm(data=self._valid_checkout_data(license_ack=False))
+        self.assertFalse(form.is_valid())
+        self.assertIn("license_ack", form.errors)
 
     def test_checkout_form_valid_minimal(self):
         form = CheckoutForm(data=self._valid_checkout_data(phone="", address="", postal_code="", notes=""))
@@ -643,6 +649,7 @@ class CheckoutFlowTests(TestCase):
             "postal_code": "",
             "notes": "",
             "pd_consent": "on",
+            "license_ack": "on",
         }
         r = self.client.post(reverse("core:checkout"), data)
         self.assertEqual(Order.objects.count(), 1)

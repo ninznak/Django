@@ -95,6 +95,12 @@ class CheckoutForm(forms.Form):
         widget=forms.CheckboxInput(attrs={"class": "w-4 h-4 text-[#3d7a4f] border-gray-300 rounded focus:ring-[#3d7a4f]"})
     )
 
+    # Подтверждение ознакомления с лицензионной памяткой (баннер на checkout)
+    license_ack = forms.BooleanField(
+        label="",
+        required=True,
+    )
+
     def clean_pd_consent(self):
         """Проверка согласия на обработку ПДн."""
         consent = self.cleaned_data.get("pd_consent")
@@ -103,4 +109,14 @@ class CheckoutForm(forms.Form):
                 "Для оформления заказа необходимо согласие на обработку персональных данных."
             )
         return consent
+
+    def clean_license_ack(self):
+        """Проверка подтверждения ознакомления с ограничениями лицензии."""
+        ack = self.cleaned_data.get("license_ack")
+        if not ack:
+            raise forms.ValidationError(
+                "Для оформления заказа необходимо подтвердить ознакомление "
+                "с условиями личного использования модели."
+            )
+        return ack
 

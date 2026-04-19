@@ -20,3 +20,9 @@ def usd_whole_to_rub_kopecks(usd_whole: int) -> tuple[str, int]:
     rub = int(usd_whole) * USD_TO_RUB_RATE
     kopecks = rub * 100
     return format_minor_as_rub(kopecks), kopecks
+
+
+def rub_whole_to_kopecks(rub_whole: int) -> tuple[str, int]:
+    """Convert a whole-ruble shelf price to display string and kopecks (RUB × 100)."""
+    kopecks = int(rub_whole) * 100
+    return format_minor_as_rub(kopecks), kopecks
