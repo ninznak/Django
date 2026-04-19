@@ -18,7 +18,7 @@ from .portfolio_gallery_data import gallery_context
 from .forms import CheckoutForm, ContactForm, RegisterForm
 from .models import ContactSubmission, Order, OrderItem
 from .pricing import format_minor_as_rub
-from .seo import get_seo
+from .seo import get_seo, news_article_seo_overrides
 from .shop_data import get_product
 
 User = get_user_model()
@@ -96,7 +96,7 @@ def news_article(request, slug):
     title_map = {
         "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush": "3D-моделирование: путь от базовых форм к коммерческому уровню",
         "midjourney-v7-for-numismatic-concept-art": "Ключевые тренды 3D-графики в 2026 году",
-        "the-2026-commemorative-medal-market": "3D-печать без брака: от цифровой модели до готового изделия",
+        "generative-design-technologies": "Технологии генеративного дизайна изделий",
         "sora-and-kling-ai-video-for-3d-presentations": "ZBrush-скульптинг: как добиться выразительной формы и чистой детализации",
         "artcam-vozmozhnosti-zadachi-i-praktika": "ArtCAM: возможности программы, ключевые задачи и практический workflow",
     }
@@ -104,26 +104,7 @@ def news_article(request, slug):
     label = label[:1].upper() + label[1:] if label else slug
     ctx = {
         "slug": slug,
-        "seo": get_seo(
-            request,
-            title=f"{label} — KurilenkoArt | Новости: 3D, медали, барельефы",
-            description=(
-                f"Статья «{label}» — 3D-моделирование, медальерное дело, барельефы, цифровая скульптура и AI. "
-                "KurilenkoArt."
-            ),
-            keywords=(
-                f"{label}, новости 3D, медали моделирование, барельеф, скульптура, ZBrush, "
-                "медальерное искусство, KurilenkoArt"
-            ),
-            canonical_path=request.path,
-            og_type="article",
-            article_ld={
-                "headline": label,
-                "description": f"Материал о 3D, медалях и творческих техниках: {label}",
-                "inLanguage": "ru-RU",
-                "keywords": "3D modeling, medals, bas-relief, digital sculpting, KurilenkoArt",
-            },
-        ),
+        "seo": get_seo(request, **news_article_seo_overrides(request, slug, label)),
     }
     return render(request, "core/news_article.html", ctx)
 

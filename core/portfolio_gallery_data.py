@@ -42,6 +42,36 @@ def news_model_gallery_items() -> list[GalleryItem]:
     return out
 
 
+def _ai_sort_key(path: Path) -> tuple[int, str]:
+    """Сортировка: сначала ``AI1``, ``AI2`` … по номеру, потом остальное по имени."""
+    stem = path.stem.lower()
+    if stem.startswith("ai"):
+        tail = stem[len("ai"):]
+        if tail.isdigit():
+            return (0, f"{int(tail):04d}")
+    return (1, stem)
+
+
+def news_ai_gallery_items() -> list[GalleryItem]:
+    """Файлы в ``static/images/news``, в имени которых есть ``ai`` (без учёта регистра)."""
+    if not _NEWS_IMAGES_DIR.is_dir():
+        return []
+    out: list[GalleryItem] = []
+    for path in sorted(_NEWS_IMAGES_DIR.iterdir(), key=_ai_sort_key):
+        if not path.is_file() or "ai" not in path.name.lower():
+            continue
+        stem = path.stem.replace("_", " ").replace("-", " ")
+        out.append(
+            {
+                "image": f"images/news/{path.name}",
+                "title_i18": "portfolio_ai_piece",
+                "subtitle_i18": "portfolio_ai_piece_cat",
+                "alt": stem,
+            }
+        )
+    return out
+
+
 _PORTFOLIO_3D_BASE: list[GalleryItem] = [
     {
         "image": "images/featured/bronze-victory-relief-1920x2400.jpg",
@@ -173,23 +203,12 @@ PORTFOLIO_GALLERIES: dict[str, GalleryMeta] = {
         "portfolio_hash": "portfolio-ai",
         "items": [
             {
-                "image": "images/featured/cosmic-weave-1920x1080.png",
-                "title_i18": "portfolio_cosmic",
-                "subtitle_i18": "portfolio_cosmic_cat",
-                "alt": "Cosmic Weave",
-            },
-            {
                 "image": "images/featured/verdant-machine-1920x2400.png",
                 "title_i18": "portfolio_verdant",
                 "subtitle_i18": "portfolio_verdant_cat",
                 "alt": "Verdant Machine",
             },
-            {
-                "image": "images/shop/verdant-dreamscape-print-1920x1440.png",
-                "title_i18": "portfolio_surreal",
-                "subtitle_i18": "portfolio_surreal_cat",
-                "alt": "Surreal Landscape",
-            },
+            *news_ai_gallery_items(),
         ],
     },
 }

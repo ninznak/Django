@@ -116,9 +116,9 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `homepage_path` | `/homepage/` | `views.homepage` | Alias. Not in sitemap. |
 | `about` | `/about/` | `views.about` | |
 | `news` | `/news/` | `views.news` | |
-| `news_article` | `/news/<slug>/` | `views.news_article` | Slug → title via in-view `title_map`; passes `article_ld` to `get_seo`. |
-| `portfolio` | `/portfolio/` | `views.portfolio` | `?category=3d\|ai\|all` redirects to anchors or base. |
-| `portfolio_gallery` | `/portfolio/<slug>/` | `views.portfolio_gallery` | Slugs: `3d`, `ai`. Unknown → `Http404`. |
+| `news_article` | `/news/<slug>/` | `views.news_article` | Slug → title via in-view `title_map`; body/tag/hero are slug-gated `{% if %}` branches in `templates/core/news_article.html`. SEO is built via `core.seo.news_article_seo_overrides(request, slug, label)`, which reads the per-slug registry `NEWS_ARTICLE_SEO` and falls back to a generic per-label template. |
+| `portfolio` | `/portfolio/` | `views.portfolio` | `?category=3d\|ai\|all` redirects to anchors or base. The homepage carousel (`templates/core/homepage.html`) links its three cards to `/portfolio/#portfolio-3d`, `#portfolio-products`, `#portfolio-ai` — keep those anchors in sync with `templates/core/portfolio.html`. |
+| `portfolio_gallery` | `/portfolio/<slug>/` | `views.portfolio_gallery` | Slugs: `3d`, `ai`, `products`. Unknown → `Http404`. |
 | `shop` | `/shop/` | `views.shop` | Data comes from context processor. |
 | `cart_api` | `/api/cart/` | `views.cart_api` | GET returns cart JSON; POST body `{action, product_id, qty}` with `action ∈ {add,set,remove,clear}`. CSRF-protected. |
 | `sign_up_login` | `/sign-up-login/` | `views.sign_up_login` | Login always; registration gated by `AUTH_SHOW_REGISTRATION`. Honors `?next=` (same-host only). |
@@ -173,9 +173,14 @@ Malformed / non-numeric keys are silently dropped.
 
 ### `core/portfolio_gallery_data.py`
 
-- `PORTFOLIO_GALLERIES: dict[slug, {slug, portfolio_hash, items[]}]` for `3d` / `ai`.
+- `PORTFOLIO_GALLERIES: dict[slug, {slug, portfolio_hash, items[]}]` for `3d`, `ai`, `products`.
 - `PORTFOLIO_GALLERY_SEO: dict[slug, {title, description}]`.
 - `gallery_context(slug) -> dict | None` — returns `{gallery, gallery_slug, gallery_seo}` or `None`. Case-insensitive, trims whitespace.
+- **Filesystem-scanned helpers** build the `items[]` dynamically at import time — drop a new file in the right folder and it appears in the gallery without a code change. Each helper ignores non-files and is safe on missing dirs:
+  - `news_model_gallery_items()` — files in `static/images/news/` whose name contains `model` (case-insensitive). Feeds the `3d` gallery alongside `_PORTFOLIO_3D_BASE`; `model9` is lifted to the front as the hero.
+  - `news_ai_gallery_items()` — files in `static/images/news/` whose name contains `ai` (case-insensitive), sorted so `AI1, AI2, …` come first by numeric suffix. Used by the `ai` gallery after the static "Verdant Machine" lead.
+  - `portfolio_products_gallery_items()` — all files in `static/images/medals/`, sorted `medal1, medal2, …`; per-file titles come from `MEDAL_CAPTIONS`. The same map feeds `_medal_seo_description()` for the `products` gallery meta description.
+- `GalleryItem` is a `TypedDict` with `image` (relative to `static/`), `title_i18`, `subtitle_i18`, `alt`. When you add a new bucket of images, reuse one of the existing i18n keys (`portfolio_3d_model_piece`, `portfolio_ai_piece`, `portfolio_products_item`, …) or add a new pair in both locale dicts in `templates/core/base.html`.
 
 ### `core/seo.py` — **read this before touching SEO**
 
@@ -183,8 +188,10 @@ Public API:
 
 ```python
 SEO_TOPIC_KEYWORDS: str
-PAGE_SEO: dict[url_name, dict]        # Per-page defaults (title/description/keywords/robots/no_json_ld)
+PAGE_SEO: dict[url_name, dict]              # Per-page defaults (title/description/keywords/robots/no_json_ld)
+NEWS_ARTICLE_SEO: dict[slug, dict]          # Per-news-article rich overrides (title/description/keywords/og_image/article_ld)
 def get_seo(request, **overrides) -> dict
+def news_article_seo_overrides(request, slug, label) -> dict   # → splat into get_seo
 ```
 
 `get_seo` merges in this order (later wins):
@@ -195,9 +202,25 @@ Recognized special overrides: `canonical_path`, `og_image_url`, `article_ld`
 (dict spread into a schema.org `Article` node), `no_json_ld` (truthy → empty
 `json_ld`).
 
+**News articles.** `views.news_article` delegates all SEO construction to
+`news_article_seo_overrides(request, slug, label)`:
+
+- If `slug` is a key in `NEWS_ARTICLE_SEO`, its entry (`title`, `description`,
+  `keywords`, optional `og_image` as a `static/`-relative path, optional
+  `article_ld` dict) is used. `article_ld.headline` is auto-filled from
+  `label` if missing; `og_image` is resolved to an absolute URL via the
+  internal `_absolute_url(static(...))`.
+- Otherwise a generic per-`label` template is returned, preserving the old
+  behavior for slugs without a dedicated entry.
+
+To add rich SEO for a new article, just add a `NEWS_ARTICLE_SEO[<slug>]`
+entry — no view edits needed. Keep values plain strings / lists / small dicts
+(the module stays shallow-copy-safe).
+
 Performance contract (don't regress):
 
-- Uses **shallow** dict copies (all base values are immutable strings/bools).
+- Uses **shallow** dict copies (all base values are immutable strings/bools
+  or small dicts / tuples of strings).
 - `_static_graph_nodes(...)` is `@lru_cache`d; **don't mutate the returned
   dicts** — always copy or extend into a fresh list.
 - Context processor wraps the default dict in `SimpleLazyObject` so views that
@@ -345,6 +368,24 @@ Coverage map (read a test before making a semantically-loaded change):
 - **Don't commit `.env`**. `.env.example` is the template.
 - **Don't regress `core/seo.py` performance**: shallow copy + `lru_cache` are
   intentional. The `SeoTests` suite will catch accidental breakages.
+- **News article slugs live in four places.** Adding / renaming a news article
+  means touching all of them:
+  1. `core/views.py::news_article.title_map` — slug → human title (drives the
+     default `label`).
+  2. `templates/core/news.html` — listing card (image, link, headline, tag,
+     read-time, date).
+  3. `templates/core/news_article.html` — each of the slug-gated `{% if / elif
+     slug == "..." %}` branches (tag, title, date/read-time, hero image,
+     body). Inline in-body images use the same `{% static %}` pattern as the
+     hero.
+  4. `core/seo.py::NEWS_ARTICLE_SEO` — optional but recommended for any
+     real article. Without an entry, SEO falls back to a generic per-label
+     template (still correct, just less targeted). `views.news_article`
+     itself doesn't need to change.
+
+  Hero / in-body images for news articles currently live under
+  `static/images/news/` (see `gener1..gener8`, `Artcam2..4`, `model*`, `AI*`
+  naming conventions).
 
 ---
 
@@ -357,6 +398,9 @@ Coverage map (read a test before making a semantically-loaded change):
 | Add a new public page | `core/urls.py` (route) + `core/views.py` (view) + `templates/core/<page>.html` + optionally `core/seo.py::PAGE_SEO`. |
 | Add a field to `Order` | `core/models.py` → new migration in `core/migrations/` → template + form if user-facing → tests. |
 | Change meta/SEO per page | `core/seo.py::PAGE_SEO` **or** pass override kwargs to `get_seo` in the view. |
+| Add rich SEO for a news article | `core/seo.py::NEWS_ARTICLE_SEO[<slug>]` — title / description / keywords / optional `og_image` / `article_ld`. `views.news_article` picks it up automatically. |
+| Add a new news article | Walk the 4-step checklist in §11 ("News article slugs live in four places"): `title_map` → `news.html` listing card → slug branches in `news_article.html` → optional `NEWS_ARTICLE_SEO` entry. |
+| Add images to a portfolio sub-gallery | Drop files in the right folder — `static/images/medals/` feeds `products`; `static/images/news/` with `model*` feeds `3d` and with `AI*` feeds `ai`. No code changes needed; for per-medal captions, extend `MEDAL_CAPTIONS` in `core/portfolio_gallery_data.py`. |
 | Change sitemap | `core/sitemaps.py`. |
 | Change checkout email body | `core/views.py::_send_order_email`. |
 | Change contact email recipient | env var `CONTACT_FORM_RECIPIENT` (falls back to `SEO_CONTACT_EMAIL`). |

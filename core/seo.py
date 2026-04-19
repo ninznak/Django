@@ -176,6 +176,67 @@ PAGE_SEO: dict[str, dict[str, Any]] = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# Per-article SEO overrides (news articles)
+# ---------------------------------------------------------------------------
+#
+# Keyed by the same ``slug`` used in ``core.views.news_article`` / the URL
+# ``/news/<slug>/``. Each entry is an optional richer override of the generic
+# news article SEO: title/description/keywords, an optional Open Graph image
+# (relative to ``static/``) and a schema.org ``Article`` sub-node. Missing
+# slugs fall back to the generic per-label template in
+# :func:`news_article_seo_overrides` below.
+NEWS_ARTICLE_SEO: dict[str, dict[str, Any]] = {
+    "generative-design-technologies": {
+        "title": (
+            "Технологии генеративного дизайна изделий — "
+            "KurilenkoArt | 3D, медали, аддитивное производство"
+        ),
+        "description": (
+            "Генеративный дизайн изделий: как топологическая оптимизация, параметрическое "
+            "моделирование, эволюционные алгоритмы и AI-ассистенты меняют проектирование "
+            "медалей, барельефов, ювелирных и промышленно-художественных изделий. "
+            "Связка с аддитивным производством (SLA, DLP, SLM, DMLS, FDM и литьём по выплавляемым моделям), "
+            "преимущества подхода, экономический и экологический эффект, место художника и инженера "
+            "в новом пайплайне. Практический взгляд от KurilenkoArt."
+        ),
+        "keywords": (
+            "генеративный дизайн, generative design, топологическая оптимизация, topology optimization, "
+            "параметрическое моделирование, parametric design, алгоритмический дизайн, lightweighting, "
+            "nTopology, Fusion 360, Autodesk Netfabb, Siemens NX, Rhino, Grasshopper, ANSYS Discovery, "
+            "аддитивное производство, 3D печать, SLA, DLP, SLM, DMLS, FDM, литьё по выплавляемым моделям, "
+            "CAD CAM художественное производство, ArtCAM, ZBrush, Blender, "
+            "AI в дизайне, AI-assisted design, нейросети в проектировании, "
+            "медали на заказ, барельефы, ювелирные изделия, индивидуальные имплантаты, "
+            "устойчивый инжиниринг, цифровая мастерская, " + SEO_TOPIC_KEYWORDS
+        ),
+        "og_image": "images/news/gener1.jpg",
+        "article_ld": {
+            "description": (
+                "Обзор технологий генеративного дизайна изделий: топологическая оптимизация, "
+                "параметрическое моделирование, AI-ассистенты, аддитивное производство, "
+                "применение в медальерном, ювелирном и промышленно-художественном производстве."
+            ),
+            "keywords": (
+                "generative design, topology optimization, parametric modeling, additive manufacturing, "
+                "AI-assisted design, medallic art, bas-relief, KurilenkoArt"
+            ),
+            "articleSection": "Технологии",
+            "inLanguage": "ru-RU",
+            "about": [
+                "Generative design",
+                "Topology optimization",
+                "Parametric modeling",
+                "Additive manufacturing",
+                "AI-assisted design",
+                "Medallic art",
+                "Bas-relief sculpture",
+            ],
+        },
+    },
+}
+
+
 # Tuple → immutable; cached JSON-LD nodes share a reference safely.
 _KNOWS_ABOUT: tuple[str, ...] = (
     "3D modeling",
@@ -337,3 +398,62 @@ def get_seo(request, **overrides: Any) -> dict[str, Any]:
     data["json_ld"] = "" if data.get("no_json_ld") else _build_json_ld_graph(request, data, article_ld)
 
     return data
+
+
+# ---------------------------------------------------------------------------
+# News article helper
+# ---------------------------------------------------------------------------
+
+
+def news_article_seo_overrides(request, slug: str, label: str) -> dict[str, Any]:
+    """Return ``get_seo`` overrides for a news article slug.
+
+    When ``slug`` is listed in :data:`NEWS_ARTICLE_SEO`, its richer metadata
+    (title, description, keywords, optional og image, schema.org ``Article``
+    fragment) is used. Otherwise a generic per-``label`` template is returned,
+    preserving backwards compatibility with articles that don't have a
+    dedicated SEO entry yet.
+
+    The result is meant to be splatted directly into ``get_seo``:
+
+    .. code-block:: python
+
+        get_seo(request, **news_article_seo_overrides(request, slug, label))
+    """
+    entry = NEWS_ARTICLE_SEO.get(slug)
+    if entry is None:
+        return {
+            "title": f"{label} — KurilenkoArt | Новости: 3D, медали, барельефы",
+            "description": (
+                f"Статья «{label}» — 3D-моделирование, медальерное дело, барельефы, "
+                "цифровая скульптура и AI. KurilenkoArt."
+            ),
+            "keywords": (
+                f"{label}, новости 3D, медали моделирование, барельеф, скульптура, ZBrush, "
+                "медальерное искусство, KurilenkoArt"
+            ),
+            "canonical_path": request.path,
+            "og_type": "article",
+            "article_ld": {
+                "headline": label,
+                "description": f"Материал о 3D, медалях и творческих техниках: {label}",
+                "inLanguage": "ru-RU",
+                "keywords": "3D modeling, medals, bas-relief, digital sculpting, KurilenkoArt",
+            },
+        }
+
+    article_ld = dict(entry.get("article_ld", {}))
+    article_ld.setdefault("headline", label)
+
+    overrides: dict[str, Any] = {
+        "title": entry["title"],
+        "description": entry["description"],
+        "keywords": entry["keywords"],
+        "canonical_path": request.path,
+        "og_type": "article",
+        "article_ld": article_ld,
+    }
+    og_image_rel = entry.get("og_image")
+    if og_image_rel:
+        overrides["og_image_url"] = _absolute_url(request, static(og_image_rel))
+    return overrides

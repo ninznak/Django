@@ -47,11 +47,11 @@
         <div class="lg:col-span-6 hidden md:flex items-center justify-center pt-0">
             <div class="cs-deck" aria-label="Portfolio preview">
 
-                <!-- Card 0 — Portfolio (back-left) -->
-                <a href="/portfolio/" class="cs-card" data-idx="0" aria-label="Portfolio">
+                <!-- Card 0 — 3D Models (back-left) -->
+                <a href="{% url 'core:portfolio' %}#portfolio-3d" class="cs-card" data-idx="0" aria-label="3D Models">
                     <div class="cs-card-inner">
-                        <img src="{% static 'images/featured/bronze-victory-relief-1920x2400.jpg' %}"
-                             alt="Bronze Victory Relief" class="cs-img" loading="eager">
+                        <img src="{% static 'images/news/model8.jpg' %}"
+                             alt="3D Models" class="cs-img" loading="eager">
                         <div class="cs-overlay"></div>
                         <div class="cs-badge">
                             <span class="tag-pill text-[10px]" data-i18="carousel_3d_models">3D Models</span>
@@ -63,11 +63,11 @@
                     </div>
                 </a>
 
-                <!-- Card 1 — Shop (mid) -->
-                <a href="/shop/" class="cs-card" data-idx="1" aria-label="Shop">
+                <!-- Card 1 — Finished Products (mid) -->
+                <a href="{% url 'core:portfolio' %}#portfolio-products" class="cs-card" data-idx="1" aria-label="Finished Products">
                     <div class="cs-card-inner">
-                        <img src="{% static 'images/shop/eagle-relief-stl-1920x1440.png' %}"
-                             alt="Shop preview" class="cs-img" loading="eager">
+                        <img src="{% static 'images/medals/medal5.JPEG' %}"
+                             alt="Finished medal" class="cs-img" loading="eager">
                         <div class="cs-overlay"></div>
                         <div class="cs-badge">
                             <span class="tag-pill text-[10px]" data-i18="carousel_latest_commission">Последний Заказ</span>
@@ -79,11 +79,11 @@
                     </div>
                 </a>
 
-                <!-- Card 2 — News (front-right) -->
-                <a href="/news/" class="cs-card" data-idx="2" aria-label="News">
+                <!-- Card 2 — AI Content (front-right) -->
+                <a href="{% url 'core:portfolio' %}#portfolio-ai" class="cs-card" data-idx="2" aria-label="AI Content">
                     <div class="cs-card-inner">
-                        <img src="{% static 'images/news/bas-relief-depth-1920x1200.png' %}"
-                             alt="News preview" class="cs-img" loading="eager">
+                        <img src="{% static 'images/news/AI3.png' %}"
+                             alt="AI Content" class="cs-img" loading="eager">
                         <div class="cs-overlay"></div>
                         <div class="cs-badge">
                             <span class="tag-pill text-[10px]" data-i18="carousel_ai_content">AI Content</span>
@@ -365,22 +365,22 @@
                 </div>
                 
                 <!-- Article 2 -->
-                <div class="group cursor-pointer flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
+                <a href="/news/generative-design-technologies/" class="group cursor-pointer flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
                     <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
-                        <img src="{% static 'images/news/medals-velvet-1920x1200.jpg' %}" 
-                             alt="Medals" 
+                        <img src="{% static 'images/news/gener1.jpg' %}"
+                             alt="Генеративный дизайн"
                              class="w-full h-full object-cover">
                     </div>
                     <div class="flex flex-col justify-center gap-1.5 min-w-0">
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]">Industry</span>
+                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]">Технологии</span>
                             <span class="text-[10px] text-gray-400">·</span>
-                            <span class="text-[10px] text-gray-400">5 min read</span>
+                            <span class="text-[10px] text-gray-400">14 min read</span>
                         </div>
-                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2">The 2026 Commemorative Medal Market</h4>
-                        <span class="text-[11px] text-gray-400">Feb 28, 2026</span>
+                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2">Технологии генеративного дизайна изделий</h4>
+                        <span class="text-[11px] text-gray-400">5 апреля 2026</span>
                     </div>
-                </div>
+                </a>
                 
                 <!-- Article 3 -->
                 <div class="group cursor-pointer flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
