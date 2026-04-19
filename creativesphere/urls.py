@@ -8,12 +8,15 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 
 from core import views as core_views
-from core.sitemaps import CoreViewSitemap
+from core.sitemaps import CoreViewSitemap, NewsArticleSitemap
 
 # Получаем базовую директорию проекта
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-sitemaps = {"pages": CoreViewSitemap}
+sitemaps = {
+    "pages": CoreViewSitemap,
+    "news": NewsArticleSitemap,
+}
 
 urlpatterns = [
     path("admin/", admin.site.urls),

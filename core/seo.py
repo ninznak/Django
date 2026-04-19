@@ -187,6 +187,82 @@ PAGE_SEO: dict[str, dict[str, Any]] = {
 # slugs fall back to the generic per-label template in
 # :func:`news_article_seo_overrides` below.
 NEWS_ARTICLE_SEO: dict[str, dict[str, Any]] = {
+    "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush": {
+        "title": (
+            "3D-моделирование: путь от базовых форм к коммерческому уровню — "
+            "KurilenkoArt | практика и пайплайн"
+        ),
+        "description": (
+            "Практическое руководство по переходу от учебного 3D к коммерческому: "
+            "блокинг и пропорции, средние формы без перегруза, техническая подготовка под рендер, "
+            "анимацию, геймдев и 3D-печать. Чистая топология, UV-развёртка, проверка нормалей и "
+            "масштаба, дисциплина процесса и воспроизводимый workflow. KurilenkoArt."
+        ),
+        "keywords": (
+            "3D моделирование практика, коммерческий 3D пайплайн, блокинг пропорции, "
+            "средние формы детализация, чистая топология, UV развёртка, подготовка модели под рендер, "
+            "3D под печать, геймдев ретопология, ZBrush коммерческий workflow, "
+            + SEO_TOPIC_KEYWORDS
+        ),
+        "og_image": "images/news/model11.JPEG",
+        "article_ld": {
+            "description": (
+                "Этапы профессионального 3D-моделирования: блокинг, средние формы, детализация, "
+                "техническая подготовка модели под рендер, анимацию, геймдев и 3D-печать."
+            ),
+            "keywords": (
+                "3D modeling workflow, blocking, midlevel shapes, topology, UV mapping, "
+                "production-ready 3D, ZBrush, KurilenkoArt"
+            ),
+            "articleSection": "Практика",
+            "inLanguage": "ru-RU",
+            "about": [
+                "3D modeling workflow",
+                "Blocking and proportions",
+                "Mesh topology",
+                "UV mapping",
+                "Production-ready 3D",
+                "Digital sculpting",
+            ],
+        },
+    },
+    "midjourney-v7-for-numismatic-concept-art": {
+        "title": (
+            "Ключевые тренды 3D-графики в 2026 году — "
+            "KurilenkoArt | PBR, модульные сцены, гибрид 3D+AI"
+        ),
+        "description": (
+            "Обзор трендов 3D-графики 2026 года: реализм материалов и света (PBR), модульные сцены "
+            "и быстрые итерации для e-commerce, гибридный workflow 3D + AI + композитинг. "
+            "Куда развиваться специалисту, чтобы решать бизнес-задачу от брифа до публикации."
+        ),
+        "keywords": (
+            "тренды 3D графики 2026, PBR материалы, реализм освещения, модульные сцены 3D, "
+            "быстрые итерации визуализация, e-commerce 3D, гибридный workflow AI, "
+            "композитинг 3D AI, Midjourney концепт, нейросети в 3D, " + SEO_TOPIC_KEYWORDS
+        ),
+        "og_image": "images/news/midjourney-1920x1200.png",
+        "article_ld": {
+            "description": (
+                "Тренды 3D-графики 2026: физически корректные материалы и свет, модульные сцены, "
+                "гибрид 3D + AI + композитинг, системный подход к продакшн-портфолио."
+            ),
+            "keywords": (
+                "3D trends 2026, PBR, modular scenes, AI-assisted 3D, Midjourney, "
+                "compositing, KurilenkoArt"
+            ),
+            "articleSection": "Тренды",
+            "inLanguage": "ru-RU",
+            "about": [
+                "3D graphics trends",
+                "PBR materials",
+                "Modular scene design",
+                "AI-assisted 3D workflow",
+                "Compositing",
+                "Numismatic concept art",
+            ],
+        },
+    },
     "generative-design-technologies": {
         "title": (
             "Технологии генеративного дизайна изделий — "
@@ -231,6 +307,86 @@ NEWS_ARTICLE_SEO: dict[str, dict[str, Any]] = {
                 "AI-assisted design",
                 "Medallic art",
                 "Bas-relief sculpture",
+            ],
+        },
+    },
+    "sora-and-kling-ai-video-for-3d-presentations": {
+        "title": (
+            "ZBrush-скульптинг: выразительная форма и чистая детализация — "
+            "KurilenkoArt | методика и пайплайн"
+        ),
+        "description": (
+            "ZBrush-скульптинг шаг за шагом: крупные массы и читаемый силуэт, средние формы и "
+            "характер материала, финальная детализация, полипейнт и экспорт под рендер, "
+            "геймдев и 3D-печать (watertight-сетка, ретопология, bake-карты). "
+            "Почему порядок «крупное → среднее → мелкое» даёт предсказуемый коммерческий результат."
+        ),
+        "keywords": (
+            "ZBrush скульптинг, художественный 3D пайплайн, силуэт пропорции, средние формы, "
+            "финальная детализация, полипейнт ZBrush, ретопология, watertight сетка, "
+            "bake карты, экспорт под печать, экспорт для геймдева, AI видео для 3D презентации, "
+            "Sora Kling 3D, " + SEO_TOPIC_KEYWORDS
+        ),
+        "og_image": "images/news/ai-video-1920x1200.png",
+        "article_ld": {
+            "description": (
+                "Методика ZBrush-скульптинга: последовательное развитие формы от крупных масс "
+                "к средним формам и финальной детализации; подготовка модели под рендер, "
+                "геймдев и 3D-печать."
+            ),
+            "keywords": (
+                "ZBrush sculpting, digital sculpting workflow, silhouette, secondary forms, "
+                "polypaint, retopology, watertight mesh, AI video for 3D, KurilenkoArt"
+            ),
+            "articleSection": "Скульптинг",
+            "inLanguage": "ru-RU",
+            "about": [
+                "ZBrush sculpting",
+                "Digital sculpting workflow",
+                "Silhouette and proportions",
+                "Surface detailing",
+                "Retopology",
+                "AI video for 3D presentations",
+            ],
+        },
+    },
+    "artcam-vozmozhnosti-zadachi-i-praktika": {
+        "title": (
+            "ArtCAM: возможности, задачи и практический workflow — "
+            "KurilenkoArt | CAD/CAM для художественного ЧПУ"
+        ),
+        "description": (
+            "Практический разбор ArtCAM как специализированной CAD/CAM-программы для художественного "
+            "производства: рельефы и барельефы, орнамент и декоративная графика, подготовка "
+            "управляющих программ для ЧПУ-фрезеровки, гравировки и 3D-печати. "
+            "Рабочий пайплайн от идеи до G-кода, связка с ZBrush/Blender, применение в медальерном "
+            "и ювелирном деле."
+        ),
+        "keywords": (
+            "ArtCAM, CAD CAM художественное производство, рельефы ArtCAM, барельеф ЧПУ, "
+            "гравировка орнамента, управляющие программы ЧПУ, подготовка G-кода, "
+            "ювелирное ЧПУ, медали фрезеровка, связка ArtCAM ZBrush, " + SEO_TOPIC_KEYWORDS
+        ),
+        "og_image": "images/news/artcam1.png",
+        "article_ld": {
+            "description": (
+                "Обзор возможностей ArtCAM: работа с рельефами и орнаментом, подготовка "
+                "управляющих программ для ЧПУ-фрезеровки и гравировки, практический workflow "
+                "в медальерном и ювелирном производстве."
+            ),
+            "keywords": (
+                "ArtCAM, CAD CAM, relief modeling, ornament, CNC machining, G-code, "
+                "medallic art, jewellery CNC, KurilenkoArt"
+            ),
+            "articleSection": "CAD/CAM",
+            "inLanguage": "ru-RU",
+            "about": [
+                "ArtCAM software",
+                "CAD/CAM for art production",
+                "Relief modeling",
+                "Ornament design",
+                "CNC machining",
+                "Medallic and jewellery manufacturing",
             ],
         },
     },
