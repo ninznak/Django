@@ -1,0 +1,42 @@
+{% comment %}
+  Yandex.Metrica: https://yandex.ru/support/metrica/code/counter-initialize.html
+  Top.Mail.Ru: https://top.mail.ru/help/ru/code/receive
+  IDs come from YANDEX_METRIKA_ID / MAILRU_TOP_ID in .env (see .env.example).
+{% endcomment %}
+{% if yandex_metrika_id %}
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+   (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+   m[i].l=1*new Date();
+   for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+   k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+   (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+   ym({{ yandex_metrika_id }}, "init", {
+        clickmap:true,
+        trackLinks:true,
+        accurateTrackBounce:true,
+        webvisor:true
+   });
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/{{ yandex_metrika_id }}" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+{% endif %}
+{% if mailru_top_id %}
+<!-- Top.Mail.Ru counter -->
+<script type="text/javascript">
+var _tmr = window._tmr || (window._tmr = []);
+_tmr.push({id: {{ mailru_top_id }}, type: "pageView", start: (new Date()).getTime()});
+(function (d, w, id) {
+  if (d.getElementById(id)) return;
+  var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;
+  ts.src = "https://top-fwz1.mail.ru/js/code.js";
+  var f = function () {var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ts, s);};
+  if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); }
+})(document, window, "topmailru-code");
+</script>
+<noscript><div>
+<img src="https://top-fwz1.mail.ru/counter?id={{ mailru_top_id }};js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru" />
+</div></noscript>
+<!-- /Top.Mail.Ru counter -->
+{% endif %}

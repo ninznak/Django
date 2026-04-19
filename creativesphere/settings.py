@@ -89,6 +89,10 @@ SEO_SITE_NAME = os.getenv('SEO_SITE_NAME', 'KurilenkoArt').strip() or 'Kurilenko
 SEO_DEFAULT_OG_IMAGE = os.getenv('SEO_DEFAULT_OG_IMAGE', 'images/news/model5.jpg').strip()
 SEO_CONTACT_EMAIL = os.getenv('SEO_CONTACT_EMAIL', 'me@nobito.ru').strip() or 'me@nobito.ru'
 
+# Yandex.Metrica and Top.Mail.ru counters (numeric IDs). Empty = disabled. Override in .env if needed.
+YANDEX_METRIKA_ID = os.getenv('YANDEX_METRIKA_ID', '103952385').strip()
+MAILRU_TOP_ID = os.getenv('MAILRU_TOP_ID', '').strip()
+
 # Outbound email (SMTP or compatible transactional provider). Dev default: print to console.
 EMAIL_BACKEND = os.getenv(
     'EMAIL_BACKEND',
@@ -157,6 +161,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'core.context_processors.site_seo',
+                'core.context_processors.analytics',
                 'core.context_processors.shop_cart',
             ],
         },

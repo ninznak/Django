@@ -17,6 +17,18 @@ def site_seo(request):
     }
 
 
+def analytics(request):
+    """Yandex.Metrica / Top.Mail.ru counter IDs for ``templates/core/includes/analytics.html``."""
+    y_raw = getattr(settings, "YANDEX_METRIKA_ID", "") or ""
+    m_raw = getattr(settings, "MAILRU_TOP_ID", "") or ""
+    yandex_metrika_id = int(y_raw) if y_raw.isdigit() else None
+    mailru_top_id = int(m_raw) if m_raw.isdigit() else None
+    return {
+        "yandex_metrika_id": yandex_metrika_id,
+        "mailru_top_id": mailru_top_id,
+    }
+
+
 def shop_cart(request):
     summary = get_cart_summary(request)
     cents = summary["cart_subtotal_cents"]
