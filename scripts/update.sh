@@ -27,6 +27,12 @@ log "=========================================="
 
 cd "$PROJECT_DIR" || { log "Ошибка: не удалось перейти в $PROJECT_DIR"; exit 1; }
 
+# Живая SQLite в каталоге репозитория: git pull конфликтует с локально меняющимся db.sqlite3.
+# Решение: в .env задать DJANGO_SQLITE_PATH вне репо (см. .env.example) и перенести файл БД один раз.
+if [ -f "$PROJECT_DIR/db.sqlite3" ] && git ls-files --error-unmatch db.sqlite3 >/dev/null 2>&1; then
+  log "Предупреждение: db.sqlite3 всё ещё отслеживается git — pull может сорваться. Выполните: git rm --cached db.sqlite3"
+fi
+
 # Git 2.35+: repo owned by www-data but pull runs as root → mark safe once per root
 if ! git config --global --get-all safe.directory | grep -Fxq "$PROJECT_DIR"; then
     git config --global --add safe.directory "$PROJECT_DIR"

@@ -4,6 +4,7 @@ Django settings for CreativeSphere project.
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -170,12 +171,48 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'creativesphere.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# --- Database: PostgreSQL on VPS (recommended) or SQLite (default / dev) ---
+# Postgres lives outside the git tree; only credentials in .env — pull never touches the DB file.
+_pg_flag = os.getenv("DJANGO_DATABASE", "").strip().lower() in (
+    "postgres",
+    "postgresql",
+    "pgsql",
+)
+if _pg_flag:
+    _pg_db = os.getenv("POSTGRES_DB", "").strip()
+    _pg_user = os.getenv("POSTGRES_USER", "").strip()
+    _pg_pass = os.getenv("POSTGRES_PASSWORD", "").strip()
+    _pg_host = os.getenv("POSTGRES_HOST", "localhost").strip() or "localhost"
+    _pg_port = os.getenv("POSTGRES_PORT", "5432").strip() or "5432"
+    if not _pg_db or not _pg_user:
+        raise ImproperlyConfigured(
+            "DJANGO_DATABASE=postgresql set but POSTGRES_DB or POSTGRES_USER is empty. "
+            "See .env.example."
+        )
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": _pg_db,
+            "USER": _pg_user,
+            "PASSWORD": _pg_pass,
+            "HOST": _pg_host,
+            "PORT": _pg_port,
+            "CONN_MAX_AGE": int(os.getenv("POSTGRES_CONN_MAX_AGE", "60").strip() or "60"),
+        }
     }
-}
+else:
+    # SQLite: по умолчанию файл в каталоге проекта. На VPS можно DJANGO_SQLITE_PATH вне репо.
+    _sqlite_env = os.getenv("DJANGO_SQLITE_PATH", "").strip()
+    if _sqlite_env:
+        _db_file = Path(_sqlite_env).expanduser()
+    else:
+        _db_file = BASE_DIR / "db.sqlite3"
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": str(_db_file),
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
