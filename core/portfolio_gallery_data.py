@@ -88,6 +88,10 @@ _PORTFOLIO_3D_TOP_ORDER: tuple[str, ...] = (
     "model9",
     "model8",
     "model99",
+    "kremlin",
+    "georg1",
+    "georg2",
+    "preview",
     "efrosyn777",
     "georg777",
     "ushak777",
@@ -129,6 +133,26 @@ _PORTFOLIO_3D_CAPTIONS: dict[str, tuple[str, str, str]] = {
         "portfolio_georg_cat",
         "Святой Георгий Победоносец",
     ),
+    "georg1": (
+        "portfolio_georg_moscow_title",
+        "portfolio_georg_cat",
+        "Георгий Победоносец (Герб Москвы)",
+    ),
+    "georg2": (
+        "portfolio_georg_moscow_title",
+        "portfolio_georg_cat",
+        "Георгий Победоносец (Герб Москвы)",
+    ),
+    "kremlin": (
+        "portfolio_kremlin_title",
+        "portfolio_georg_cat",
+        "Плакетка Кремль",
+    ),
+    "preview": (
+        "portfolio_preview_saints_title",
+        "portfolio_georg_cat",
+        "Барельеф медальный",
+    ),
     "ushak777": (
         "portfolio_ushak_title",
         "portfolio_ushak_cat",
@@ -150,7 +174,7 @@ def _news_3d_items() -> list[GalleryItem]:
         if (
             "model" not in name_lower
             and "777" not in name_lower
-            and stem != "jimm"
+            and stem not in {"jimm", "georg1", "georg2", "kremlin", "preview"}
         ):
             continue
         if stem in _PORTFOLIO_3D_EXCLUDED:
@@ -294,7 +318,8 @@ PORTFOLIO_GALLERY_SEO: dict[str, dict[str, str]] = {
     "3d": {
         "title": "3D барельефы и медали — галерея | KurilenkoArt",
         "description": (
-            "Галерея 3D-работ: бронзовые барельефы, нумизматика, памятные медали и цифровая скульптура."
+            "Галерея 3D-работ: бронзовые барельефы, нумизматика, памятные медали и цифровая скульптура. "
+            "Включает плакетку Кремль, Георгия Победоносца (герб Москвы) и медальные барельефы."
         ),
     },
     "products": {
