@@ -4,22 +4,23 @@
 {% block content %}
 {% comment %}
 ═══════════════════════════════════════════════════════════════════════════
-  «ЗАНЯТОСТЬ СКУЛЬПТОРА»  —  ЗНАЧЕНИЕ ОТ 0 ДО 100
+  «ЗАГРУЖЕННОСТЬ АВТОРА»  —  ЗНАЧЕНИЕ ОТ 0 ДО 100
 ═══════════════════════════════════════════════════════════════════════════
-  Кнопка «Занятость: XX%» в hero-блоке (третья в ряду с «Смотреть
+  Кнопка «Загруженность: XX%» в hero-блоке (третья в ряду с «Смотреть
   Портфолио» и «В Магазин»). Цвет подложки и текст модального окна
   подбираются автоматически по значению:
 
-     0 – 29   →  зелёная,  «Скульптор слабо загружен работой»
-    30 – 59   →  жёлтая,   «Скульптор загружен работой»
-    60 – 100  →  красная,  «Скульптор очень занят»
+     0 – 24   →  зелёная,   «Свободен для сотрудничества»
+    25 – 49   →  бирюзовая, «Рассматриваю проекты для сотрудничества»
+    50 – 74   →  жёлтая,    «Автор частично занят проектом»
+    75 – 100  →  красная,   «Автор занят на проекте»
 
   Чтобы изменить показатель — поменяйте ЧИСЛО в строке `sculptor_busy=XX`
   ниже и обновите страницу. Перезапуск Gunicorn и collectstatic НЕ нужны —
   Django перечитывает шаблон при каждом запросе.
 ═══════════════════════════════════════════════════════════════════════════
 {% endcomment %}
-{% with sculptor_busy=95 %}
+{% with sculptor_busy=65 %}
 <!-- Hero Section -->
 <section class="pt-24 max-sm:pt-[8.5rem] pb-20">
     <div class="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-12 gap-8 items-start">
@@ -48,10 +49,10 @@
                 {% comment %}Busyness button (tier + message computed from sculptor_busy).{% endcomment %}
                 <button type="button"
                         class="btn-busy"
-                        data-busy-tier="{% if sculptor_busy < 30 %}low{% elif sculptor_busy < 60 %}mid{% else %}high{% endif %}"
+                        data-busy-tier="{% if sculptor_busy < 25 %}free{% elif sculptor_busy < 50 %}open{% elif sculptor_busy < 75 %}partial{% else %}busy{% endif %}"
                         aria-haspopup="dialog"
                         aria-controls="busyModal">
-                    <span data-i18="hero_busy_label">Занятость</span>:&nbsp;<span class="btn-busy-pct">{{ sculptor_busy }}%</span>
+                    <span data-i18="hero_busy_label">Загруженность</span>:&nbsp;<span class="btn-busy-pct">{{ sculptor_busy }}%</span>
                 </button>
             </div>
             <div class="flex gap-8 md:gap-10 pt-6 mt-6 border-t justify-center lg:justify-start" style="border-color: var(--line);">
@@ -134,14 +135,16 @@
         <div class="busy-modal-backdrop" data-busy-close></div>
         <div class="busy-modal-card" role="document">
             <button type="button" class="busy-modal-close" data-busy-close aria-label="Закрыть">×</button>
-            <div class="busy-modal-dot busy-modal-dot--{% if sculptor_busy < 30 %}low{% elif sculptor_busy < 60 %}mid{% else %}high{% endif %}"></div>
+            <div class="busy-modal-dot busy-modal-dot--{% if sculptor_busy < 25 %}free{% elif sculptor_busy < 50 %}open{% elif sculptor_busy < 75 %}partial{% else %}busy{% endif %}"></div>
             <p id="busyModalTitle" class="busy-modal-percent">{{ sculptor_busy }}%</p>
-            {% if sculptor_busy < 30 %}
-                <p class="busy-modal-text" data-i18="hero_busy_low">Скульптор слабо загружен работой</p>
-            {% elif sculptor_busy < 60 %}
-                <p class="busy-modal-text" data-i18="hero_busy_mid">Скульптор загружен работой</p>
+            {% if sculptor_busy < 25 %}
+                <p class="busy-modal-text" data-i18="hero_busy_free">Свободен для сотрудничества</p>
+            {% elif sculptor_busy < 50 %}
+                <p class="busy-modal-text" data-i18="hero_busy_open">Рассматриваю проекты для сотрудничества</p>
+            {% elif sculptor_busy < 75 %}
+                <p class="busy-modal-text" data-i18="hero_busy_partial">Автор частично занят проектом</p>
             {% else %}
-                <p class="busy-modal-text" data-i18="hero_busy_high">Скульптор очень занят</p>
+                <p class="busy-modal-text" data-i18="hero_busy_busy">Автор занят на проекте</p>
             {% endif %}
         </div>
     </div>
@@ -314,9 +317,10 @@
     outline-offset: 2px;
 }
 .btn-busy-pct { font-variant-numeric: tabular-nums; }
-.btn-busy[data-busy-tier="low"]  { background: #3d7a4f; border-color: #2f5f3d; }
-.btn-busy[data-busy-tier="mid"]  { background: #eab308; border-color: #b8870a; color: #1a2e1a; }
-.btn-busy[data-busy-tier="high"] { background: #dc2626; border-color: #a61b1b; }
+.btn-busy[data-busy-tier="free"]    { background: #3d7a4f; border-color: #2f5f3d; }
+.btn-busy[data-busy-tier="open"]    { background: #0d9488; border-color: #0f766e; }
+.btn-busy[data-busy-tier="partial"] { background: #eab308; border-color: #b8870a; color: #1a2e1a; }
+.btn-busy[data-busy-tier="busy"]    { background: #dc2626; border-color: #a61b1b; }
 
 /* ── Busyness modal ────────────────────────────────────────────────────── */
 .busy-modal {
@@ -374,9 +378,10 @@
     margin: 0 auto 14px;
     box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.04);
 }
-.busy-modal-dot--low  { background: #3d7a4f; }
-.busy-modal-dot--mid  { background: #eab308; }
-.busy-modal-dot--high { background: #dc2626; }
+.busy-modal-dot--free    { background: #3d7a4f; }
+.busy-modal-dot--open    { background: #0d9488; }
+.busy-modal-dot--partial { background: #eab308; }
+.busy-modal-dot--busy    { background: #dc2626; }
 .busy-modal-percent {
     font-family: var(--font-display, inherit);
     font-size: 40px;

@@ -1,0 +1,245 @@
+==============================================================================
+Перевод проекта CreativeSphere / KurilenkoArt с SQLite на PostgreSQL
+(VPS: Ubuntu/Debian, проект в /var/www/Django, venv в /var/www/Django/venv)
+==============================================================================
+
+Цель: вынести базу из каталога репозитория, чтобы `git pull` не конфликтовал
+с живым файлом `db.sqlite3`, а корзина/сессии писались в полноценную СУБД.
+
+------------------------------------------------------------------------------
+0. Правки в коде проекта (один раз, у себя локально, закоммитить в git)
+------------------------------------------------------------------------------
+- requirements.txt: добавлен драйвер
+      psycopg[binary]>=3.1,<4.0
+
+- creativesphere/settings.py: блок DATABASES читает переменные окружения.
+  Если в .env задано DJANGO_DATABASE=postgresql — используются POSTGRES_*.
+  Иначе — по-прежнему SQLite (локальная разработка / совместимость).
+
+- .env.example: шаблон переменных для PostgreSQL и SQLite.
+
+Пушнуть изменения в репозиторий, затем на сервере `git pull`.
+
+------------------------------------------------------------------------------
+1. Установка PostgreSQL на сервере
+------------------------------------------------------------------------------
+    sudo apt update
+    sudo apt install -y postgresql postgresql-contrib
+    sudo systemctl enable --now postgresql
+
+Проверка:
+    systemctl status postgresql --no-pager
+    psql --version
+
+------------------------------------------------------------------------------
+2. Создание роли и базы данных
+------------------------------------------------------------------------------
+    cd /tmp      # чтобы пользователь postgres не спотыкался о /root
+    sudo -u postgres psql -c "CREATE USER creativesphere WITH PASSWORD 'Topsik358!';"
+    sudo -u postgres psql -c "CREATE DATABASE creativesphere OWNER creativesphere;"
+
+Проверка:
+    sudo -u postgres psql -c "\du"
+    sudo -u postgres psql -c "\l"
+
+Ожидаемо видим роль `creativesphere` и базу `creativesphere` (owner — та же роль,
+Encoding UTF8).
+
+------------------------------------------------------------------------------
+3. Установка пароля роли (важный момент: символ `!` в bash)
+------------------------------------------------------------------------------
+Рекомендуемый способ — через psql, минуя подвохи bash:
+
+    cd /tmp
+    sudo -u postgres psql
+    postgres=# \password creativesphere
+    # ввести пароль дважды (не отображается)
+    postgres=# \q
+
+Проверка подключения от роли по паролю (одинарные кавычки вокруг !):
+
+    PGPASSWORD='Topsik358!' psql -h localhost -U creativesphere -d creativesphere \
+        -c "SELECT current_user, current_database();"
+
+Ожидание: `creativesphere | creativesphere`.
+
+------------------------------------------------------------------------------
+4. Обновление кода и .env на сервере
+------------------------------------------------------------------------------
+    cd /var/www/Django
+    git pull
+
+Если git ругается на db.sqlite3 — в `.gitignore` он уже есть, убираем из индекса
+и с диска (база теперь в Postgres):
+
+    git ls-files db.sqlite3
+    git rm --cached -f db.sqlite3 2>/dev/null
+    rm -f db.sqlite3
+    git pull
+
+Создаём .env из шаблона:
+
+    cp -n .env.example .env
+    nano .env
+
+В .env ключевые строки (без кавычек, без пробелов вокруг `=`):
+
+    DJANGO_SECRET_KEY=длинный_случайный_ключ
+    DEBUG=0
+
+    DJANGO_DATABASE=postgresql
+    POSTGRES_DB=creativesphere
+    POSTGRES_USER=creativesphere
+    POSTGRES_PASSWORD=Topsik358!
+    POSTGRES_HOST=localhost
+    POSTGRES_PORT=5432
+
+    DJANGO_SITE_DOMAINS=kurilenkoart.ru
+    DJANGO_CANONICAL_DOMAIN=kurilenkoart.ru
+    PUBLIC_SITE_URL=https://kurilenkoart.ru
+
+Права и владелец:
+
+    chmod 600 /var/www/Django/.env
+    # имя пользователя gunicorn посмотреть в сервисе (см. ниже)
+    chown www-data:www-data /var/www/Django/.env   # подставьте актуального пользователя
+
+------------------------------------------------------------------------------
+5. Установка зависимостей в venv
+------------------------------------------------------------------------------
+На этом VPS venv называется `venv` (без точки), путь `/var/www/Django/venv`.
+Узнать фактический путь venv:
+
+    sudo systemctl cat creativesphere-gunicorn | grep -E 'ExecStart|WorkingDirectory'
+
+Установка:
+
+    /var/www/Django/venv/bin/pip install -r /var/www/Django/requirements.txt
+
+Проверка:
+
+    /var/www/Django/venv/bin/python -c "import psycopg, django; print(psycopg.__version__, django.get_version())"
+
+------------------------------------------------------------------------------
+6. Проверка, что Django видит Postgres, и миграции
+------------------------------------------------------------------------------
+    cd /var/www/Django
+    ./venv/bin/python manage.py shell -c "from django.conf import settings as s; d=s.DATABASES['default']; print(d['ENGINE'], d.get('NAME'), d.get('HOST'), d.get('USER'))"
+
+Ожидание: `django.db.backends.postgresql creativesphere localhost creativesphere`.
+
+Миграции и (по желанию) суперпользователь:
+
+    ./venv/bin/python manage.py check --database default
+    ./venv/bin/python manage.py migrate
+    ./venv/bin/python manage.py createsuperuser
+
+------------------------------------------------------------------------------
+7. collectstatic + перезапуск gunicorn
+------------------------------------------------------------------------------
+    ./venv/bin/python manage.py collectstatic --noinput
+    sudo systemctl restart creativesphere-gunicorn
+    sudo systemctl status creativesphere-gunicorn --no-pager
+
+Сервис должен быть в состоянии active (running), без трассировок.
+
+------------------------------------------------------------------------------
+8. Проверка работы корзины
+------------------------------------------------------------------------------
+В браузере (https://kurilenkoart.ru/) → DevTools → Network → «Add to Cart»:
+  - POST /api/cart/ → 200
+  - тело JSON вида {"ok": true, "totalItems": 1, "lines": [...]}
+Счётчик на иконке корзины увеличивается, drawer открывается с товаром.
+
+Логи в реальном времени:
+
+    sudo journalctl -u creativesphere-gunicorn -n 80 --no-pager -f
+
+==============================================================================
+Проблемы, с которыми столкнулись, и как решались
+==============================================================================
+
+[A] «No VM guests are running outdated hypervisor (qemu) binaries on this host.»
+    — служебное сообщение `needrestart` после apt install. К PostgreSQL
+      отношения не имеет, игнорируем.
+
+[B] «could not change directory to "/root": Permission denied»
+    — появлялось при `sudo -u postgres psql` из каталога /root. Пользователю
+      `postgres` нет доступа в домашний каталог root.
+    Решение: запускать из общедоступного каталога:
+        cd /tmp
+      либо через `sudo -i -u postgres` (перейдёт в ~postgres).
+
+[C] «-bash: !': event not found» при команде с паролем, содержащим `!`
+    — bash по умолчанию включает history expansion, и `!` трактуется как
+      ссылка на историю.
+    Решения (любое):
+      1) Одинарные кавычки вокруг всей команды/подстроки с паролем:
+             sudo -u postgres psql -c 'ALTER USER creativesphere WITH PASSWORD "Topsik358!";'
+             PGPASSWORD='Topsik358!' psql -h localhost -U creativesphere -d creativesphere -c "SELECT 1;"
+      2) Использовать `\password` внутри psql — bash не участвует:
+             sudo -u postgres psql
+             postgres=# \password creativesphere
+             postgres=# \q
+      3) Временно выключить history expansion: `set +H` (и потом `set -H`).
+
+[D] «psql: password authentication failed for user creativesphere»
+    — Первый `ALTER USER ... 'Topsik358!'` пострадал от [C] и пароль в базе
+      не совпадал с ожидаемым.
+    Решение: переустановить пароль через `\password creativesphere` в psql,
+    затем проверить:
+        PGPASSWORD='Topsik358!' psql -h localhost -U creativesphere -d creativesphere -c "SELECT 1;"
+
+[E] «-bash: gunicorn: No such file or directory» при chown
+    — в инструкции фигурировали placeholders вроде <gunicorn>:<gunicorn>, они
+      не являются реальным именем пользователя.
+    Решение: узнать реального пользователя сервиса и подставить имя:
+        sudo systemctl cat creativesphere-gunicorn | grep -E '^(User|Group)='
+        chown www-data:www-data /var/www/Django/.env   # пример
+
+[F] «-bash: /var/www/Django/.venv/bin/python: No such file or directory»
+    — на сервере venv называется `venv` (без точки). В локальной среде могло
+      быть `.venv` — пути отличаются.
+    Решение: использовать реальный путь venv, который указан в ExecStart
+    юнита gunicorn:
+        /var/www/Django/venv/bin/python ...
+
+[G] «ModuleNotFoundError: No module named 'psycopg'»
+    — драйвер ещё не установлен в venv (после подтягивания нового
+      requirements.txt).
+    Решение:
+        /var/www/Django/venv/bin/pip install -r /var/www/Django/requirements.txt
+      либо напрямую:
+        /var/www/Django/venv/bin/pip install "psycopg[binary]>=3.1,<4.0"
+
+[H] «django.db.utils.OperationalError: password authentication failed»
+    при `manage.py migrate`
+    — Django уже ходит в Postgres (это хорошая новость), но пароль в .env
+      не совпадает с тем, что в БД.
+    Решение: выровнять пароли. Либо обновить пароль в БД через `\password`,
+    либо поправить .env. В .env — БЕЗ кавычек и БЕЗ экранирования:
+        POSTGRES_PASSWORD=Topsik358!
+
+[I] `sed -i "s|...|POSTGRES_PASSWORD=Topsik358!|"` — снова «event not found»
+    — двойные кавычки в bash интерпретируют `!`.
+    Решения:
+      1) Одинарные кавычки:
+             sed -i 's|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=Topsik358!|' /var/www/Django/.env
+      2) `set +H` перед sed, и обратно `set -H` после.
+
+==============================================================================
+Итоговая схема на будущее
+==============================================================================
+- Сессии корзины, заказы, контактные сообщения — всё в PostgreSQL.
+- Файл db.sqlite3 в репозитории не нужен; `.gitignore` его уже исключает.
+- `git pull` больше не конфликтует с живой БД: данные вне дерева проекта.
+- Штатный апдейт (scripts/update.sh или вручную):
+      cd /var/www/Django
+      git pull
+      ./venv/bin/pip install -r requirements.txt
+      ./venv/bin/python manage.py migrate
+      ./venv/bin/python manage.py collectstatic --noinput
+      sudo systemctl restart creativesphere-gunicorn
+
+Бэкап PostgreSQL (по желанию, в cron):
+      sudo -u postgres pg_dump -Fc creativesphere > /var/backups/creativesphere_$(date +%F).dump
