@@ -204,6 +204,43 @@
             background: var(--primary);
             color: white;
         }
+
+        /* Attention CTA for free models */
+        .btn-attention {
+            position: relative;
+            z-index: 0;
+            animation: btnAttentionPulse 2.9s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+            will-change: transform, background-color, border-color, color;
+        }
+        .btn-attention:hover,
+        .btn-attention:focus-visible {
+            animation-play-state: paused;
+        }
+        @keyframes btnAttentionPulse {
+            0% {
+                transform: translateY(0) scale(1);
+                background: transparent;
+                border-color: var(--primary);
+                color: var(--primary);
+            }
+            50% {
+                transform: translateY(-1.5px) scale(1.06);
+                background: var(--primary);
+                border-color: var(--primary);
+                color: #ffffff;
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                background: transparent;
+                border-color: var(--primary);
+                color: var(--primary);
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .btn-attention {
+                animation: none;
+            }
+        }
         
         .card {
             background: rgba(225, 236, 198, 0.54);
@@ -429,9 +466,19 @@
                 shop_title: "Приобрести Работу",
                 shop_sub: "Цифровые загрузки, файлы 3D-моделей и эксклюзивные принты.",
                 shop_free_button: "Бесплатные модели",
+                shop_page_prev: "Назад",
+                shop_page_next: "Вперед",
+                shop_page_label: "Страница",
                 shop_free_label: "Бесплатные модели",
                 shop_free_title: "Бесплатные модели",
                 shop_free_sub: "Для личного некоммерческого использования.",
+                shop_free_tab_hobby: "Хоббийные модели",
+                shop_free_tab_art: "Художественные модели",
+                shop_free_tab_tech: "Технические модели",
+                shop_free_pagination_prev: "Назад",
+                shop_free_pagination_next: "Вперед",
+                shop_free_placeholder_title: "Скоро новая модель",
+                shop_free_placeholder_sub: "Место для будущего фото",
                 shop_free_type: "3D Модель",
                 shop_free_item_title: "Злой кабачок",
                 shop_free_item_desc: "Формат OBJ. Бесплатная загрузка для личных тестов и ознакомления.",
@@ -710,9 +757,19 @@
                 shop_title: "Purchase Work",
                 shop_sub: "Digital downloads, 3D model files and exclusive prints.",
                 shop_free_button: "Free Models",
+                shop_page_prev: "Previous",
+                shop_page_next: "Next",
+                shop_page_label: "Page",
                 shop_free_label: "Free Models",
                 shop_free_title: "Free Models",
                 shop_free_sub: "For personal non-commercial use.",
+                shop_free_tab_hobby: "Hobby Models",
+                shop_free_tab_art: "Artistic Models",
+                shop_free_tab_tech: "Technical Models",
+                shop_free_pagination_prev: "Previous",
+                shop_free_pagination_next: "Next",
+                shop_free_placeholder_title: "New model coming soon",
+                shop_free_placeholder_sub: "Placeholder for future photo",
                 shop_free_type: "3D Model",
                 shop_free_item_title: "Angry Zucchini",
                 shop_free_item_desc: "OBJ format. Free download for personal testing and preview.",

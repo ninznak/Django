@@ -457,6 +457,11 @@ class StaticPagesViewTests(TestCase):
         response = c.get(reverse("core:news_article", args=["some-slug"]))
         self.assertEqual(response.status_code, 200)
 
+    def test_shop_pagination_query_renders(self):
+        c = Client()
+        response = c.get(reverse("core:shop") + "?page=2")
+        self.assertEqual(response.status_code, 200)
+
     def test_portfolio_gallery_valid_and_invalid(self):
         c = Client()
         ok = c.get(reverse("core:portfolio_gallery", args=["3d"]))

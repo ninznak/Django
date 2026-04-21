@@ -9,8 +9,13 @@
             <h1 class="font-display text-5xl md:text-6xl font-semibold mt-4" data-i18="shop_title">Purchase Work</h1>
             <p class="text-gray-500 mt-4 max-w-xl mx-auto" data-i18="shop_subtitle">Digital downloads, 3D model files and exclusive prints.</p>
             <div class="mt-6">
-                <a href="{% url 'core:free_models' %}" class="btn-outline" data-i18="shop_free_button">Бесплатные модели</a>
+                <a href="{% url 'core:free_models' %}" class="btn-outline btn-attention" data-i18="shop_free_button">Бесплатные модели</a>
             </div>
+            {% if shop_page_obj and shop_page_obj.paginator.num_pages > 1 %}
+            <nav class="mt-5 flex flex-col items-center justify-center" aria-label="Shop pagination top">
+                <div class="shop-page-list" data-shop-pages data-current="{{ shop_page_obj.number }}" data-total="{{ shop_page_obj.paginator.num_pages }}"></div>
+            </nav>
+            {% endif %}
         </div>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -45,6 +50,109 @@
             {% endfor %}
         </div>
 
+        {% if shop_page_obj and shop_page_obj.paginator.num_pages > 1 %}
+        <nav class="mt-10 flex flex-col items-center justify-center" aria-label="Shop pagination">
+            <div class="shop-page-list" data-shop-pages data-current="{{ shop_page_obj.number }}" data-total="{{ shop_page_obj.paginator.num_pages }}"></div>
+        </nav>
+        {% endif %}
+
     </div>
 </div>
+
+<style>
+.shop-page-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+.shop-page-link,
+.shop-page-current {
+    min-width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1;
+    text-decoration: none;
+}
+.shop-page-link {
+    color: #1a2e1a;
+    background: rgba(225, 236, 198, 0.54);
+    border: 1px solid var(--line);
+}
+.shop-page-link:hover {
+    background: #dce8cf;
+}
+.shop-page-current {
+    color: #ffffff;
+    background: #1a2e1a;
+    border: 1px solid #1a2e1a;
+}
+.shop-page-dots {
+    min-width: 19px;
+    text-align: center;
+    font-size: 18px;
+    color: #5f6f5a;
+}
+</style>
+
+<script>
+    (function () {
+        const hosts = Array.from(document.querySelectorAll('[data-shop-pages]'));
+        if (!hosts.length) return;
+
+        hosts.forEach((host) => {
+            const current = Number(host.getAttribute('data-current') || 1);
+            const total = Number(host.getAttribute('data-total') || 1);
+            if (!Number.isFinite(current) || !Number.isFinite(total) || total < 2) return;
+
+            const addDots = () => {
+                const dots = document.createElement('span');
+                dots.className = 'shop-page-dots';
+                dots.textContent = '...';
+                host.appendChild(dots);
+            };
+            const addPage = (p) => {
+                if (p === current) {
+                    const cur = document.createElement('span');
+                    cur.className = 'shop-page-current';
+                    cur.textContent = String(p);
+                    host.appendChild(cur);
+                    return;
+                }
+                const a = document.createElement('a');
+                a.className = 'shop-page-link';
+                a.href = '?page=' + String(p);
+                a.textContent = String(p);
+                host.appendChild(a);
+            };
+
+            if (total <= 7) {
+                for (let p = 1; p <= total; p += 1) addPage(p);
+                return;
+            }
+
+            let start = Math.max(2, current - 1);
+            let end = Math.min(total - 1, current + 1);
+            if (current <= 3) {
+                start = 2;
+                end = 4;
+            } else if (current >= total - 2) {
+                start = total - 3;
+                end = total - 1;
+            }
+
+            addPage(1);
+            if (start > 2) addDots();
+            for (let p = start; p <= end; p += 1) addPage(p);
+            if (end < total - 1) addDots();
+            addPage(total);
+        });
+    })();
+</script>
 {% endblock %}

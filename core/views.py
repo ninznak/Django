@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.core.mail import EmailMessage
+from django.core.paginator import Paginator
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -19,7 +20,7 @@ from .forms import CheckoutForm, ContactForm, RegisterForm
 from .models import ContactSubmission, Order, OrderItem
 from .pricing import format_minor_as_rub
 from .seo import get_seo, news_article_seo_overrides
-from .shop_data import get_product
+from .shop_data import SHOP_PRODUCTS, get_product
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -148,7 +149,16 @@ def portfolio_gallery(request, slug):
 
 def shop(request):
     """Страница магазина"""
-    return render(request, 'core/shop.html')
+    paginator = Paginator(SHOP_PRODUCTS, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    return render(
+        request,
+        "core/shop.html",
+        {
+            "shop_products": page_obj.object_list,
+            "shop_page_obj": page_obj,
+        },
+    )
 
 
 def free_models(request):

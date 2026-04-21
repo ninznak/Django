@@ -20,7 +20,7 @@
   Django перечитывает шаблон при каждом запросе.
 ═══════════════════════════════════════════════════════════════════════════
 {% endcomment %}
-{% with sculptor_busy=65 %}
+{% with sculptor_busy=85 %}
 <!-- Hero Section -->
 <section class="pt-24 max-sm:pt-[8.5rem] pb-20">
     <div class="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-12 gap-8 items-start">
@@ -46,7 +46,7 @@
                 <a href="/shop/" class="btn-outline" data-i18="hero_cta2">
                     В Магазин
                 </a>
-                <a href="{% url 'core:free_models' %}" class="btn-outline" data-i18="hero_cta_free">
+                <a href="{% url 'core:free_models' %}" class="btn-outline btn-attention" data-i18="hero_cta_free">
                     Бесплатные модели
                 </a>
                 {% comment %}Busyness button (tier + message computed from sculptor_busy).{% endcomment %}
