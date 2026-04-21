@@ -31,6 +31,14 @@ from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 
 # Topics used for meta keywords and schema.org knowsAbout (3D, medals, sculpting, related craft).
+SEO_FREE_MODEL_KEYWORDS = (
+    "бесплатные 3D модели, бесплатные модели для 3D печати, скачать бесплатно 3D модель, "
+    "free 3D models, free STL files, free OBJ files, STL model download, OBJ model download, "
+    "3D печать модели бесплатно, модели для принтера STL, модели для 3D принтера OBJ, "
+    "print-ready STL, printable 3D model, FDM print model, SLA resin print model, "
+    "kitbash 3D, sculpting reference model, test print model"
+)
+
 SEO_TOPIC_KEYWORDS = (
     "3D моделирование, 3D modeling, скульптурный рельеф, bas-relief, барельеф, низкий рельеф, "
     "медали, medals, медальерное искусство, medallic art, нумизматика, numismatics, монеты, coin design, "
@@ -42,7 +50,8 @@ SEO_TOPIC_KEYWORDS = (
     "чумной доктор, plague doctor mask, 3D модель для печати, FDM SLA STL, "
     "медаль Толстова, Ю. Орлов портрет скан, герб Адыгеи барельеф, Урал геологоразведки модель, "
     "Игры новых развивающихся сил медаль, святой барельеф, Евфросиния Полоцкая, Георгий Победоносец, Феодор Ушаков, "
-    "KurilenkoArt"
+    "KurilenkoArt, "
+    + SEO_FREE_MODEL_KEYWORDS
 )
 
 _DEFAULT_DESCRIPTION = (
@@ -122,7 +131,19 @@ PAGE_SEO: dict[str, dict[str, Any]] = {
             "купить 3D модель, STL медаль барельеф, 3D модель для печати, цифровая скульптура магазин, "
             "Давид Микеланджело 3D, Давид Донателло модель, чумной доктор 3D, отсканированный бюст, "
             "медаль Толстова, скан медали Орлов, герб Адыгеи 3D, Урал автомобиль модель, "
-            "3D print art, STL для ЧПУ, "
+            "3D print art, STL для ЧПУ, бесплатные 3D модели, free STL download, free OBJ download, "
+            + SEO_TOPIC_KEYWORDS
+        ),
+    },
+    "free_models": {
+        "title": "Бесплатные 3D-модели — KurilenkoArt | OBJ и STL для 3D-печати",
+        "description": (
+            "Раздел бесплатных 3D-моделей KurilenkoArt: бесплатные OBJ/STL-файлы для тестовой 3D-печати, "
+            "проверки принтера и знакомства со стилем моделей."
+        ),
+        "keywords": (
+            "бесплатные 3D модели, бесплатные STL, бесплатные OBJ, скачать STL бесплатно, скачать OBJ бесплатно, "
+            "модели для 3D печати бесплатно, test print model, printable 3D model, "
             + SEO_TOPIC_KEYWORDS
         ),
     },
@@ -424,6 +445,10 @@ _KNOWS_ABOUT: tuple[str, ...] = (
     "Renaissance sculpture",
     "Classical sculpture 3D scanning",
     "3D printing for art",
+    "Free 3D models",
+    "STL files for 3D printing",
+    "OBJ files for 3D printing",
+    "Printable 3D models",
     "Religious bas-relief",
 )
 

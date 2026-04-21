@@ -119,7 +119,8 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `news_article` | `/news/<slug>/` | `views.news_article` | Slug → title via in-view `title_map`; body/tag/hero are slug-gated `{% if %}` branches in `templates/core/news_article.html`. SEO is built via `core.seo.news_article_seo_overrides(request, slug, label)`, which reads the per-slug registry `NEWS_ARTICLE_SEO` and falls back to a generic per-label template. |
 | `portfolio` | `/portfolio/` | `views.portfolio` | `?category=3d\|ai\|all` redirects to anchors or base. The homepage carousel (`templates/core/homepage.html`) links its three cards to `/portfolio/#portfolio-3d`, `#portfolio-products`, `#portfolio-ai` — keep those anchors in sync with `templates/core/portfolio.html`. |
 | `portfolio_gallery` | `/portfolio/<slug>/` | `views.portfolio_gallery` | Slugs: `3d`, `ai`, `products`. Unknown → `Http404`. |
-| `shop` | `/shop/` | `views.shop` | Data comes from context processor. |
+| `shop` | `/shop/` | `views.shop` | Data comes from context processor. Header includes a CTA button to `core:free_models`. |
+| `free_models` | `/free-models/` | `views.free_models` | Dedicated free-download page (currently "Злой кабачок"). Uses local images from `static/images/shop/free/` and a click-driven image switcher (dots + image click). |
 | `cart_api` | `/api/cart/` | `views.cart_api` | GET returns cart JSON; POST body `{action, product_id, qty}` with `action ∈ {add,set,remove,clear}`. CSRF-protected. |
 | `sign_up_login` | `/sign-up-login/` | `views.sign_up_login` | Login always; registration gated by `AUTH_SHOW_REGISTRATION`. Honors `?next=` (same-host only). |
 | `logout` | `/logout/` | `views.logout_view` | |
@@ -394,6 +395,7 @@ Coverage map (read a test before making a semantically-loaded change):
 | I want to… | Edit |
 |---|---|
 | Add a product | `core/shop_data.py` (append to `SHOP_PRODUCTS`; ids are integers, unique). |
+| Edit free downloads section/page | `templates/core/free_models.html` (card/media/slider/link), `core/urls.py` + `core/views.py` (route/view), and `core/seo.py::PAGE_SEO["free_models"]`. |
 | Change product pricing logic | `core/pricing.py` (+ its tests). |
 | Add a new public page | `core/urls.py` (route) + `core/views.py` (view) + `templates/core/<page>.html` + optionally `core/seo.py::PAGE_SEO`. |
 | Add a field to `Order` | `core/models.py` → new migration in `core/migrations/` → template + form if user-facing → tests. |

@@ -19,6 +19,7 @@ urlpatterns = [
     path('portfolio/', views.portfolio, name='portfolio'),
     path('portfolio/<slug:slug>/', views.portfolio_gallery, name='portfolio_gallery'),
     path('shop/', views.shop, name='shop'),
+    path('free-models/', views.free_models, name='free_models'),
     path('api/cart/', views.cart_api, name='cart_api'),
     # path('forum/', views.forum, name='forum'),
     # path('forum/<int:topic_id>/', views.forum_topic, name='forum_topic'),

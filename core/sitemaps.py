@@ -26,6 +26,7 @@ class CoreViewSitemap(_BaseSitemap):
             ("core:portfolio_gallery", {"slug": "products"}),
             ("core:portfolio_gallery", {"slug": "ai"}),
             "core:shop",
+            "core:free_models",
             "core:news",
             # "core:forum",
             "core:copyright",

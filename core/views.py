@@ -151,6 +151,11 @@ def shop(request):
     return render(request, 'core/shop.html')
 
 
+def free_models(request):
+    """Отдельная страница с бесплатными 3D-моделями."""
+    return render(request, "core/free_models.html")
+
+
 def _serialize_cart_line(line):
     p = line["product"]
     return {

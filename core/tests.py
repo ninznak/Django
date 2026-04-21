@@ -444,6 +444,7 @@ class StaticPagesViewTests(TestCase):
             "core:news",
             "core:portfolio",
             "core:shop",
+            "core:free_models",
             "core:copyright",
             "core:sign_up_login",
         ):
