@@ -33,6 +33,7 @@ from django.utils.safestring import mark_safe
 # Topics used for meta keywords and schema.org knowsAbout (3D, medals, sculpting, related craft).
 SEO_FREE_MODEL_KEYWORDS = (
     "бесплатные 3D модели, бесплатные модели для 3D печати, скачать бесплатно 3D модель, "
+    "3d печать, stl, stl модели, авторские модели, эксклюзивные модели, "
     "free 3D models, free STL files, free OBJ files, STL model download, OBJ model download, "
     "3D печать модели бесплатно, модели для принтера STL, модели для 3D принтера OBJ, "
     "print-ready STL, printable 3D model, FDM print model, SLA resin print model, "
@@ -48,6 +49,7 @@ SEO_TOPIC_KEYWORDS = (
     "Давид Микеланджело, Michelangelo David, Давид Донателло, Donatello David, "
     "3D сканирование скульптуры, 3D scan bust, отсканированный бюст, photogrammetry art, "
     "чумной доктор, plague doctor mask, 3D модель для печати, FDM SLA STL, "
+    "Георгий Победоносец барельеф, частный заказ барельеф для ЧПУ фрезеровки, CNC барельеф на заказ, "
     "медаль Толстова, Ю. Орлов портрет скан, герб Адыгеи барельеф, Урал геологоразведки модель, "
     "Игры новых развивающихся сил медаль, святой барельеф, Евфросиния Полоцкая, Георгий Победоносец, Феодор Ушаков, "
     "KurilenkoArt, "
