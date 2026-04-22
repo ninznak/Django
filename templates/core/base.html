@@ -13,6 +13,7 @@
     <meta name="theme-color" content="#3d7a4f">
     <meta name="robots" content="{{ seo.robots }}">
     <link rel="canonical" href="{{ seo.canonical_url }}">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/ico/favicon (1).ico' %}">
 
     <meta property="og:type" content="{{ seo.og_type }}">
     <meta property="og:site_name" content="{{ seo.site_name }}">
@@ -297,6 +298,38 @@
             color: white;
         }
 
+        /* Icon tooltips in the compact md header */
+        .nav-icon-link {
+            position: relative;
+        }
+        .nav-icon-link::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 50%;
+            top: calc(100% + 8px);
+            transform: translateX(-50%) translateY(-4px);
+            background: rgba(26, 46, 26, 0.96);
+            color: #f3f8e9;
+            border: 1px solid rgba(168, 201, 87, 0.35);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.2;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s ease;
+            z-index: 60;
+        }
+        .nav-icon-link:hover::after,
+        .nav-icon-link:focus-visible::after {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
         body.nav-menu-open {
             overflow: hidden;
         }
@@ -324,11 +357,12 @@
         <nav class="max-w-7xl mx-auto px-3 sm:px-6 flex flex-col gap-3 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-2 sm:gap-y-2 sm:py-3 lg:py-4 min-w-0">
             <!-- Top: logo | (desktop links) | menu · cart · lang · Shop · Sign in -->
             <div class="flex w-full min-w-0 items-center justify-between gap-2 sm:flex-1 sm:min-w-0">
-                <a href="/" class="site-logo font-display text-xl max-sm:text-2xl sm:text-lg lg:text-2xl font-extrabold tracking-tight text-shadow shrink-0 min-w-0" style="letter-spacing: 1.2px;">
-                    <span style="font-weight: 700;">Kurilenko</span><span style="font-weight: 400; opacity: 0.85;">Art</span>
+                <a href="/" class="site-logo font-display text-xl max-sm:text-2xl sm:text-lg lg:text-2xl font-extrabold tracking-tight text-shadow shrink-0 min-w-0 inline-flex items-center gap-2" style="letter-spacing: 1.2px;">
+                    <img src="{% static 'images/ico/favicon (1).ico' %}" alt="KurilenkoArt logo" class="h-8 w-8 rounded-md object-cover">
+                    <span><span style="font-weight: 700;">Kurilenko</span><span style="font-weight: 400; opacity: 0.85;">Art</span></span>
                 </a>
 
-                <div class="hidden lg:flex flex-1 justify-center items-center gap-4 xl:gap-6 min-w-0 px-2" style="font-size: 14px;">
+                <div class="hidden xl:flex flex-1 justify-center items-center gap-4 xl:gap-6 min-w-0 px-2" style="font-size: 14px;">
                     <a href="/homepage/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_home">Главная</a>
                     <a href="/about/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_about">Обо мне</a>
                     <a href="/portfolio/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_portfolio">Портфолио</a>
@@ -341,19 +375,57 @@
                     <a href="/copyright/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_copyright">Авторское право</a>
                 </div>
 
-                <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-                    <button type="button" class="js-nav-drawer-open hidden sm:inline-flex lg:hidden items-center justify-center rounded-xl p-2 transition-colors" style="color: #3a4830;" aria-expanded="false" aria-controls="nav-drawer" aria-label="Меню">
+                <div class="hidden md:flex lg:hidden items-center gap-2 min-w-0 mx-3">
+                    <a href="/homepage/" class="nav-icon-link inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-white/40 transition-colors" style="color: #3a4830; opacity: 0.9;" aria-label="Главная" data-i18-aria-label="nav_home" data-tooltip="Главная" data-i18-tooltip="nav_home">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 10.5L12 3l9 7.5"/>
+                            <path d="M5 9.5V20h14V9.5"/>
+                        </svg>
+                    </a>
+                    <a href="/portfolio/" class="nav-icon-link inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-white/40 transition-colors" style="color: #3a4830; opacity: 0.9;" aria-label="Портфолио" data-i18-aria-label="nav_portfolio" data-tooltip="Портфолио" data-i18-tooltip="nav_portfolio">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="16" rx="2"/>
+                            <circle cx="8.5" cy="9" r="1.5"/>
+                            <path d="M21 16l-5.5-5.5L7 19"/>
+                        </svg>
+                    </a>
+                    <a href="/homepage/#contact" class="nav-icon-link inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-white/40 transition-colors" style="color: #3a4830; opacity: 0.9;" aria-label="Контакты" data-i18-aria-label="nav_contact" data-tooltip="Контакты" data-i18-tooltip="nav_contact">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="5" width="18" height="14" rx="2"/>
+                            <path d="M3 7l9 6 9-6"/>
+                        </svg>
+                    </a>
+                    <a href="/copyright/" class="nav-icon-link inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-white/40 transition-colors" style="color: #3a4830; opacity: 0.9;" aria-label="Авторское право" data-i18-aria-label="nav_copyright" data-tooltip="Авторское право" data-i18-tooltip="nav_copyright">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 3v2"/>
+                            <path d="M8 5h8"/>
+                            <path d="M12 5v13"/>
+                            <path d="M6 10h12"/>
+                            <path d="M6 10l-2.5 4a3 3 0 0 0 5 0L6 10z"/>
+                            <path d="M18 10l-2.5 4a3 3 0 0 0 5 0L18 10z"/>
+                            <path d="M9 19h6"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="hidden lg:flex xl:hidden items-center gap-2 xl:gap-3 min-w-0 mx-3">
+                    <a href="/homepage/" class="px-2.5 py-1.5 rounded-lg text-xs lg:text-sm font-semibold whitespace-nowrap hover:bg-white/40 transition-colors" style="color: #3a4830; opacity: 0.9;" data-i18="nav_home">Главная</a>
+                    <a href="/portfolio/" class="px-2.5 py-1.5 rounded-lg text-xs lg:text-sm font-semibold whitespace-nowrap hover:bg-white/40 transition-colors" style="color: #3a4830; opacity: 0.9;" data-i18="nav_portfolio">Портфолио</a>
+                    <a href="/homepage/#contact" class="px-2.5 py-1.5 rounded-lg text-xs lg:text-sm font-semibold whitespace-nowrap hover:bg-white/40 transition-colors" style="color: #3a4830; opacity: 0.9;" data-i18="nav_contact">Контакты</a>
+                </div>
+
+                <div class="flex items-center gap-1 sm:gap-2 shrink-0 rounded-xl sm:bg-white/25 sm:px-2 sm:py-1.5 sm:border sm:border-white/30 xl:bg-transparent xl:px-0 xl:py-0 xl:border-0">
+                    <button type="button" class="js-nav-drawer-open hidden sm:inline-flex xl:hidden items-center justify-center rounded-xl p-2 transition-colors" style="color: #3a4830;" aria-expanded="false" aria-controls="nav-drawer" aria-label="Меню">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path d="M4 6h16M4 12h16M4 18h16"/>
                         </svg>
                     </button>
-                    <button type="button" id="cart-toggle" class="relative z-50 rounded-xl p-1.5 sm:p-2 transition-colors shrink-0" style="color: var(--muted);" aria-label="Cart">
+                    <button type="button" id="cart-toggle" class="js-cart-toggle relative z-50 rounded-xl p-1.5 sm:p-2 transition-colors shrink-0 max-sm:hidden" style="color: var(--muted);" aria-label="Cart">
                         <svg class="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="9" cy="21" r="1"/>
                             <circle cx="20" cy="21" r="1"/>
                             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
                         </svg>
-                        <span id="cart-badge" class="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white {% if cart_total_items == 0 %}hidden{% endif %}" style="background: var(--primary);">{{ cart_total_items }}</span>
+                        <span data-cart-badge class="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white {% if cart_total_items == 0 %}hidden{% endif %}" style="background: var(--primary);">{{ cart_total_items }}</span>
                     </button>
                     <div class="lang-switch shrink-0">
                         <span class="lang-btn active" onclick="setLang('ru')" id="lang-ru">RU</span>
@@ -362,10 +434,22 @@
                     </div>
                     <a href="/shop/" class="hidden sm:inline-flex btn-outline text-xs sm:text-sm py-1.5 px-2 sm:py-2 sm:px-3 whitespace-nowrap shrink-0" data-i18="nav_shop_btn">Магазин</a>
                     {% if user.is_authenticated %}
+                    {# Выход + профиль появляются на sm+ вместе с «Магазин»; на <sm — через бургер #}
                     <form method="post" action="{% url 'core:logout' %}" class="hidden sm:inline-flex m-0 shrink-0">
                         {% csrf_token %}
                         <button type="submit" class="btn-outline text-xs sm:text-sm py-1.5 px-2 sm:py-2 sm:px-3 sm:px-4 whitespace-nowrap" data-i18="sign_out">Выход</button>
                     </form>
+                    <a href="{% url 'core:profile' %}"
+                       class="hidden sm:inline-flex items-center justify-center shrink-0 rounded-xl p-1.5 sm:p-2 transition-colors hover:bg-white/40"
+                       style="color: var(--primary);"
+                       title="{{ user.get_username }}"
+                       aria-label="Профиль"
+                       data-i18-aria-label="nav_profile">
+                        <svg class="w-[20px] h-[20px] sm:w-[22px] sm:h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </a>
                     {% else %}
                     <a href="{% url 'core:sign_up_login' %}" class="hidden sm:inline-flex btn-primary text-xs sm:text-sm py-1.5 px-2 sm:py-2 sm:px-3 sm:px-4 whitespace-nowrap shrink-0" data-i18="sign_in">Вход</a>
                     {% endif %}
@@ -380,12 +464,16 @@
                     </svg>
                 </button>
                 <a href="/shop/" class="btn-outline text-sm py-2.5 px-5 whitespace-nowrap shrink-0" data-i18="nav_shop_btn">Магазин</a>
-                {% if user.is_authenticated %}
-                <form method="post" action="{% url 'core:logout' %}" class="inline-flex m-0 shrink-0">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-outline text-sm py-2.5 px-6 whitespace-nowrap" data-i18="sign_out">Выход</button>
-                </form>
-                {% else %}
+                <button type="button" id="cart-toggle-mobile" class="js-cart-toggle relative rounded-xl p-2 transition-colors shrink-0" style="color: var(--muted);" aria-label="Cart">
+                    <svg class="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="9" cy="21" r="1"/>
+                        <circle cx="20" cy="21" r="1"/>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                    <span data-cart-badge class="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white {% if cart_total_items == 0 %}hidden{% endif %}" style="background: var(--primary);">{{ cart_total_items }}</span>
+                </button>
+                {% if not user.is_authenticated %}
+                {# Авторизованный пользователь ходит в профиль/выход через бургер-меню #}
                 <a href="{% url 'core:sign_up_login' %}" class="btn-primary text-sm py-2.5 px-6 whitespace-nowrap shrink-0" data-i18="sign_in">Вход</a>
                 {% endif %}
             </div>
@@ -393,7 +481,7 @@
     </header>
 
     <!-- Mobile / tablet: full-screen menu (main links only; Shop & Sign in stay in header) -->
-    <div id="nav-drawer" class="fixed inset-0 z-[70] hidden flex-col lg:hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="nav-drawer-title">
+    <div id="nav-drawer" class="fixed inset-0 z-[70] hidden flex-col xl:hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="nav-drawer-title">
         <div id="nav-drawer-backdrop" class="absolute inset-0 bg-black/45 backdrop-blur-sm"></div>
         <div class="relative flex min-h-full flex-col" style="background: rgba(220, 232, 207, 0.97); backdrop-filter: blur(12px);">
             <p id="nav-drawer-title" class="sr-only" data-i18="nav_drawer_title">Разделы сайта</p>
@@ -403,15 +491,32 @@
                 </svg>
             </button>
             <nav class="nav-mobile-panel flex flex-1 flex-col items-center justify-center gap-5 sm:gap-6 px-8 pt-24 pb-16 overflow-y-auto" aria-label="Main">
-                <a href="/homepage/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_home">Главная</a>
+                <a href="/homepage/" class="text-lg sm:text-xl font-semibold lg:hidden" style="color: #3a4830;" data-i18="nav_home">Главная</a>
                 <a href="/about/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_about">Обо мне</a>
-                <a href="/portfolio/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_portfolio">Портфолио</a>
+                <a href="/portfolio/" class="text-lg sm:text-xl font-semibold lg:hidden" style="color: #3a4830;" data-i18="nav_portfolio">Портфолио</a>
                 <a href="/news/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_news">Новости</a>
                 {% comment %}
                 <a href="/forum/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_forum">Форум</a>
                 {% endcomment %}
-                <a href="/homepage/#contact" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_contact">Контакты</a>
+                <a href="/homepage/#contact" class="text-lg sm:text-xl font-semibold lg:hidden" style="color: #3a4830;" data-i18="nav_contact">Контакты</a>
                 <a href="/copyright/" class="text-lg sm:text-xl font-semibold" style="color: #3a4830;" data-i18="nav_copyright">Авторское право</a>
+
+                {% if user.is_authenticated %}
+                {# Профиль + Выход уезжают сюда на всех экранах < lg #}
+                <div class="flex flex-col items-center gap-3 pt-3 mt-2 border-t w-full max-w-xs" style="border-color: var(--line);">
+                    <a href="{% url 'core:profile' %}" class="inline-flex items-center gap-2 text-lg sm:text-xl font-semibold" style="color: var(--primary);" data-i18="nav_profile">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <span>Профиль</span>
+                    </a>
+                    <form method="post" action="{% url 'core:logout' %}" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-outline text-sm py-2.5 px-6 whitespace-nowrap" data-i18="sign_out">Выход</button>
+                    </form>
+                </div>
+                {% endif %}
             </nav>
         </div>
     </div>
@@ -428,6 +533,7 @@
                 nav_news: "Новости",
                 nav_forum: "Форум",
                 nav_contact: "Контакты",
+                nav_law: "Закон",
                 nav_copyright: "Авторское право",
                 copyright_label: "Правовая Информация",
                 copyright_title: "Авторское Право в Российской Федерации",
@@ -438,6 +544,65 @@
                 nav_drawer_title: "Разделы сайта",
                 sign_in: "Вход",
                 sign_out: "Выход",
+                nav_profile: "Профиль",
+                // --- Profile page (see core/views.py::profile / templates/core/profile*.html)
+                profile_section_label: "Личный кабинет",
+                profile_title: "Мой профиль",
+                profile_role_admin: "Администратор",
+                profile_role_editor: "Редактор",
+                profile_role_staff: "Сотрудник",
+                profile_role_user: "Пользователь",
+                profile_role_guest: "Гость",
+                profile_login_field: "Логин",
+                profile_email_field: "Email",
+                profile_email_empty: "не указан",
+                profile_logout: "Выйти",
+                profile_content_label: "Управление контентом",
+                profile_content_heading: "Добавить контент",
+                profile_content_intro: "Упрощённые формы для быстрой публикации без захода в Django-админку. Публиковать сразу могут редакторы (группа Editors) и суперпользователи — остальным доступны только черновики.",
+                profile_card_product_title: "Товар / бесплатная модель",
+                profile_card_product_sub: "Карточка для /shop/ или /free-models/.",
+                profile_card_article_title: "Статья / новость",
+                profile_card_article_sub: "Публикация в разделе /news/.",
+                profile_recent_products_title: "Недавние товары",
+                profile_recent_articles_title: "Недавние статьи",
+                profile_status_published: "опубл.",
+                profile_status_draft: "черновик",
+                profile_admin_hint_prefix: "Полный функционал редактирования и удаления — в ",
+                profile_admin_hint_link: "Django-админке",
+                profile_admin_hint_suffix: ".",
+                profile_form_back: "← В профиль",
+                profile_form_draft_only: "Вы можете сохранить контент только как черновик — публикация доступна редакторам.",
+                profile_form_save: "Сохранить",
+                profile_form_cancel: "Отмена",
+                profile_product_form_section: "Магазин / бесплатные модели",
+                profile_product_form_title: "Добавить товар / бесплатную модель",
+                profile_product_form_intro: "Форма-обёртка над Django-админкой. Поля, отмеченные звёздочкой, обязательны.",
+                profile_product_fs_type: "Тип карточки",
+                profile_product_fs_basic: "Основная информация",
+                profile_product_fs_image: "Картинка",
+                profile_product_fs_pricing: "Цена / скачивание",
+                profile_product_fs_publish: "Публикация",
+                profile_product_help_free_category: "Только для бесплатных моделей.",
+                profile_product_help_slug: "Латиница-дефисы. Пусто — сгенерируем из названия.",
+                profile_product_help_image: "Путь относительно каталога static/, например images/shop/battletoad.png.",
+                profile_product_help_price: "Целое число в рублях. Для бесплатных — 0.",
+                profile_product_help_display_order: "Меньшее число — выше в списке.",
+                profile_product_help_download: "Для free: полный https://... или files/free/xxx.zip в static/.",
+                profile_product_help_published: "Сразу видна на сайте. Доступно редакторам/superuser.",
+                profile_product_help_sold_out: "Показать метку «Распродано» и блокировать кнопку.",
+                profile_product_help_placeholder: "Карточка-заглушка «Скоро новая модель» — картинка/описание не обязательны.",
+                profile_article_form_section: "Новости",
+                profile_article_form_title: "Добавить статью",
+                profile_article_form_intro: "Форма-обёртка над Django-админкой. Текст статьи поддерживает простую разметку:",
+                profile_article_form_intro_markup: "## заголовок, списки - и 1., **жирный**, *курсив*, [ссылка](url), ![alt](images/news/...).",
+                profile_article_fs_basic: "Основное",
+                profile_article_fs_content: "Содержимое",
+                profile_article_fs_settings: "Настройки",
+                profile_article_help_slug: "Пусто — сгенерируем из заголовка.",
+                profile_article_help_excerpt: "Короткий анонс статьи для списка новостей.",
+                profile_article_help_cover: "Путь относительно static/, например images/news/cover.jpg.",
+                profile_article_help_status: "«Опубликовано» — доступно редакторам.",
                 hero_label: "Творческое Портфолио",
                 hero_title1: "Где Мастерство",
                 hero_title2: "Встречает",
@@ -719,6 +884,7 @@
                 nav_news: "News",
                 nav_forum: "Forum",
                 nav_contact: "Contact",
+                nav_law: "Law",
                 nav_copyright: "Copyright",
                 copyright_label: "Legal information",
                 copyright_title: "Copyright in the Russian Federation",
@@ -729,6 +895,65 @@
                 nav_drawer_title: "Site sections",
                 sign_in: "Sign In",
                 sign_out: "Log out",
+                nav_profile: "Profile",
+                // --- Profile page (mirror of ru block above)
+                profile_section_label: "My account",
+                profile_title: "My profile",
+                profile_role_admin: "Administrator",
+                profile_role_editor: "Editor",
+                profile_role_staff: "Staff",
+                profile_role_user: "User",
+                profile_role_guest: "Guest",
+                profile_login_field: "Username",
+                profile_email_field: "Email",
+                profile_email_empty: "not set",
+                profile_logout: "Log out",
+                profile_content_label: "Content management",
+                profile_content_heading: "Add content",
+                profile_content_intro: "Streamlined forms for quick publishing without the Django admin. Only the Editors group and superusers can publish immediately — everyone else saves as draft.",
+                profile_card_product_title: "Product / free model",
+                profile_card_product_sub: "Card for /shop/ or /free-models/.",
+                profile_card_article_title: "Article / news post",
+                profile_card_article_sub: "Publishes to /news/.",
+                profile_recent_products_title: "Recent products",
+                profile_recent_articles_title: "Recent articles",
+                profile_status_published: "live",
+                profile_status_draft: "draft",
+                profile_admin_hint_prefix: "Full editing and deletion lives in the ",
+                profile_admin_hint_link: "Django admin",
+                profile_admin_hint_suffix: ".",
+                profile_form_back: "← Back to profile",
+                profile_form_draft_only: "You can only save this as a draft — publishing is limited to editors.",
+                profile_form_save: "Save",
+                profile_form_cancel: "Cancel",
+                profile_product_form_section: "Shop / free models",
+                profile_product_form_title: "Add product / free model",
+                profile_product_form_intro: "Wrapper form around the Django admin. Fields marked with an asterisk are required.",
+                profile_product_fs_type: "Card type",
+                profile_product_fs_basic: "Basic information",
+                profile_product_fs_image: "Image",
+                profile_product_fs_pricing: "Pricing / download",
+                profile_product_fs_publish: "Publishing",
+                profile_product_help_free_category: "Only for free models.",
+                profile_product_help_slug: "Latin letters and dashes. Leave empty to auto-generate from the title.",
+                profile_product_help_image: "Path relative to the static/ folder, e.g. images/shop/battletoad.png.",
+                profile_product_help_price: "Whole number in RUB. Use 0 for free models.",
+                profile_product_help_display_order: "Lower number = higher on the page.",
+                profile_product_help_download: "For free models: full https://... URL or files/free/xxx.zip under static/.",
+                profile_product_help_published: "Immediately visible on the site. Editors / superuser only.",
+                profile_product_help_sold_out: "Show the \"sold out\" badge and disable the button.",
+                profile_product_help_placeholder: "Placeholder \"coming soon\" card — image / description / download URL are optional.",
+                profile_article_form_section: "News",
+                profile_article_form_title: "Add article",
+                profile_article_form_intro: "Wrapper form around the Django admin. Article body supports lightweight markup:",
+                profile_article_form_intro_markup: "## heading, lists - and 1., **bold**, *italic*, [link](url), ![alt](images/news/...).",
+                profile_article_fs_basic: "Basic",
+                profile_article_fs_content: "Content",
+                profile_article_fs_settings: "Settings",
+                profile_article_help_slug: "Leave empty to auto-generate from the title.",
+                profile_article_help_excerpt: "Short teaser for the news list.",
+                profile_article_help_cover: "Path relative to static/, e.g. images/news/cover.jpg.",
+                profile_article_help_status: "\"Published\" is reserved for editors.",
                 hero_label: "Creative Portfolio",
                 hero_title1: "Where Craft",
                 hero_title2: "Meets",
@@ -1043,183 +1268,16 @@
             });
             const navClose = document.getElementById('nav-menu-close');
             if (navClose && t.nav_menu_close) navClose.setAttribute('aria-label', t.nav_menu_close);
-            
-            // Hero section - use data attributes
-            document.querySelectorAll('[data-i18="hero_label"]').forEach(el => el.textContent = t.hero_label);
-            document.querySelectorAll('[data-i18="hero_title1"]').forEach(el => el.textContent = t.hero_title1);
-            document.querySelectorAll('[data-i18="hero_title2"]').forEach(el => el.textContent = t.hero_title2);
-            document.querySelectorAll('[data-i18="hero_title3"]').forEach(el => el.textContent = t.hero_title3);
-            document.querySelectorAll('[data-i18="hero_sub"]').forEach(el => el.textContent = t.hero_sub);
-            document.querySelectorAll('[data-i18="hero_cta1"]').forEach(el => el.textContent = t.hero_cta1);
-            document.querySelectorAll('[data-i18="hero_cta2"]').forEach(el => el.textContent = t.hero_cta2);
-            document.querySelectorAll('[data-i18="hero_cta_free"]').forEach(el => el.textContent = t.hero_cta_free);
-            document.querySelectorAll('[data-i18="hero_busy_label"]').forEach(el => el.textContent = t.hero_busy_label);
-            document.querySelectorAll('[data-i18="hero_busy_free"]').forEach(el => el.textContent = t.hero_busy_free);
-            document.querySelectorAll('[data-i18="hero_busy_open"]').forEach(el => el.textContent = t.hero_busy_open);
-            document.querySelectorAll('[data-i18="hero_busy_partial"]').forEach(el => el.textContent = t.hero_busy_partial);
-            document.querySelectorAll('[data-i18="hero_busy_busy"]').forEach(el => el.textContent = t.hero_busy_busy);
-            document.querySelectorAll('[data-i18="stats_3d"]').forEach(el => el.textContent = t.stats_3d);
-            document.querySelectorAll('[data-i18="stats_ai"]').forEach(el => el.textContent = t.stats_ai);
-            document.querySelectorAll('[data-i18="stats_years"]').forEach(el => el.textContent = t.stats_years);
-            
-            // Featured
-            document.querySelectorAll('[data-i18="featured_label"]').forEach(el => el.textContent = t.featured_label);
-            document.querySelectorAll('[data-i18="featured_title"]').forEach(el => el.textContent = t.featured_title);
-            document.querySelectorAll('[data-i18="featured_sub"]').forEach(el => el.textContent = t.featured_sub);
-            document.querySelectorAll('[data-i18="featured_mid_title"]').forEach(el => el.textContent = t.featured_mid_title);
-            document.querySelectorAll('[data-i18="featured_mid_cat"]').forEach(el => el.textContent = t.featured_mid_cat);
-            document.querySelectorAll('[data-i18="featured_jimm_title"]').forEach(el => el.textContent = t.featured_jimm_title);
-            document.querySelectorAll('[data-i18="featured_jimm_cat"]').forEach(el => el.textContent = t.featured_jimm_cat);
-            document.querySelectorAll('[data-i18="featured_georg_title"]').forEach(el => el.textContent = t.featured_georg_title);
-            document.querySelectorAll('[data-i18="featured_georg_cat"]').forEach(el => el.textContent = t.featured_georg_cat);
-            document.querySelectorAll('[data-i18="featured_david_title"]').forEach(el => el.textContent = t.featured_david_title);
-            document.querySelectorAll('[data-i18="featured_david_cat"]').forEach(el => el.textContent = t.featured_david_cat);
-            document.querySelectorAll('[data-i18="featured_scan_title"]').forEach(el => el.textContent = t.featured_scan_title);
-            document.querySelectorAll('[data-i18="featured_scan_cat"]').forEach(el => el.textContent = t.featured_scan_cat);
-            
-            // News
-            document.querySelectorAll('[data-i18="news_label"]').forEach(el => el.textContent = t.news_label);
-            document.querySelectorAll('[data-i18="news_title"]').forEach(el => el.textContent = t.news_title);
-            document.querySelectorAll('[data-i18="news_sub"]').forEach(el => el.textContent = t.news_sub);
-            document.querySelectorAll('[data-i18="news_view_all"]').forEach(el => el.textContent = t.news_view_all);
-            
-            // Shop
-            document.querySelectorAll('[data-i18="shop_label"]').forEach(el => el.textContent = t.shop_label);
-            document.querySelectorAll('[data-i18="shop_title"]').forEach(el => el.textContent = t.shop_title);
-            document.querySelectorAll('[data-i18="shop_sub"]').forEach(el => el.textContent = t.shop_sub);
-            document.querySelectorAll('[data-i18="shop_view_all"]').forEach(el => el.textContent = t.shop_view_all);
-            
-            // Forum
-            document.querySelectorAll('[data-i18="forum_label"]').forEach(el => el.textContent = t.forum_label);
-            document.querySelectorAll('[data-i18="forum_title"]').forEach(el => el.textContent = t.forum_title);
-            document.querySelectorAll('[data-i18="forum_sub"]').forEach(el => el.textContent = t.forum_sub);
-            document.querySelectorAll('[data-i18="forum_members"]').forEach(el => el.textContent = t.forum_members);
-            document.querySelectorAll('[data-i18="forum_threads"]').forEach(el => el.textContent = t.forum_threads);
-            document.querySelectorAll('[data-i18="forum_posts"]').forEach(el => el.textContent = t.forum_posts);
-            document.querySelectorAll('[data-i18="forum_go"]').forEach(el => el.textContent = t.forum_go);
-            document.querySelectorAll('[data-i18="carousel_3d_models"]').forEach(el => el.textContent = t.carousel_3d_models);
-            document.querySelectorAll('[data-i18="carousel_bas_relief_collection"]').forEach(el => el.textContent = t.carousel_bas_relief_collection);
-            document.querySelectorAll('[data-i18="carousel_models_available"]').forEach(el => el.textContent = t.carousel_models_available);
-            document.querySelectorAll('[data-i18="carousel_latest_commission"]').forEach(el => el.textContent = t.carousel_latest_commission);
-            document.querySelectorAll('[data-i18="carousel_silver_relief_panel"]').forEach(el => el.textContent = t.carousel_silver_relief_panel);
-            document.querySelectorAll('[data-i18="carousel_custom_order_progress"]').forEach(el => el.textContent = t.carousel_custom_order_progress);
-            document.querySelectorAll('[data-i18="carousel_ai_content"]').forEach(el => el.textContent = t.carousel_ai_content);
-            document.querySelectorAll('[data-i18="carousel_generative_art_series"]').forEach(el => el.textContent = t.carousel_generative_art_series);
-            document.querySelectorAll('[data-i18="carousel_neural_landscapes"]').forEach(el => el.textContent = t.carousel_neural_landscapes);
-            
-            // Contact
-            document.querySelectorAll('[data-i18="contact_label"]').forEach(el => el.textContent = t.contact_label);
-            document.querySelectorAll('[data-i18="contact_title"]').forEach(el => el.textContent = t.contact_title);
-            document.querySelectorAll('[data-i18="contact_sub"]').forEach(el => el.textContent = t.contact_sub);
-            document.querySelectorAll('[data-i18="contact_name"]').forEach(el => el.textContent = t.contact_name);
-            document.querySelectorAll('[data-i18="contact_email"]').forEach(el => el.textContent = t.contact_email);
-            document.querySelectorAll('[data-i18="contact_subject"]').forEach(el => el.textContent = t.contact_subject);
-            document.querySelectorAll('[data-i18="contact_message"]').forEach(el => el.textContent = t.contact_message);
-            document.querySelectorAll('[data-i18="contact_send"]').forEach(el => el.textContent = t.contact_send);
-            document.querySelectorAll('[data-i18="contact_response"]').forEach(el => el.textContent = t.contact_response);
-            
-            // Footer
-            document.querySelectorAll('[data-i18="footer_copyright"]').forEach(el => el.textContent = t.footer_copyright);
-            document.querySelectorAll('[data-i18="footer_brand"]').forEach(el => el.textContent = t.footer_brand);
-            document.querySelectorAll('[data-i18="footer_tagline"]').forEach(el => el.textContent = t.footer_tagline);
-            document.querySelectorAll('[data-i18="footer_nav"]').forEach(el => el.textContent = t.footer_nav);
-            document.querySelectorAll('[data-i18="footer_home"]').forEach(el => el.textContent = t.footer_home);
-            document.querySelectorAll('[data-i18="footer_about"]').forEach(el => el.textContent = t.footer_about);
-            document.querySelectorAll('[data-i18="footer_portfolio"]').forEach(el => el.textContent = t.footer_portfolio);
-            document.querySelectorAll('[data-i18="footer_shop"]').forEach(el => el.textContent = t.footer_shop);
-            document.querySelectorAll('[data-i18="footer_community"]').forEach(el => el.textContent = t.footer_community);
-            document.querySelectorAll('[data-i18="footer_news"]').forEach(el => el.textContent = t.footer_news);
-            document.querySelectorAll('[data-i18="footer_forum"]').forEach(el => el.textContent = t.footer_forum);
-            document.querySelectorAll('[data-i18="footer_signin"]').forEach(el => el.textContent = t.footer_signin);
-            document.querySelectorAll('[data-i18="footer_contact"]').forEach(el => el.textContent = t.footer_contact);
-            document.querySelectorAll('[data-i18="footer_location"]').forEach(el => el.textContent = t.footer_location);
-            
-            // Portfolio page
-            document.querySelectorAll('[data-i18="portfolio_title"]').forEach(el => el.textContent = t.portfolio_title);
-            document.querySelectorAll('[data-i18="portfolio_subtitle"]').forEach(el => el.textContent = t.portfolio_subtitle);
-            document.querySelectorAll('[data-i18="portfolio_all"]').forEach(el => el.textContent = t.portfolio_all);
-            document.querySelectorAll('[data-i18="portfolio_3d"]').forEach(el => el.textContent = t.portfolio_3d);
-            document.querySelectorAll('[data-i18="portfolio_products"]').forEach(el => el.textContent = t.portfolio_products);
-            document.querySelectorAll('[data-i18="portfolio_ai"]').forEach(el => el.textContent = t.portfolio_ai);
-            document.querySelectorAll('[data-i18="portfolio_3d_title"]').forEach(el => el.textContent = t.portfolio_3d_title);
-            document.querySelectorAll('[data-i18="portfolio_products_title"]').forEach(el => el.textContent = t.portfolio_products_title);
-            document.querySelectorAll('[data-i18="portfolio_products_item"]').forEach(el => el.textContent = t.portfolio_products_item);
-            document.querySelectorAll('[data-i18="portfolio_products_item_cat"]').forEach(el => el.textContent = t.portfolio_products_item_cat);
-            document.querySelectorAll('[data-i18="portfolio_products_view_all"]').forEach(el => el.textContent = t.portfolio_products_view_all);
-            ["portfolio_medal_1","portfolio_medal_2","portfolio_medal_3","portfolio_medal_4","portfolio_medal_5","portfolio_medal_6","portfolio_medal_7","portfolio_medal_8","portfolio_medal_9","portfolio_medal_10","portfolio_medal_11","portfolio_medal_12","portfolio_medal_13","portfolio_medal_sofia"].forEach(function(key){
-                document.querySelectorAll('[data-i18="' + key + '"]').forEach(el => el.textContent = t[key]);
-            });
-            document.querySelectorAll('[data-i18="portfolio_ai_title"]').forEach(el => el.textContent = t.portfolio_ai_title);
-            
-            // Shop page
-            document.querySelectorAll('[data-i18="shop_title"]').forEach(el => el.textContent = t.shop_title);
-            document.querySelectorAll('[data-i18="shop_subtitle"]').forEach(el => el.textContent = t.shop_subtitle);
-            document.querySelectorAll('[data-i18="shop_digital"]').forEach(el => el.textContent = t.shop_digital);
-            document.querySelectorAll('[data-i18="shop_3d_bundle"]').forEach(el => el.textContent = t.shop_3d_bundle);
-            document.querySelectorAll('[data-i18="shop_fine_art"]').forEach(el => el.textContent = t.shop_fine_art);
-            document.querySelectorAll('[data-i18="shop_3d_model"]').forEach(el => el.textContent = t.shop_3d_model);
-            document.querySelectorAll('[data-i18="shop_not_for_sale"]').forEach(el => el.textContent = t.shop_not_for_sale);
-            document.querySelectorAll('[data-i18="checkout_license_title"]').forEach(el => el.textContent = t.checkout_license_title);
-            document.querySelectorAll('[data-i18="checkout_license_body"]').forEach(el => el.textContent = t.checkout_license_body);
-            document.querySelectorAll('[data-i18="checkout_license_ack"]').forEach(el => el.textContent = t.checkout_license_ack);
-            document.querySelectorAll('[data-i18="shop_add_cart"]').forEach(el => el.textContent = t.shop_add_cart);
-            
-            // News page
-            document.querySelectorAll('[data-i18="news_title"]').forEach(el => el.textContent = t.news_title);
-            document.querySelectorAll('[data-i18="news_subtitle"]').forEach(el => el.textContent = t.news_subtitle);
-            document.querySelectorAll('[data-i18="news_technique"]').forEach(el => el.textContent = t.news_technique);
-            document.querySelectorAll('[data-i18="news_ai"]').forEach(el => el.textContent = t.news_ai);
-            document.querySelectorAll('[data-i18="news_industry"]').forEach(el => el.textContent = t.news_industry);
-            document.querySelectorAll('[data-i18="news_read_more"]').forEach(el => el.textContent = t.news_read_more);
-            
-            // About page
-            document.querySelectorAll('[data-i18="about_title"]').forEach(el => el.textContent = t.about_title);
-            document.querySelectorAll('[data-i18="about_subtitle"]').forEach(el => el.textContent = t.about_subtitle);
-            document.querySelectorAll('[data-i18="about_p2"]').forEach(el => el.textContent = t.about_p2);
-            document.querySelectorAll('[data-i18="about_p3"]').forEach(el => el.textContent = t.about_p3);
-            document.querySelectorAll('[data-i18="about_p4"]').forEach(el => el.textContent = t.about_p4);
-            document.querySelectorAll('[data-i18="about_cta"]').forEach(el => el.textContent = t.about_cta);
-            document.querySelectorAll('[data-i18="about_years_exp"]').forEach(el => el.textContent = t.about_years_exp);
-            document.querySelectorAll('[data-i18="about_3d_created"]').forEach(el => el.textContent = t.about_3d_created);
-            document.querySelectorAll('[data-i18="about_projects_minted"]').forEach(el => el.textContent = t.about_projects_minted);
-            document.querySelectorAll('[data-i18="about_response"]').forEach(el => el.textContent = t.about_response);
-            
-            // Forum page
-            document.querySelectorAll('[data-i18="forum_title"]').forEach(el => el.textContent = t.forum_title);
-            document.querySelectorAll('[data-i18="forum_subtitle"]').forEach(el => el.textContent = t.forum_subtitle);
-            
-            // Auth page
-            document.querySelectorAll('[data-i18="auth_signin"]').forEach(el => el.textContent = t.auth_signin);
-            document.querySelectorAll('[data-i18="auth_signup"]').forEach(el => el.textContent = t.auth_signup);
-            document.querySelectorAll('[data-i18="auth_email"]').forEach(el => el.textContent = t.auth_email);
-            document.querySelectorAll('[data-i18="auth_password"]').forEach(el => el.textContent = t.auth_password);
-            document.querySelectorAll('[data-i18="auth_remember"]').forEach(el => el.textContent = t.auth_remember);
-            document.querySelectorAll('[data-i18="auth_forgot"]').forEach(el => el.textContent = t.auth_forgot);
-            document.querySelectorAll('[data-i18="auth_no_account"]').forEach(el => el.textContent = t.auth_no_account);
-            document.querySelectorAll('[data-i18="auth_have_account"]').forEach(el => el.textContent = t.auth_have_account);
-            document.querySelectorAll('[data-i18="auth_welcome_back"]').forEach(el => el.textContent = t.auth_welcome_back);
-            document.querySelectorAll('[data-i18="auth_signin_account"]').forEach(el => el.textContent = t.auth_signin_account);
-            document.querySelectorAll('[data-i18="auth_email_or_username"]').forEach(el => el.textContent = t.auth_email_or_username);
-            document.querySelectorAll('[data-i18="auth_enter_email_or_username"]').forEach(el => el.textContent = t.auth_enter_email_or_username);
-            document.querySelectorAll('[data-i18="auth_enter_password"]').forEach(el => el.textContent = t.auth_enter_password);
-            document.querySelectorAll('[data-i18="auth_sign_up_link"]').forEach(el => el.textContent = t.auth_sign_up_link);
-            document.querySelectorAll('[data-i18="auth_join_title"]').forEach(el => el.textContent = t.auth_join_title);
-            document.querySelectorAll('[data-i18="auth_join_sub"]').forEach(el => el.textContent = t.auth_join_sub);
-            document.querySelectorAll('[data-i18="auth_username"]').forEach(el => el.textContent = t.auth_username);
-            document.querySelectorAll('[data-i18="auth_confirm_password"]').forEach(el => el.textContent = t.auth_confirm_password);
-            document.querySelectorAll('[data-i18="auth_sign_in_link"]').forEach(el => el.textContent = t.auth_sign_in_link);
-            document.querySelectorAll('[data-i18="auth_or_continue"]').forEach(el => el.textContent = t.auth_or_continue);
-            document.querySelectorAll('[data-i18="auth_google"]').forEach(el => el.textContent = t.auth_google);
-            document.querySelectorAll('[data-i18="auth_github"]').forEach(el => el.textContent = t.auth_github);
-            document.querySelectorAll('[data-i18="about_label"]').forEach(el => el.textContent = t.about_label);
-            document.querySelectorAll('[data-i18="forum_3d_modeling_desc"]').forEach(el => el.textContent = t.forum_3d_modeling_desc);
-            document.querySelectorAll('[data-i18="forum_ai_content_desc"]').forEach(el => el.textContent = t.forum_ai_content_desc);
-            document.querySelectorAll('[data-i18="forum_business_desc"]').forEach(el => el.textContent = t.forum_business_desc);
-            document.querySelectorAll('[data-i18="forum_recent_discussions"]').forEach(el => el.textContent = t.forum_recent_discussions);
-            document.querySelectorAll('[data-i18="forum_replies"]').forEach(el => el.textContent = t.forum_replies);
-            document.querySelectorAll('[data-i18="forum_page_title"]').forEach(el => el.textContent = t.forum_page_title);
-            document.querySelectorAll('[data-i18="forum_page_subtitle"]').forEach(el => el.textContent = t.forum_page_subtitle);
-            
+
+            // Note: раньше здесь был ~175-строчный блок вида
+            //   document.querySelectorAll('[data-i18="hero_label"]')...
+            //   document.querySelectorAll('[data-i18="featured_title"]')...
+            //   ...и так для каждого ключа по отдельности.
+            // Всё это уже покрыто обобщённым циклом выше
+            // (document.querySelectorAll('[data-i18]').forEach(...)), поэтому
+            // удалено. Если нужно локализовать атрибут — используйте
+            // data-i18-placeholder / data-i18-aria-label / data-i18-tooltip (ниже).
+
             // Placeholders
             document.querySelectorAll('[data-i18-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-i18-placeholder');
@@ -1228,8 +1286,20 @@
                 }
             });
 
-            // Common
-            document.querySelectorAll('[data-i18="back"]').forEach(el => el.textContent = t.back);
+            // aria-label переводы (для иконок-кнопок без видимого текста)
+            document.querySelectorAll('[data-i18-aria-label]').forEach(el => {
+                const key = el.getAttribute('data-i18-aria-label');
+                if (key && t[key]) {
+                    el.setAttribute('aria-label', t[key]);
+                }
+            });
+            // tooltip переводы (кастомные подсказки у nav-иконок)
+            document.querySelectorAll('[data-i18-tooltip]').forEach(el => {
+                const key = el.getAttribute('data-i18-tooltip');
+                if (key && t[key]) {
+                    el.setAttribute('data-tooltip', t[key]);
+                }
+            });
 
             window.__CART_I18N__ = {
                 title: t.cart_title,

@@ -1261,3 +1261,222 @@ class ShopFreeViewsTests(TestCase):
             # Если есть следующая страница — текущая должна быть заполнена
             # ровно на per_page (все ряды полные).
             self.assertEqual(len(page_obj.object_list), SHOP_PAGE_SIZE)
+
+
+# ---------------------------------------------------------------------------
+# Профиль пользователя и единый модуль прав ``core.permissions``.
+# Гарантируют, что staff/Editors/superuser видят /profile/, а формы
+# /profile/products/add/ и /profile/articles/add/ блокируют публикацию
+# для обычного staff.
+# ---------------------------------------------------------------------------
+
+
+class PermissionsHelpersTests(TestCase):
+    """Единый модуль прав ``core.permissions`` — контракт для админки,
+    форм и вью (см. AGENTS.md §6). Если кто-то дублирует логику или
+    «откреплится» от модуля — тесты упадут."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.anon = None  # через request.user.is_authenticated=False
+        cls.user = User.objects.create_user(username="u", password="pw")
+        cls.staff = User.objects.create_user(username="s", password="pw", is_staff=True)
+        cls.editor = User.objects.create_user(username="e", password="pw")
+        cls.editor.groups.add(Group.objects.create(name="Editors"))
+        cls.superuser = User.objects.create_superuser(username="a", password="pw")
+
+    def test_role_key_maps_each_role(self):
+        from core.permissions import role_key
+
+        self.assertEqual(role_key(self.user), "user")
+        self.assertEqual(role_key(self.staff), "staff")
+        self.assertEqual(role_key(self.editor), "editor")
+        self.assertEqual(role_key(self.superuser), "admin")
+
+    def test_can_publish_content_only_superuser_and_editors(self):
+        from core.permissions import can_publish_content
+
+        self.assertFalse(can_publish_content(self.user))
+        self.assertFalse(can_publish_content(self.staff))  # ключевое: staff ≠ publish
+        self.assertTrue(can_publish_content(self.editor))
+        self.assertTrue(can_publish_content(self.superuser))
+
+    def test_can_manage_content_includes_staff(self):
+        from core.permissions import can_manage_content
+
+        self.assertFalse(can_manage_content(self.user))
+        self.assertTrue(can_manage_content(self.staff))  # staff — ТОЛЬКО черновики
+        self.assertTrue(can_manage_content(self.editor))
+        self.assertTrue(can_manage_content(self.superuser))
+
+
+class ProfileViewTests(TestCase):
+    """Страница ``/profile/``: аутентификация, роль, recent-контент."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(username="plain", password="pw")
+        cls.editor = User.objects.create_user(username="ed", password="pw")
+        cls.editor.groups.add(Group.objects.create(name="Editors"))
+
+    def test_anonymous_redirected_to_login(self):
+        resp = Client().get(reverse("core:profile"))
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn(reverse("core:sign_up_login"), resp["Location"])
+        self.assertIn("next=", resp["Location"])
+
+    def test_plain_user_sees_profile_without_content_panel(self):
+        c = Client()
+        c.force_login(self.user)
+        resp = c.get(reverse("core:profile"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.context["can_manage_content"])
+        self.assertEqual(resp.context["profile_role_key"], "user")
+        # Обычный пользователь не видит список «недавних» товаров/статей.
+        self.assertEqual(list(resp.context["recent_products"]), [])
+        self.assertEqual(list(resp.context["recent_articles"]), [])
+
+    def test_editor_sees_content_management(self):
+        c = Client()
+        c.force_login(self.editor)
+        resp = c.get(reverse("core:profile"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.context["can_manage_content"])
+        self.assertEqual(resp.context["profile_role_key"], "editor")
+
+
+class ProfileAddProductTests(TestCase):
+    """Форма ``/profile/products/add/``: только staff/Editors, публикация ограничена."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(username="plain", password="pw")
+        cls.staff = User.objects.create_user(username="stf", password="pw", is_staff=True)
+        cls.editor = User.objects.create_user(username="ed", password="pw")
+        cls.editor.groups.add(Group.objects.create(name="Editors"))
+
+    # Slug генерируется из title через django.utils.text.slugify с
+    # allow_unicode=False — кириллица выкидывается. Поэтому в тестах
+    # фиксируем латинский slug явно, иначе generated-имя было бы "product".
+    _PRODUCT_SLUG = "test-product-from-profile"
+
+    def _valid_product_post(self, *, is_published=False):
+        return {
+            "kind": Product.Kind.SHOP,
+            "file_type": Product.FileType.MODEL_3D,
+            "free_category": "",
+            "title": "Новый товар",
+            "slug": self._PRODUCT_SLUG,
+            "description": "desc",
+            "badge": "",
+            "image": "images/shop/x.png",
+            "alt": "alt",
+            "price_rub": 100,
+            "download_url": "",
+            "display_order": 0,
+            "is_published": "on" if is_published else "",
+            "is_sold_out": "",
+            "is_placeholder": "",
+        }
+
+    def test_anonymous_redirected_to_login(self):
+        resp = Client().get(reverse("core:profile_add_product"))
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn(reverse("core:sign_up_login"), resp["Location"])
+
+    def test_plain_user_redirected_to_profile(self):
+        c = Client()
+        c.force_login(self.user)
+        resp = c.get(reverse("core:profile_add_product"))
+        self.assertRedirects(resp, reverse("core:profile"))
+
+    def test_staff_can_save_draft_but_not_publish(self):
+        # Обычный staff заходит на форму, но если поставит is_published=True —
+        # форма добавит ошибку (та же логика, что и в ProductAdmin).
+        c = Client()
+        c.force_login(self.staff)
+        resp = c.post(
+            reverse("core:profile_add_product"),
+            self._valid_product_post(is_published=True),
+        )
+        self.assertEqual(resp.status_code, 200)  # остаёмся на форме с ошибкой
+        self.assertFalse(Product.objects.filter(slug=self._PRODUCT_SLUG).exists())
+        # А черновик — сохраняется.
+        resp2 = c.post(
+            reverse("core:profile_add_product"),
+            self._valid_product_post(is_published=False),
+        )
+        self.assertRedirects(resp2, reverse("core:profile"))
+        created = Product.objects.get(slug=self._PRODUCT_SLUG)
+        self.assertFalse(created.is_published)
+
+    def test_editor_can_publish(self):
+        c = Client()
+        c.force_login(self.editor)
+        resp = c.post(
+            reverse("core:profile_add_product"),
+            self._valid_product_post(is_published=True),
+        )
+        self.assertRedirects(resp, reverse("core:profile"))
+        created = Product.objects.get(slug=self._PRODUCT_SLUG)
+        self.assertTrue(created.is_published)
+
+
+class ProfileAddArticleTests(TestCase):
+    """Форма ``/profile/articles/add/``: публикация только для Editors."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.staff = User.objects.create_user(username="stf", password="pw", is_staff=True)
+        cls.editor = User.objects.create_user(username="ed", password="pw")
+        cls.editor.groups.add(Group.objects.create(name="Editors"))
+
+    # См. пояснение к ``ProfileAddProductTests._PRODUCT_SLUG``.
+    _ARTICLE_SLUG = "test-article-from-profile"
+
+    def _valid_article_post(self, status=NewsArticle.Status.DRAFT):
+        return {
+            "title": "Тестовая статья",
+            "slug": self._ARTICLE_SLUG,
+            "tag": "Статья",
+            "excerpt": "Короткий анонс",
+            "content": "Тело статьи.",
+            "cover_image": "",
+            "reading_time_minutes": 5,
+            "status": status,
+        }
+
+    def test_staff_cannot_publish(self):
+        c = Client()
+        c.force_login(self.staff)
+        resp = c.post(
+            reverse("core:profile_add_article"),
+            self._valid_article_post(status=NewsArticle.Status.PUBLISHED),
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(NewsArticle.objects.filter(slug=self._ARTICLE_SLUG).exists())
+
+    def test_staff_saves_draft_with_null_published_at(self):
+        c = Client()
+        c.force_login(self.staff)
+        resp = c.post(
+            reverse("core:profile_add_article"),
+            self._valid_article_post(status=NewsArticle.Status.DRAFT),
+        )
+        self.assertRedirects(resp, reverse("core:profile"))
+        art = NewsArticle.objects.get(slug=self._ARTICLE_SLUG)
+        self.assertEqual(art.status, NewsArticle.Status.DRAFT)
+        self.assertIsNone(art.published_at)
+        self.assertEqual(art.author, self.staff)
+
+    def test_editor_publishes_with_published_at_set(self):
+        c = Client()
+        c.force_login(self.editor)
+        resp = c.post(
+            reverse("core:profile_add_article"),
+            self._valid_article_post(status=NewsArticle.Status.PUBLISHED),
+        )
+        self.assertRedirects(resp, reverse("core:profile"))
+        art = NewsArticle.objects.get(slug=self._ARTICLE_SLUG)
+        self.assertEqual(art.status, NewsArticle.Status.PUBLISHED)
+        self.assertIsNotNone(art.published_at)

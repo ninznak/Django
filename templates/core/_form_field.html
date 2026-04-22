@@ -1,0 +1,56 @@
+{% comment %}
+Универсальный рендер поля Django-формы.
+
+Использование:
+    {% include "core/_form_field.html" with field=form.title %}
+    {% include "core/_form_field.html" with field=form.is_published as_checkbox=1 help="..." %}
+    {% include "core/_form_field.html" with field=form.slug help_i18="profile_product_help_slug" %}
+
+Параметры:
+    field         — поле формы (обязательно)
+    help          — статическая подсказка под полем (русский по умолчанию),
+                    переопределяет field.help_text.
+    help_i18      — ключ в translations (base.html::translations). Если задан,
+                    рендерим <span data-i18="<key>">{{ help }}</span> и JS
+                    автоматически подменяет текст при смене языка.
+                    Можно использовать вместе с help — тогда help будет
+                    русским fallback, а ключ i18n отвечает за en-перевод.
+    as_checkbox   — если truthy, рендерим поле как чекбокс в одну строку.
+{% endcomment %}
+{% if as_checkbox %}
+<label class="flex items-start gap-3 cursor-pointer">
+    {{ field }}
+    <span class="flex-1 text-sm">
+        <span class="font-medium text-[#263120]">
+            {{ field.label }}{% if field.field.required %} <span class="text-red-600">*</span>{% endif %}
+        </span>
+        {% if help_i18 %}
+        <span class="block text-xs text-[#4c5940]/80 mt-0.5" data-i18="{{ help_i18 }}">{{ help }}</span>
+        {% elif help %}
+        <span class="block text-xs text-[#4c5940]/80 mt-0.5">{{ help }}</span>
+        {% elif field.help_text %}
+        <span class="block text-xs text-[#4c5940]/80 mt-0.5">{{ field.help_text|safe }}</span>
+        {% endif %}
+        {% if field.errors %}
+        <span class="block text-xs text-red-600 mt-1">{{ field.errors|join:" " }}</span>
+        {% endif %}
+    </span>
+</label>
+{% else %}
+<div>
+    <label class="block text-sm font-medium text-[#263120] mb-1" for="{{ field.id_for_label }}">
+        {{ field.label }}{% if field.field.required %} <span class="text-red-600">*</span>{% endif %}
+    </label>
+    {{ field }}
+    {% if help_i18 %}
+    <p class="mt-1 text-xs text-[#4c5940]/80" data-i18="{{ help_i18 }}">{{ help }}</p>
+    {% elif help %}
+    <p class="mt-1 text-xs text-[#4c5940]/80">{{ help }}</p>
+    {% elif field.help_text %}
+    <p class="mt-1 text-xs text-[#4c5940]/80">{{ field.help_text|safe }}</p>
+    {% endif %}
+    {% if field.errors %}
+    <p class="mt-1 text-xs text-red-600">{{ field.errors|join:" " }}</p>
+    {% endif %}
+</div>
+{% endif %}

@@ -3,18 +3,18 @@ from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 
 from .models import ContactSubmission, NewsArticle, Order, OrderItem, Product, ProductImage
+from .permissions import can_publish_content
 from .pricing import format_minor_as_rub
 
 
 def _user_can_publish(request) -> bool:
-    """Публиковать товары/статьи разрешено только superuser и группе Editors.
+    """Обёртка над ``permissions.can_publish_content`` (см. AGENTS.md §11).
 
-    Общая точка для ``NewsArticleAdmin`` и ``ProductAdmin`` — если появятся
-    новые модели, подключайте их сюда же, чтобы правила публикации были
-    в одном месте и легко менялись (см. AGENTS.md §11).
+    Оставлена как public-name, т.к. на неё ссылаются тесты и сторонние
+    места (грепните ``_user_can_publish`` — это единственная точка правды
+    для админки). Логика живёт в ``core.permissions``.
     """
-    user = request.user
-    return user.is_superuser or user.groups.filter(name="Editors").exists()
+    return can_publish_content(request.user)
 
 
 class OrderItemInline(admin.TabularInline):

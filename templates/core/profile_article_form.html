@@ -1,0 +1,68 @@
+{% extends "core/base.html" %}
+
+{% comment %}
+Форма добавления статьи из профиля. Та же i18n-схема, что и у
+profile_product_form.html (data-i18 + ключи profile_article_*). Лейблы полей
+берутся из ``NewsArticle._meta.verbose_name`` и остаются русскими.
+{% endcomment %}
+
+{% block content %}
+<section class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
+    <div class="max-w-3xl mx-auto px-6">
+        <div class="mb-6 flex items-center gap-3">
+            <a href="{% url 'core:profile' %}" class="text-[#3d7a4f] text-sm font-semibold hover:underline" data-i18="profile_form_back">&larr; В профиль</a>
+        </div>
+
+        <div class="card p-6 sm:p-10">
+            <p class="section-label mb-2" data-i18="profile_article_form_section">Новости</p>
+            <h1 class="font-display text-3xl font-semibold mb-2" data-i18="profile_article_form_title">Добавить статью</h1>
+            <p class="text-[#4c5940] mb-6 text-sm">
+                <span data-i18="profile_article_form_intro">Форма-обёртка над Django-админкой. Текст статьи поддерживает простую разметку:</span>
+                <code data-i18="profile_article_form_intro_markup">## заголовок, списки - и 1., **жирный**, *курсив*, [ссылка](url), ![alt](images/news/...).</code>
+                {% if not can_publish %}
+                <br><span class="text-amber-700 font-medium" data-i18="profile_form_draft_only">Вы можете сохранить статью только как черновик — публикация доступна редакторам.</span>
+                {% endif %}
+            </p>
+
+            {% if form.non_field_errors %}
+            <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {% for err in form.non_field_errors %}<p>{{ err }}</p>{% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" action="" class="space-y-5" novalidate>
+                {% csrf_token %}
+
+                <fieldset class="space-y-5">
+                    <legend class="font-display text-lg font-semibold text-[#263120] mb-1" data-i18="profile_article_fs_basic">Основное</legend>
+                    {% include "core/_form_field.html" with field=form.title %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {% include "core/_form_field.html" with field=form.slug help_i18="profile_article_help_slug" %}
+                        {% include "core/_form_field.html" with field=form.tag %}
+                    </div>
+                </fieldset>
+
+                <fieldset class="space-y-5">
+                    <legend class="font-display text-lg font-semibold text-[#263120] mb-1" data-i18="profile_article_fs_content">Содержимое</legend>
+                    {% include "core/_form_field.html" with field=form.excerpt help_i18="profile_article_help_excerpt" %}
+                    {% include "core/_form_field.html" with field=form.content %}
+                    {% include "core/_form_field.html" with field=form.cover_image help_i18="profile_article_help_cover" %}
+                </fieldset>
+
+                <fieldset class="space-y-5">
+                    <legend class="font-display text-lg font-semibold text-[#263120] mb-1" data-i18="profile_article_fs_settings">Настройки</legend>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {% include "core/_form_field.html" with field=form.reading_time_minutes %}
+                        {% include "core/_form_field.html" with field=form.status help_i18="profile_article_help_status" %}
+                    </div>
+                </fieldset>
+
+                <div class="flex flex-wrap items-center gap-3 pt-2">
+                    <button type="submit" class="btn-primary" data-i18="profile_form_save">Сохранить</button>
+                    <a href="{% url 'core:profile' %}" class="btn-outline" data-i18="profile_form_cancel">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

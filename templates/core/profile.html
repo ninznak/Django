@@ -1,0 +1,128 @@
+{% extends "core/base.html" %}
+
+{% comment %}
+Личный кабинет пользователя.
+
+Все видимые тексты переводятся через общий механизм ``data-i18`` в
+``base.html``. Если добавляете новую строку на странице — заведите пару
+ru/en ключей в ``translations`` и используйте ``data-i18="<key>"``, чтобы
+не захардкодить русский текст.
+
+Роль пользователя (``profile_role_key``) приходит из вью и маппится на
+один из ключей ``profile_role_admin/editor/staff/user/guest``.
+{% endcomment %}
+
+{% block content %}
+<section class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
+    <div class="max-w-4xl mx-auto px-6">
+        <div class="card p-6 sm:p-10">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <p class="section-label mb-2" data-i18="profile_section_label">Личный кабинет</p>
+                    <h1 class="font-display text-3xl sm:text-4xl font-semibold" data-i18="profile_title">Мой профиль</h1>
+                </div>
+                <span class="inline-flex self-start sm:self-auto items-center gap-2 px-3 py-1.5 rounded-full bg-[#3d7a4f]/10 text-[#2d5a3d] text-sm font-semibold">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <span data-i18="profile_role_{{ profile_role_key }}">{{ profile_role }}</span>
+                </span>
+            </div>
+
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <div class="rounded-2xl border border-[#4a5e38]/20 bg-white/60 p-4">
+                    <dt class="text-xs uppercase tracking-wider text-[#4c5940] font-semibold mb-1" data-i18="profile_login_field">Логин</dt>
+                    <dd class="text-lg font-medium text-[#263120] break-all">{{ profile_user.get_username }}</dd>
+                </div>
+                <div class="rounded-2xl border border-[#4a5e38]/20 bg-white/60 p-4">
+                    <dt class="text-xs uppercase tracking-wider text-[#4c5940] font-semibold mb-1" data-i18="profile_email_field">Email</dt>
+                    <dd class="text-lg font-medium text-[#263120] break-all">
+                        {% if profile_user.email %}
+                            <a href="mailto:{{ profile_user.email }}" class="hover:text-[#3d7a4f] transition-colors">{{ profile_user.email }}</a>
+                        {% else %}
+                            <span class="text-[#4c5940]/70 italic" data-i18="profile_email_empty">не указан</span>
+                        {% endif %}
+                    </dd>
+                </div>
+            </dl>
+
+            <form method="post" action="{% url 'core:logout' %}" class="mt-8 inline-flex">
+                {% csrf_token %}
+                <button type="submit" class="btn-outline" data-i18="profile_logout">Выйти</button>
+            </form>
+        </div>
+
+        {% if can_manage_content %}
+        <div class="card p-6 sm:p-10 mt-8">
+            <p class="section-label mb-2" data-i18="profile_content_label">Управление контентом</p>
+            <h2 class="font-display text-2xl sm:text-3xl font-semibold mb-3" data-i18="profile_content_heading">Добавить контент</h2>
+            <p class="text-[#4c5940] mb-6" data-i18="profile_content_intro">
+                Упрощённые формы для быстрой публикации без захода в Django-админку.
+                Публиковать сразу могут редакторы (группа Editors) и суперпользователи —
+                остальным доступны только черновики.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <a href="{% url 'core:profile_add_product' %}" class="group rounded-2xl border border-[#4a5e38]/25 bg-white/70 p-6 transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#3d7a4f]/12 text-[#3d7a4f]">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9l9-6 9 6v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+                        </span>
+                        <svg class="text-[#3d7a4f] opacity-0 group-hover:opacity-100 transition-opacity" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                    </div>
+                    <h3 class="font-display text-lg font-semibold mb-1" data-i18="profile_card_product_title">Товар / бесплатная модель</h3>
+                    <p class="text-sm text-[#4c5940]" data-i18="profile_card_product_sub">Карточка для /shop/ или /free-models/.</p>
+                </a>
+                <a href="{% url 'core:profile_add_article' %}" class="group rounded-2xl border border-[#4a5e38]/25 bg-white/70 p-6 transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#3d7a4f]/12 text-[#3d7a4f]">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                        </span>
+                        <svg class="text-[#3d7a4f] opacity-0 group-hover:opacity-100 transition-opacity" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                    </div>
+                    <h3 class="font-display text-lg font-semibold mb-1" data-i18="profile_card_article_title">Статья / новость</h3>
+                    <p class="text-sm text-[#4c5940]" data-i18="profile_card_article_sub">Публикация в разделе /news/.</p>
+                </a>
+            </div>
+
+            <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {% if recent_products %}
+                <div class="rounded-2xl border border-[#4a5e38]/20 bg-white/60 p-5">
+                    <h3 class="font-display text-lg font-semibold mb-3" data-i18="profile_recent_products_title">Недавние товары</h3>
+                    <ul class="space-y-2 text-sm">
+                        {% for p in recent_products %}
+                        <li class="flex items-center justify-between gap-3">
+                            <span class="truncate">{{ p.title }}</span>
+                            <span class="shrink-0 text-xs px-2 py-0.5 rounded-full {% if p.is_published %}bg-[#3d7a4f]/15 text-[#2d5a3d]{% else %}bg-gray-200 text-gray-700{% endif %}"
+                                  data-i18="{% if p.is_published %}profile_status_published{% else %}profile_status_draft{% endif %}">
+                                {% if p.is_published %}опубл.{% else %}черновик{% endif %}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if recent_articles %}
+                <div class="rounded-2xl border border-[#4a5e38]/20 bg-white/60 p-5">
+                    <h3 class="font-display text-lg font-semibold mb-3" data-i18="profile_recent_articles_title">Недавние статьи</h3>
+                    <ul class="space-y-2 text-sm">
+                        {% for a in recent_articles %}
+                        <li class="flex items-center justify-between gap-3">
+                            <span class="truncate">{{ a.title }}</span>
+                            <span class="shrink-0 text-xs px-2 py-0.5 rounded-full {% if a.status == 'published' %}bg-[#3d7a4f]/15 text-[#2d5a3d]{% else %}bg-gray-200 text-gray-700{% endif %}"
+                                  data-i18="{% if a.status == 'published' %}profile_status_published{% else %}profile_status_draft{% endif %}">
+                                {% if a.status == 'published' %}опубл.{% else %}черновик{% endif %}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <p class="mt-6 text-xs text-[#4c5940]/80">
+                <span data-i18="profile_admin_hint_prefix">Полный функционал редактирования и удаления — в </span><a href="/admin/" class="text-[#3d7a4f] font-semibold hover:underline" data-i18="profile_admin_hint_link">Django-админке</a><span data-i18="profile_admin_hint_suffix">.</span>
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

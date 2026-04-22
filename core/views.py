@@ -16,8 +16,21 @@ from django.views.decorators.http import require_http_methods
 
 from . import cart_utils
 from .portfolio_gallery_data import gallery_context
-from .forms import CheckoutForm, ContactForm, RegisterForm
+from .forms import (
+    CheckoutForm,
+    ContactForm,
+    NewsArticleCreateForm,
+    ProductCreateForm,
+    RegisterForm,
+)
 from .models import ContactSubmission, NewsArticle, Order, OrderItem, Product
+from .permissions import (
+    can_manage_content,
+    can_publish_content,
+    require_content_manager,
+    role_key,
+    role_label_ru,
+)
 from .pricing import format_minor_as_rub
 from .seo import get_seo, news_article_seo_overrides
 from .shop_data import get_product, get_shop_products
@@ -531,6 +544,140 @@ def order_confirmation(request, order_id):
         ),
     }
     return render(request, "core/order_confirmation.html", ctx)
+
+
+# ---------------------------------------------------------------------------
+# Профиль пользователя + UI-дружелюбные формы добавления контента.
+#
+# Это "зеркало админки" для авторизованных пользователей: на /profile/ они
+# видят свои данные (логин, email, роль), а staff / Editors дополнительно
+# получают кнопки «Добавить товар» и «Добавить статью», открывающие
+# упрощённые формы ``ProductCreateForm`` / ``NewsArticleCreateForm``.
+#
+# Права на публикацию живут в одном месте — ``core/permissions.py``:
+#   * ``can_manage_content(user)`` — пускать в формы (staff/Editors/superuser);
+#   * ``can_publish_content(user)`` — разрешить ``is_published=True`` /
+#     ``status=published`` (только superuser + группа Editors).
+# ---------------------------------------------------------------------------
+
+
+def _profile_seo(request, title: str, description: str) -> dict:
+    """SEO для всех /profile/ страниц: noindex, nofollow, без JSON-LD.
+
+    Выделено в helper, чтобы не повторять один и тот же блок в трёх вью.
+    """
+    return get_seo(
+        request,
+        title=title,
+        description=description,
+        canonical_path=request.path,
+        robots="noindex, nofollow",
+        no_json_ld=True,
+    )
+
+
+@require_http_methods(["GET"])
+def profile(request):
+    """Страница профиля: логин, email, ссылки на управление контентом."""
+    if not request.user.is_authenticated:
+        return redirect(f"{reverse('core:sign_up_login')}?next={request.path}")
+
+    user = request.user
+    can_manage = can_manage_content(user)
+    ctx = {
+        "profile_user": user,
+        "profile_role": role_label_ru(user),
+        "profile_role_key": role_key(user),
+        "can_manage_content": can_manage,
+        "recent_products": (
+            Product.objects.order_by("-updated_at")[:5] if can_manage else []
+        ),
+        "recent_articles": (
+            NewsArticle.objects.only(
+                "id", "title", "status", "updated_at"
+            ).order_by("-updated_at")[:5]
+            if can_manage
+            else []
+        ),
+        "seo": _profile_seo(
+            request,
+            "Мой профиль — KurilenkoArt",
+            "Личный кабинет пользователя KurilenkoArt.",
+        ),
+    }
+    return render(request, "core/profile.html", ctx)
+
+
+@require_http_methods(["GET", "POST"])
+@require_content_manager
+def profile_add_product(request):
+    """UI-дружелюбный дубль ``ProductAdmin`` для staff/Editors."""
+    if request.method == "POST":
+        form = ProductCreateForm(request.POST, user=request.user)
+        if form.is_valid():
+            product = form.save()
+            messages.success(
+                request,
+                f"Товар «{product.title}» сохранён "
+                f"({'опубликован' if product.is_published else 'черновик'}).",
+            )
+            return redirect("core:profile")
+    else:
+        form = ProductCreateForm(user=request.user)
+
+    ctx = {
+        "form": form,
+        "can_publish": can_publish_content(request.user),
+        "seo": _profile_seo(
+            request,
+            "Добавить товар — KurilenkoArt",
+            "Форма добавления товара или бесплатной модели.",
+        ),
+    }
+    return render(request, "core/profile_product_form.html", ctx)
+
+
+@require_http_methods(["GET", "POST"])
+@require_content_manager
+def profile_add_article(request):
+    """UI-дружелюбный дубль ``NewsArticleAdmin`` для staff/Editors."""
+    if request.method == "POST":
+        form = NewsArticleCreateForm(request.POST, user=request.user)
+        if form.is_valid():
+            article = form.save(commit=False)
+            if article.author_id is None:
+                article.author = request.user
+            # Держим ``published_at`` в синхронизации со ``status`` — та же
+            # логика, что и в ``NewsArticleAdmin.save_model`` (см. admin.py).
+            if (
+                article.status == NewsArticle.Status.PUBLISHED
+                and article.published_at is None
+            ):
+                from django.utils import timezone
+
+                article.published_at = timezone.now()
+            elif article.status == NewsArticle.Status.DRAFT:
+                article.published_at = None
+            article.save()
+            messages.success(
+                request,
+                f"Статья «{article.title}» сохранена "
+                f"({'опубликована' if article.status == NewsArticle.Status.PUBLISHED else 'черновик'}).",
+            )
+            return redirect("core:profile")
+    else:
+        form = NewsArticleCreateForm(user=request.user)
+
+    ctx = {
+        "form": form,
+        "can_publish": can_publish_content(request.user),
+        "seo": _profile_seo(
+            request,
+            "Добавить статью — KurilenkoArt",
+            "Форма добавления новостной статьи.",
+        ),
+    }
+    return render(request, "core/profile_article_form.html", ctx)
 
 
 def robots_txt(request):

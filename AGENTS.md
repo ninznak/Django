@@ -3,7 +3,9 @@
 > Goal: give an AI agent everything it needs to make safe, targeted edits to this
 > Django project **without reading every file**. Read this first, then jump only
 > to the specific module you need to touch. Keep this file up to date when
-> module responsibilities change.
+> module responsibilities change. After each successful implementation iteration,
+> update this file if behavior, structure, routes, i18n keys, or conventions
+> changed.
 
 ---
 
@@ -40,9 +42,10 @@ Django/
 │   ├── apps.py                         # AppConfig (name="core", verbose_name="My studio")
 │   ├── models.py                       # Order, OrderItem, ContactSubmission, NewsArticle, Product, ProductImage
 │   ├── admin.py                        # Admin для Order, ContactSubmission, NewsArticle, Product (publish-gate для Editors/superuser)
-│   ├── forms.py                        # ContactForm, RegisterForm, CheckoutForm
+│   ├── forms.py                        # ContactForm, RegisterForm, CheckoutForm, ProductCreateForm, NewsArticleCreateForm
 │   ├── urls.py                         # app_name="core" route table
-│   ├── views.py                        # All HTTP views (pages, cart API, checkout, auth)
+│   ├── views.py                        # All HTTP views (pages, cart API, checkout, auth, profile)
+│   ├── permissions.py                  # Единая точка правды: can_publish_content / can_manage_content / role_key / @require_content_manager
 │   ├── cart_utils.py                   # Session cart primitives (add/set/remove/clear/build_lines)
 │   ├── pricing.py                      # format_minor_as_rub, usd_whole_to_rub_kopecks
 │   ├── shop_data.py                    # Адаптер над Product: get_shop_products/get_free_products/get_product
@@ -52,11 +55,15 @@ Django/
 │   ├── sitemaps.py                     # CoreViewSitemap + NewsArticleSitemap
 │   ├── templatetags/pricing_extras.py  # {{ value|rub_minor }}
 │   ├── templatetags/article_extras.py  # {{ article.content|render_article_body }} (headings / ordered & unordered lists / inline images / bold / italic / safe links)
-│   ├── tests.py                        # tests covering pricing/forms/cart/SEO/news/admin flows
+│   ├── tests.py                        # tests covering pricing/forms/cart/SEO/news/admin/profile flows
 │   └── migrations/                     # 0001_contact_submission, 0002_order, 0003_order_address_optional
 │
 ├── templates/core/                     # HTML templates for every named URL
-│   ├── base.html                       # Head/meta/OG/Twitter/JSON-LD wiring (consumes `seo`)
+│   ├── base.html                       # Head/meta/OG/Twitter/JSON-LD wiring (consumes `seo`) + i18n engine (data-i18 / data-i18-placeholder / data-i18-aria-label)
+│   ├── _form_field.html                # Универсальный рендер Django-поля (поддерживает help / help_i18 / as_checkbox)
+│   ├── profile.html                    # Личный кабинет (логин, email, роль, ссылки на формы добавления)
+│   ├── profile_product_form.html       # Форма /profile/products/add/ (обёртка над ProductAdmin)
+│   ├── profile_article_form.html       # Форма /profile/articles/add/ (обёртка над NewsArticleAdmin)
 │   └── <page>.html                     # One per view
 │
 ├── static/                             # Source static assets (CSS, JS, images)
@@ -126,6 +133,9 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `cart_api` | `/api/cart/` | `views.cart_api` | GET returns cart JSON; POST body `{action, product_id, qty}` with `action ∈ {add,set,remove,clear}`. CSRF-protected. |
 | `sign_up_login` | `/sign-up-login/` | `views.sign_up_login` | Login always; registration gated by `AUTH_SHOW_REGISTRATION`. Honors `?next=` (same-host only). |
 | `logout` | `/logout/` | `views.logout_view` | |
+| `profile` | `/profile/` | `views.profile` | Личный кабинет авторизованного пользователя. Анонимным — redirect на `core:sign_up_login?next=/profile/`. Staff/Editors/superuser (`can_manage_content(user)`) дополнительно видят блок «Управление контентом» со ссылками на формы добавления. Роль отдаётся шаблону как `profile_role` (русская подпись) + `profile_role_key` (ключ i18n: `admin`/`editor`/`staff`/`user`/`guest`). SEO — `noindex, nofollow`, без JSON-LD. |
+| `profile_add_product` | `/profile/products/add/` | `views.profile_add_product` | UI-дружелюбный дубль `ProductAdmin` (форма `ProductCreateForm`). Gated декоратором `@require_content_manager` из `core.permissions`; публикацию (`is_published=True`) форма блокирует для обычного staff (только Editors/superuser). |
+| `profile_add_article` | `/profile/articles/add/` | `views.profile_add_article` | UI-дружелюбный дубль `NewsArticleAdmin` (форма `NewsArticleCreateForm`). Те же правила прав + синхронизация `published_at` со `status`, как в `NewsArticleAdmin.save_model`. |
 | `copyright` | `/copyright/` | `views.copyright` | |
 | `checkout` | `/checkout/` | `views.checkout` | Empty cart → redirect to `core:shop`. Creates `Order` + `OrderItem`s, clears cart, emails admin. |
 | `order_confirmation` | `/order/<int>/confirmation/` | `views.order_confirmation` | Missing order → redirect to shop. |
@@ -317,6 +327,43 @@ Templates already read: `seo.title`, `.description`, `.keywords`, `.robots`,
 `.canonical_url`, `.og_type`, `.og_image`, `.site_name`, `.json_ld` (via
 `mark_safe`). If you add a field, add it in `base.html` too.
 
+### `core/permissions.py` — единая точка правды для прав на контент
+
+Был дубляж: одинаковая логика «кто может публиковать» жила в
+`admin.py::_user_can_publish`, `forms.py::_user_can_publish_content` и
+`views.py::_user_is_content_manager`. Теперь всё это в одном модуле:
+
+```python
+EDITORS_GROUP_NAME = "Editors"                  # переименование здесь — одновременно во всех call-sites
+
+def can_publish_content(user) -> bool           # superuser OR Editors — может ставить is_published=True / status=published
+def can_manage_content(user) -> bool            # can_publish_content OR staff — пускаем в /profile/*/add/ (staff сохранит только черновик)
+def role_key(user) -> str                       # "admin" / "editor" / "staff" / "user" / "guest" — для data-i18="profile_role_<key>"
+def role_label_ru(user) -> str                  # русская подпись роли для первичного SSR-рендера profile.html
+
+def require_content_manager(view_func) -> view_func   # декоратор: gate для профильных форм
+#   anon → redirect("core:sign_up_login?next=…")
+#   can_manage_content=False → messages.error + redirect("core:profile")
+```
+
+Правила:
+
+- **`admin.py::_user_can_publish(request)`** — тонкая обёртка над
+  `can_publish_content(request.user)`; оставлена как public-name, чтобы
+  сохранить совместимость с `ProductAdminTests` и другими внешними точками.
+- **`forms.py` (`ProductCreateForm.clean`, `NewsArticleCreateForm.clean`)** —
+  импортируют `can_publish_content` напрямую; никакой локальной копии логики.
+- **`views.py` (`profile_add_product`, `profile_add_article`)** — обёрнуты
+  `@require_content_manager`; не делают свою проверку на `is_authenticated`.
+- **Новые админ-модели с publish-gate** подключаем сюда же. Если появится
+  четвёртое место, где нужна «разрешено только Editors/superuser», — не
+  дублируйте логику, импортируйте `can_publish_content`.
+
+Тесты контракта — `PermissionsHelpersTests`, `ProfileViewTests`,
+`ProfileAddProductTests`, `ProfileAddArticleTests` в `core/tests.py`. Они
+явно проверяют, что `staff ≠ publish`, но `staff` может зайти в форму и
+сохранить черновик.
+
 ### `core/forms.py`
 
 | Form | Fields | Notable validation |
@@ -324,6 +371,8 @@ Templates already read: `seo.title`, `.description`, `.keywords`, `.robots`,
 | `ContactForm` | name, email, subject (max 200), message (max 5000) | All required. |
 | `RegisterForm(UserCreationForm)` | username, email, password1/2 | `clean_email` lowercases + rejects duplicates case-insensitively. |
 | `CheckoutForm` | name, email, phone?, country (default "Россия"), city, address?, postal_code?, notes?, **pd_consent** | `clean_pd_consent` **requires True** — enforces 152-ФЗ consent. |
+| `ProductCreateForm(ModelForm)` | `kind/file_type/free_category/title/slug?/description?/badge?/image?/alt?/price_rub/download_url?/is_published/is_sold_out/is_placeholder/display_order` | Принимает `user=` в `__init__`. `clean_slug` автогенерит slug из title. `clean()` зависит от `kind`: для `free` требует `free_category` + `download_url` (если не placeholder), для `shop` — `price_rub > 0`. `is_published=True` разрешён только если `permissions.can_publish_content(user)`. |
+| `NewsArticleCreateForm(ModelForm)` | `title/slug?/tag/excerpt/content/cover_image?/reading_time_minutes/status` | `user=` в `__init__`. `clean_slug` автогенерит slug из title. `status=published` блокируется в `clean()` для не-Editors/superuser. |
 
 ### `core/views.py` — conventions
 
@@ -337,6 +386,9 @@ Templates already read: `seo.title`, `.description`, `.keywords`, `.robots`,
 ## 7. Templates (`templates/core/`)
 
 - `base.html` is the layout; every page `{% extends "core/base.html" %}`.
+- Header responsive contract: on narrow phones (`<sm`) top row keeps logo left
+  and language switcher right; cart button moves to the lower row (`sm:hidden`)
+  right after `Магазин` (burger + shop + cart + optional sign in for guests).
 - It already renders full meta + Open Graph + Twitter Card + JSON-LD using the
   `seo` context var. **Never hard-code meta tags in child templates** — extend
   `PAGE_SEO` or pass overrides to `get_seo` instead.
@@ -347,6 +399,57 @@ Templates already read: `seo.title`, `.description`, `.keywords`, `.robots`,
   - Block-level: `## heading` → `<h3>`, `- item` → `<ul><li>`, `1. item` (any positive integer) → `<ol><li>`, `![alt](images/news/file.jpg)` on its own line → styled `<img>` block, blank line separates paragraphs.
   - Inline (works inside paragraphs, headings and list items): `**bold**` → `<strong>`, `*italic*` → `<em>`, `[label](url)` → `<a>` with `rel="noopener noreferrer"`. Only `http://`, `https://`, `mailto:`, `tel:`, `#`, `/`, `./` and `../` URLs are allowed — `javascript:`, `data:` and unknown schemes are rendered as plain text.
   - Cover image is rendered separately by the template from `NewsArticle.cover_image`; don't duplicate it inside `content` via `![]()`.
+- `homepage.html` hero carousel (`.cs-card`) should keep hover motion smooth and calm (no spring overshoot curves that cause visual jerk on pointer hover). Prefer gentle `ease-out`-style cubic-bezier and moderate lift/scale. **Stacking:** the middle card uses the highest base `z-index` (fan “front”), so it is never covered by both side cards at once; sides use lower layers (`0→1`, `1→3`, `2→2`); hovered card still uses `z-index: 10`.
+
+### 7.1 i18n (клиентская — `data-i18` в `base.html`)
+
+Сайт не использует Django gettext/`LocaleMiddleware`. Переключение языка
+полностью клиентское: `base.html` содержит `const translations = { ru: {...}, en: {...} }`
+и функцию `updatePageTranslations()`, которая:
+
+1. **Один обобщённый цикл** пробегает `[data-i18]` и ставит
+   `el.textContent = t[key]` (если ключ есть). **Это покрывает все текстовые
+   переводы** — больше не нужно добавлять по `querySelectorAll('[data-i18="X"]')`
+   на каждый новый ключ (так было раньше; около 175 строк дубляжа удалено).
+2. `[data-i18-placeholder="<key>"]` — `setAttribute("placeholder", t[key])`.
+3. `[data-i18-aria-label="<key>"]` — `setAttribute("aria-label", t[key])`.
+4. `window.__CART_I18N__` заполняется отдельно (корзина берёт переводы через
+   `window.applyCartI18n()`).
+
+Правила при добавлении новой текстовой строки:
+
+- Добавьте **пару** ключей (`ru`+`en`) в `const translations` в `base.html`.
+- На элементе поставьте `data-i18="<key>"` и **обязательно** заполните
+  русский текст как fallback (SSR-рендер отдаёт русский до старта JS).
+- Для input-а placeholder'а — `data-i18-placeholder="<key>"` + `placeholder="..."`
+  в атрибуте для SSR.
+- Для icon-кнопок — `data-i18-aria-label="<key>"` + `aria-label="..."`.
+- Ключ помещайте в обе локали. Если какой-то ключ существует только в `ru`,
+  JS просто оставит русский текст в en-режиме (`if (key && t[key])` skip).
+
+**Не добавляйте** ручные `document.querySelectorAll('[data-i18="X"]').forEach(el => el.textContent = t.X)`
+в `updatePageTranslations()` — обобщённый цикл уже делает это. Любой такой
+код — дубляж, мы его вычистили (см. историю `base.html`).
+
+### 7.2 Шаблоны профиля и `_form_field.html`
+
+`templates/core/_form_field.html` — универсальный рендер одного поля
+Django-формы. Параметры (передаются через `{% include ... with ... %}`):
+
+| Параметр     | Что делает |
+|--------------|------------|
+| `field`      | сам bound-field (обязателен) |
+| `help`       | статическая подсказка под полем (перезаписывает `field.help_text`) |
+| `help_i18`   | ключ в `translations` (`base.html`). Рендерится как `data-i18="<key>"`, JS подменяет при смене языка. Можно комбинировать с `help` (тогда `help` — это ru-fallback). |
+| `as_checkbox`| truthy → inline-разметка для чекбокса |
+
+`profile*.html` используют `data-i18` для всех chrome-текстов (заголовки,
+section-labels, кнопки, help-тексты) и `help_i18` для подсказок у полей.
+**Русский fallback обязателен прямо в разметке**, чтобы SSR возвращал
+полноценную русскую страницу без JS. Field-лейблы приходят из
+`Model._meta.verbose_name` (русские) и остаются русскими на en-локали —
+полный перевод лейблов потребовал бы Django gettext, что выходит за
+рамки нынешней клиентской i18n-схемы.
 
 ---
 
@@ -448,6 +551,10 @@ Coverage map (read a test before making a semantically-loaded change):
 
 ## 11. Conventions & gotchas
 
+- **AGENTS.md update discipline**: after each successful iteration/task, update
+  this file if anything changed in architecture, module ownership, URL map,
+  templates/i18n contracts, permissions, tests coverage, or operational rules.
+  If nothing changed materially, no update is required.
 - **Money = integer kopecks** (minor units). Never store floats. Format with
   `format_minor_as_rub` / `|rub_minor`.
 - **URL building**: always `reverse("core:<name>", kwargs={...})`. The catch-all

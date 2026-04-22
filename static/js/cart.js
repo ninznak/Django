@@ -50,10 +50,12 @@
   }
 
   function updateBadge(n) {
-    var b = document.getElementById('cart-badge');
-    if (!b) return;
-    b.textContent = n > 99 ? '99+' : String(n);
-    b.classList.toggle('hidden', n === 0);
+    var badges = document.querySelectorAll('[data-cart-badge]');
+    if (!badges.length) return;
+    badges.forEach(function (b) {
+      b.textContent = n > 99 ? '99+' : String(n);
+      b.classList.toggle('hidden', n === 0);
+    });
   }
 
   function renderDrawer(data) {
@@ -135,8 +137,9 @@
     if (el && t.clear) el.textContent = t.clear;
     el = document.getElementById('cart-drawer-close');
     if (el) el.setAttribute('aria-label', t.close || 'Close');
-    el = document.getElementById('cart-toggle');
-    if (el) el.setAttribute('aria-label', t.navCart || 'Cart');
+    document.querySelectorAll('.js-cart-toggle').forEach(function (toggle) {
+      toggle.setAttribute('aria-label', t.navCart || 'Cart');
+    });
     el = document.getElementById('cart-drawer-backdrop');
     if (el && t.close) el.setAttribute('aria-label', t.close);
   }
@@ -161,7 +164,7 @@
     var backdrop = document.getElementById('cart-drawer-backdrop');
     var closeBtn = document.getElementById('cart-drawer-close');
     var clearBtn = document.getElementById('cart-clear');
-    var openBtn = document.getElementById('cart-toggle');
+    var openBtns = document.querySelectorAll('.js-cart-toggle');
 
     function openDrawer() {
       if (drawer) drawer.classList.remove('hidden');
@@ -180,7 +183,9 @@
       refresh().catch(function () {});
     };
 
-    if (openBtn) openBtn.addEventListener('click', openDrawer);
+    openBtns.forEach(function (btn) {
+      btn.addEventListener('click', openDrawer);
+    });
     if (backdrop) backdrop.addEventListener('click', closeDrawer);
     if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
     document.addEventListener('keydown', function (e) {

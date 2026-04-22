@@ -1,0 +1,89 @@
+{% extends "core/base.html" %}
+
+{% comment %}
+Форма добавления товара / бесплатной модели из профиля.
+
+Вся chrome-обвязка (заголовки, секции, кнопки) переводится через
+``data-i18`` (см. ключи ``profile_*`` в ``base.html``). Лейблы полей
+приходят из ``Product._meta.verbose_name`` (русские), поэтому на en-локали
+часть формы останется русской — это осознанный компромисс: полный перевод
+field-labels потребовал бы Django gettext, что выходит за рамки текущей
+i18n-схемы сайта.
+{% endcomment %}
+
+{% block content %}
+<section class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
+    <div class="max-w-3xl mx-auto px-6">
+        <div class="mb-6 flex items-center gap-3">
+            <a href="{% url 'core:profile' %}" class="text-[#3d7a4f] text-sm font-semibold hover:underline" data-i18="profile_form_back">&larr; В профиль</a>
+        </div>
+
+        <div class="card p-6 sm:p-10">
+            <p class="section-label mb-2" data-i18="profile_product_form_section">Магазин / бесплатные модели</p>
+            <h1 class="font-display text-3xl font-semibold mb-2" data-i18="profile_product_form_title">Добавить товар / бесплатную модель</h1>
+            <p class="text-[#4c5940] mb-6 text-sm">
+                <span data-i18="profile_product_form_intro">Форма-обёртка над Django-админкой. Поля, отмеченные звёздочкой, обязательны.</span>
+                {% if not can_publish %}
+                <br><span class="text-amber-700 font-medium" data-i18="profile_form_draft_only">Вы можете сохранить карточку только как черновик — публикация доступна редакторам.</span>
+                {% endif %}
+            </p>
+
+            {% if form.non_field_errors %}
+            <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {% for err in form.non_field_errors %}<p>{{ err }}</p>{% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" action="" class="space-y-5" novalidate>
+                {% csrf_token %}
+
+                <fieldset class="space-y-5">
+                    <legend class="font-display text-lg font-semibold text-[#263120] mb-1" data-i18="profile_product_fs_type">Тип карточки</legend>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {% include "core/_form_field.html" with field=form.kind %}
+                        {% include "core/_form_field.html" with field=form.file_type %}
+                        {% include "core/_form_field.html" with field=form.free_category help_i18="profile_product_help_free_category" %}
+                    </div>
+                </fieldset>
+
+                <fieldset class="space-y-5">
+                    <legend class="font-display text-lg font-semibold text-[#263120] mb-1" data-i18="profile_product_fs_basic">Основная информация</legend>
+                    {% include "core/_form_field.html" with field=form.title %}
+                    {% include "core/_form_field.html" with field=form.slug help_i18="profile_product_help_slug" %}
+                    {% include "core/_form_field.html" with field=form.description %}
+                    {% include "core/_form_field.html" with field=form.badge %}
+                </fieldset>
+
+                <fieldset class="space-y-5">
+                    <legend class="font-display text-lg font-semibold text-[#263120] mb-1" data-i18="profile_product_fs_image">Картинка</legend>
+                    {% include "core/_form_field.html" with field=form.image help_i18="profile_product_help_image" %}
+                    {% include "core/_form_field.html" with field=form.alt %}
+                </fieldset>
+
+                <fieldset class="space-y-5">
+                    <legend class="font-display text-lg font-semibold text-[#263120] mb-1" data-i18="profile_product_fs_pricing">Цена / скачивание</legend>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {% include "core/_form_field.html" with field=form.price_rub help_i18="profile_product_help_price" %}
+                        {% include "core/_form_field.html" with field=form.display_order help_i18="profile_product_help_display_order" %}
+                    </div>
+                    {% include "core/_form_field.html" with field=form.download_url help_i18="profile_product_help_download" %}
+                </fieldset>
+
+                <fieldset class="space-y-4">
+                    <legend class="font-display text-lg font-semibold text-[#263120] mb-1" data-i18="profile_product_fs_publish">Публикация</legend>
+                    <div class="space-y-3 rounded-2xl border border-[#4a5e38]/20 bg-white/60 p-4">
+                        {% include "core/_form_field.html" with field=form.is_published as_checkbox=1 help_i18="profile_product_help_published" %}
+                        {% include "core/_form_field.html" with field=form.is_sold_out as_checkbox=1 help_i18="profile_product_help_sold_out" %}
+                        {% include "core/_form_field.html" with field=form.is_placeholder as_checkbox=1 help_i18="profile_product_help_placeholder" %}
+                    </div>
+                </fieldset>
+
+                <div class="flex flex-wrap items-center gap-3 pt-2">
+                    <button type="submit" class="btn-primary" data-i18="profile_form_save">Сохранить</button>
+                    <a href="{% url 'core:profile' %}" class="btn-outline" data-i18="profile_form_cancel">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
