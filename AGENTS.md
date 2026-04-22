@@ -316,6 +316,12 @@ with `sudo certbot renew --dry-run`.
 `migrate` → `collectstatic` → `systemctl restart creativesphere-gunicorn`. It
 does **not** touch `.env` or Nginx config.
 
+`scripts/update-safe.sh` wraps `update.sh` with a pre-deploy backup of the prod
+PostgreSQL database (`pg_dump -Fc` to `/var/backups/creativesphere/db-<ts>.dump`,
+keeping the last 30) and a JSON snapshot of `core.NewsArticle` in the same
+directory. Prefer it over bare `update.sh` whenever content might have been
+edited via Django admin between deploys (see §11 "Content vs code" rule).
+
 ---
 
 ## 10. Tests (`core/tests.py`) — **use these as the contract**
@@ -384,6 +390,26 @@ Coverage map (read a test before making a semantically-loaded change):
   Hero / in-body images for news articles currently live under
   `static/images/news/` (see `gener1..gener8`, `Artcam2..4`, `model*`, `AI*`
   naming conventions).
+
+- **Content vs code rule (don't clobber admin edits on prod).** Articles live in
+  two places: the production PostgreSQL DB (filled via Django admin) and the git
+  repo (initial seed in `core/migrations/0007_seed_news_articles.py`, later
+  reformats in `0008/0009/0010`). **Data migrations must never unconditionally
+  `.update()` a field that could have been hand-edited on prod.** The safe
+  patterns are:
+  - `get_or_create` / `update_or_create(defaults={...})` **only on first seed**
+    (by slug).
+  - For later schema-neutral content fixes (like `0010_restore_full_news_content`),
+    gate every `.update()` on a legacy-content check — e.g. skip if
+    `len(existing.content) > LEGACY_SEED_LIMIT` **and** it doesn't already
+    match the target. That migration is the reference pattern; copy its
+    guard when writing similar ones.
+  - New articles should be added **via Django admin in production**, not via
+    migrations. Use migrations/commands only for the initial baseline that
+    should ship with a fresh install.
+  - Always deploy with `scripts/update-safe.sh` (pg_dump + news JSON snapshot
+    before `migrate`) so an accidental clobber can be reverted from
+    `/var/backups/creativesphere/`.
 
 ---
 

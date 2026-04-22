@@ -216,7 +216,19 @@ def restore_full_content(apps, schema_editor):
         ),
     }
 
+    # Safety: do not clobber articles that were edited via Django admin on
+    # production. The legacy seeded content from migrations 0007/0008/0009 was
+    # always under ~1500 characters. Anything substantially longer is assumed
+    # to be admin-edited and is left untouched.
+    LEGACY_SEED_LIMIT = 1500
+
     for slug, body in bodies.items():
+        article = NewsArticle.objects.filter(slug=slug).first()
+        if article is None:
+            continue
+        current = article.content or ""
+        if len(current) > LEGACY_SEED_LIMIT and current.strip() != body.strip():
+            continue
         NewsArticle.objects.filter(slug=slug).update(content=body)
 
 
