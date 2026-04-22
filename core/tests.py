@@ -1242,3 +1242,22 @@ class ShopFreeViewsTests(TestCase):
         session = {}
         add_item(session, ph.pk, 1)
         self.assertEqual(session.get("cart", {}), {})
+
+    def test_shop_pagination_non_last_pages_are_row_aligned(self):
+        """Все страницы магазина, кроме последней, должны иметь число
+        карточек, кратное ширине сетки (НОК sm=2, lg=3 = 6). Это гарантирует
+        отсутствие дырявых рядов на лицевой части каталога — «добирание»
+        карточками со следующей страницы достигается не JS-логикой, а
+        row-aligned размером страницы.
+        """
+        from core.views import SHOP_PAGE_SIZE, _SHOP_ROW_LCM
+
+        self.assertEqual(SHOP_PAGE_SIZE % _SHOP_ROW_LCM, 0)
+
+        response = Client().get(reverse("core:shop") + "?page=1")
+        self.assertEqual(response.status_code, 200)
+        page_obj = response.context["shop_page_obj"]
+        if page_obj.paginator.num_pages > 1:
+            # Если есть следующая страница — текущая должна быть заполнена
+            # ровно на per_page (все ряды полные).
+            self.assertEqual(len(page_obj.object_list), SHOP_PAGE_SIZE)

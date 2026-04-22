@@ -298,7 +298,48 @@
             });
         }
 
-        const MAX_MODELS_PER_PAGE = 102;
+        const TARGET_MODELS_PER_PAGE = 102;
+        // НОК для сетки free-cards: sm=2 колонки, lg=3 колонки.
+        // Все промежуточные страницы стараемся делать кратными 6 карточкам,
+        // чтобы ряд не обрывался при наличии следующей страницы.
+        const ROW_LCM = 6;
+
+        const buildPageWindows = (totalCards, targetPerPage, rowLcm) => {
+            const windows = [];
+            let from = 0;
+
+            while (from < totalCards) {
+                const remaining = totalCards - from;
+                if (remaining <= targetPerPage) {
+                    windows.push({ from, to: totalCards });
+                    break;
+                }
+
+                let size = targetPerPage;
+                const remainder = size % rowLcm;
+                if (remainder !== 0) {
+                    const need = rowLcm - remainder;
+                    const availableFromNext = remaining - size;
+
+                    if (availableFromNext >= need) {
+                        // Можем «добрать» начало следующей страницы и закрыть ряд.
+                        size += need;
+                    } else {
+                        // Добрать не хватает — сдвигаем границу назад до полного ряда.
+                        const down = size - remainder;
+                        if (down > 0 && (remaining - down) > 0) {
+                            size = down;
+                        }
+                    }
+                }
+
+                windows.push({ from, to: from + size });
+                from += size;
+            }
+
+            return windows;
+        };
+
         const panelsWithPagination = document.querySelectorAll('[data-tab-panel]');
         panelsWithPagination.forEach((panel) => {
             const cards = Array.from(panel.querySelectorAll('.free-model-card, .free-placeholder-card'));
@@ -307,7 +348,8 @@
             const pageHost = pager ? pager.querySelector('[data-free-pages]') : null;
             if (!pager || !cards.length) return;
 
-            const totalPages = Math.max(1, Math.ceil(cards.length / MAX_MODELS_PER_PAGE));
+            const pageWindows = buildPageWindows(cards.length, TARGET_MODELS_PER_PAGE, ROW_LCM);
+            const totalPages = Math.max(1, pageWindows.length);
             let page = 1;
 
             const renderPageLinks = () => {
@@ -362,8 +404,9 @@
             };
 
             const renderPage = () => {
-                const from = (page - 1) * MAX_MODELS_PER_PAGE;
-                const to = from + MAX_MODELS_PER_PAGE;
+                const window = pageWindows[page - 1] || { from: 0, to: cards.length };
+                const from = window.from;
+                const to = window.to;
                 cards.forEach((card, idx) => {
                     card.hidden = idx < from || idx >= to;
                 });
