@@ -9,89 +9,51 @@
             <h1 class="font-display text-5xl md:text-6xl font-semibold mt-4" data-i18="news_title">Статьи и материалы</h1>
             <p class="text-gray-500 mt-4 max-w-xl mx-auto" data-i18="news_subtitle">Практические материалы о 3D-моделировании, трендах индустрии, 3D-печати, ArtCAM и ZBrush-скульптинге.</p>
         </div>
-        
-        <!-- Articles Grid -->
         <div class="grid md:grid-cols-2 gap-8">
-            <!-- Featured Article -->
-            <a href="/news/bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush/" class="md:col-span-2 bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group block">
+            {% if featured_article %}
+            <a href="{% url 'core:news_article' featured_article.slug %}" class="md:col-span-2 bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group block">
                 <div class="aspect-[2/1] overflow-hidden">
-                    <img src="{% static 'images/news/model11.JPEG' %}" 
-                         alt="Bas Relief" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                    <img src="{% if featured_article.cover_image %}{% static featured_article.cover_image %}{% else %}{% static 'images/news/model11.JPEG' %}{% endif %}"
+                         alt="{{ featured_article.title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                 </div>
                 <div class="p-8">
                     <div class="flex items-center gap-3 mb-4">
-                        <span class="tag-pill" data-i18="news_technique">Практика</span>
-                        <span class="text-sm text-gray-400">10 минут чтения</span>
+                        <span class="tag-pill">{{ featured_article.tag|default:"Статья" }}</span>
+                        <span class="text-sm text-gray-400">{{ featured_article.reading_time_minutes }} минут чтения</span>
                     </div>
-                    <h2 class="text-2xl font-semibold group-hover:text-[#3d7a4f] transition-colors">3D-моделирование: путь от базовых форм к коммерческому уровню</h2>
-                    <p class="text-gray-500 mt-3">О последовательной работе с формой, деталями и технической подготовкой модели под реальный продакшн.</p>
-                    <p class="text-sm text-gray-400 mt-4">14 апреля 2026</p>
+                    <h2 class="text-2xl font-semibold group-hover:text-[#3d7a4f] transition-colors">{{ featured_article.title }}</h2>
+                    <p class="text-gray-500 mt-3">{{ featured_article.excerpt }}</p>
+                    {% if featured_article.published_at %}
+                    <p class="text-sm text-gray-400 mt-4">{{ featured_article.published_at|date:"d.m.Y" }}</p>
+                    {% endif %}
                 </div>
             </a>
+            {% endif %}
 
-            <!-- Article 2 -->
-            <a href="/news/midjourney-v7-for-numismatic-concept-art/" class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group block">
+            {% for article in other_articles %}
+            <a href="{% url 'core:news_article' article.slug %}" class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group block">
                 <div class="aspect-video overflow-hidden">
-                    <img src="{% static 'images/news/midjourney-1920x1200.png' %}" 
-                         alt="Midjourney" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                    <img src="{% if article.cover_image %}{% static article.cover_image %}{% else %}{% static 'images/news/model11.JPEG' %}{% endif %}"
+                         alt="{{ article.title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                 </div>
                 <div class="p-6">
                     <div class="flex items-center gap-3 mb-3">
-                        <span class="tag-pill" data-i18="news_ai">Тренды</span>
-                        <span class="text-sm text-gray-400">9 минут чтения</span>
+                        <span class="tag-pill">{{ article.tag|default:"Статья" }}</span>
+                        <span class="text-sm text-gray-400">{{ article.reading_time_minutes }} минут чтения</span>
                     </div>
-                    <h3 class="text-xl font-semibold group-hover:text-[#3d7a4f] transition-colors">Ключевые тренды 3D-графики в 2026 году</h3>
-                    <p class="text-sm text-gray-400 mt-3">10 апреля 2026</p>
+                    <h3 class="text-xl font-semibold group-hover:text-[#3d7a4f] transition-colors">{{ article.title }}</h3>
+                    {% if article.published_at %}
+                    <p class="text-sm text-gray-400 mt-3">{{ article.published_at|date:"d.m.Y" }}</p>
+                    {% endif %}
                 </div>
             </a>
-
-            <!-- Article 3 -->
-            <a href="/news/generative-design-technologies/" class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group block">
-                <div class="aspect-video overflow-hidden">
-                    <img src="{% static 'images/news/gener1.jpg' %}"
-                         alt="Генеративный дизайн" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+            {% empty %}
+                {% if not featured_article %}
+                <div class="md:col-span-2 bg-white rounded-3xl border border-primary/10 p-8 text-center text-gray-500">
+                    Пока нет опубликованных статей.
                 </div>
-                <div class="p-6">
-                    <div class="flex items-center gap-3 mb-3">
-                        <span class="tag-pill" data-i18="news_industry">Технологии</span>
-                        <span class="text-sm text-gray-400">14 минут чтения</span>
-                    </div>
-                    <h3 class="text-xl font-semibold group-hover:text-[#3d7a4f] transition-colors">Технологии генеративного дизайна изделий</h3>
-                    <p class="text-sm text-gray-400 mt-3">5 апреля 2026</p>
-                </div>
-            </a>
-
-            <!-- Article 4 -->
-            <a href="/news/sora-and-kling-ai-video-for-3d-presentations/" class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group block">
-                <div class="aspect-video overflow-hidden">
-                    <img src="{% static 'images/news/ai-video-1920x1200.png' %}" 
-                         alt="AI Video" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center gap-3 mb-3">
-                        <span class="tag-pill" data-i18="news_ai">Скульптинг</span>
-                        <span class="text-sm text-gray-400">11 минут чтения</span>
-                    </div>
-                    <h3 class="text-xl font-semibold group-hover:text-[#3d7a4f] transition-colors">ZBrush-скульптинг: как добиться выразительной формы и чистой детализации</h3>
-                    <p class="text-sm text-gray-400 mt-3">1 апреля 2026</p>
-                </div>
-            </a>
-
-            <!-- Article 5 -->
-            <a href="/news/artcam-vozmozhnosti-zadachi-i-praktika/" class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group block">
-                <div class="aspect-video overflow-hidden">
-                    <img src="{% static 'images/news/artcam1.png' %}" 
-                         alt="ArtCAM" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center gap-3 mb-3">
-                        <span class="tag-pill" data-i18="news_industry">CAD/CAM</span>
-                        <span class="text-sm text-gray-400">12 минут чтения</span>
-                    </div>
-                    <h3 class="text-xl font-semibold group-hover:text-[#3d7a4f] transition-colors">ArtCAM: возможности программы, ключевые задачи и практический workflow</h3>
-                    <p class="text-sm text-gray-400 mt-3">15 апреля 2026</p>
-                </div>
-            </a>
+                {% endif %}
+            {% endfor %}
         </div>
     </div>
 </div>

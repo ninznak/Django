@@ -38,7 +38,7 @@ Django/
 │
 ├── core/                               # The only first-party app
 │   ├── apps.py                         # AppConfig (name="core", verbose_name="My studio")
-│   ├── models.py                       # Order, OrderItem, ContactSubmission
+│   ├── models.py                       # Order, OrderItem, ContactSubmission, NewsArticle
 │   ├── admin.py                        # Read-mostly admin for Order + ContactSubmission
 │   ├── forms.py                        # ContactForm, RegisterForm, CheckoutForm
 │   ├── urls.py                         # app_name="core" route table
@@ -49,9 +49,10 @@ Django/
 │   ├── portfolio_gallery_data.py       # PORTFOLIO_GALLERIES static data + gallery_context()
 │   ├── context_processors.py           # site_seo (lazy), shop_cart
 │   ├── seo.py                          # get_seo(), PAGE_SEO, JSON-LD builder (cached)
-│   ├── sitemaps.py                     # CoreViewSitemap
+│   ├── sitemaps.py                     # CoreViewSitemap + NewsArticleSitemap
 │   ├── templatetags/pricing_extras.py  # {{ value|rub_minor }}
-│   ├── tests.py                        # 72 tests covering everything below
+│   ├── templatetags/article_extras.py  # {{ article.content|render_article_body }} (headings / ordered & unordered lists / inline images / bold / italic / safe links)
+│   ├── tests.py                        # tests covering pricing/forms/cart/SEO/news/admin flows
 │   └── migrations/                     # 0001_contact_submission, 0002_order, 0003_order_address_optional
 │
 ├── templates/core/                     # HTML templates for every named URL
@@ -101,6 +102,7 @@ Anything under `.venv/`, `venv/`, `.idea/`, `.vscode/`, `.gigaide/`,
 | `Order` | Guest checkout order (no user FK). Status enum `new/processing/paid/shipped/completed/cancelled`, defaults to `new`. | `name`, `email`, `phone`, `country` (default `"Россия"`), `city`, `address`, `postal_code`, `total_cents` (PositiveInteger, kopecks), `notes`, `pd_consent` (required), `pd_consent_date` (auto_now_add), `ip_address`, `created_at`, `updated_at`. `ordering = ["-created_at"]`. |
 | `OrderItem` | Line in an `Order` (FK `related_name="items"`). | `product_id`, `product_name`, `product_price_cents`, `quantity`. Property `total_cents = price * qty`. |
 | `ContactSubmission` | Contact-form message stored in admin. | `name`, `email`, `subject`, `message`, `created_at`, `email_sent` (bool flag: notification actually delivered). |
+| `NewsArticle` | Admin-managed article with draft/publish flow. Public pages show only `published`. | `title`, `slug`, `excerpt`, `content`, `tag`, `reading_time_minutes`, `cover_image` (path in `static/`), `author` (nullable FK), `status` (`draft/published`), `published_at`, `created_at`, `updated_at`. |
 
 **Money is stored as integer kopecks** (`*_cents` fields despite the name).
 Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
@@ -116,7 +118,7 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `homepage_path` | `/homepage/` | `views.homepage` | Alias. Not in sitemap. |
 | `about` | `/about/` | `views.about` | |
 | `news` | `/news/` | `views.news` | |
-| `news_article` | `/news/<slug>/` | `views.news_article` | Slug → title via in-view `title_map`; body/tag/hero are slug-gated `{% if %}` branches in `templates/core/news_article.html`. SEO is built via `core.seo.news_article_seo_overrides(request, slug, label)`, which reads the per-slug registry `NEWS_ARTICLE_SEO` and falls back to a generic per-label template. |
+| `news_article` | `/news/<slug>/` | `views.news_article` | Reads `NewsArticle` by slug. Public users can open only `status=published`; staff can preview drafts. SEO is built via `core.seo.news_article_seo_overrides(request, slug, title)` with per-slug `NEWS_ARTICLE_SEO` fallback behavior preserved. |
 | `portfolio` | `/portfolio/` | `views.portfolio` | `?category=3d\|ai\|all` redirects to anchors or base. The homepage carousel (`templates/core/homepage.html`) links its three cards to `/portfolio/#portfolio-3d`, `#portfolio-products`, `#portfolio-ai` — keep those anchors in sync with `templates/core/portfolio.html`. |
 | `portfolio_gallery` | `/portfolio/<slug>/` | `views.portfolio_gallery` | Slugs: `3d`, `ai`, `products`. Unknown → `Http404`. |
 | `shop` | `/shop/` | `views.shop` | Data comes from context processor. Header includes a CTA button to `core:free_models`. |
@@ -257,6 +259,10 @@ Templates already read: `seo.title`, `.description`, `.keywords`, `.robots`,
 - Tailwind is loaded from the CDN script tag; site theme tokens are defined in
   a `<style>` block at the top of `base.html`. **No build step.**
 - `{% load pricing_extras %}` unlocks `{{ kopecks|rub_minor }}`.
+- `{% load article_extras %}` unlocks `{{ article.content|render_article_body }}` for news body markup. Input is HTML-escaped first, then the following markup is transformed:
+  - Block-level: `## heading` → `<h3>`, `- item` → `<ul><li>`, `1. item` (any positive integer) → `<ol><li>`, `![alt](images/news/file.jpg)` on its own line → styled `<img>` block, blank line separates paragraphs.
+  - Inline (works inside paragraphs, headings and list items): `**bold**` → `<strong>`, `*italic*` → `<em>`, `[label](url)` → `<a>` with `rel="noopener noreferrer"`. Only `http://`, `https://`, `mailto:`, `tel:`, `#`, `/`, `./` and `../` URLs are allowed — `javascript:`, `data:` and unknown schemes are rendered as plain text.
+  - Cover image is rendered separately by the template from `NewsArticle.cover_image`; don't duplicate it inside `content` via `![]()`.
 
 ---
 
@@ -314,7 +320,7 @@ does **not** touch `.env` or Nginx config.
 
 ## 10. Tests (`core/tests.py`) — **use these as the contract**
 
-72 tests. Run with:
+89 tests. Run with:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test core
@@ -337,6 +343,7 @@ Coverage map (read a test before making a semantically-loaded change):
 | `ModelTests` | `__str__`s + `OrderItem.total_cents`. |
 | `FormTests` | Contact / Checkout (pd_consent mandatory) / Register (duplicate email, email lowercased). |
 | `PricingExtrasTemplateTagTests` | `\|rub_minor`. |
+| `ArticleExtrasTemplateTagTests` | `\|render_article_body` — headings, ordered & unordered lists, inline images, bold / italic, safe links (and rejection of `javascript:`), HTML escaping. |
 | `SeoTests` | Defaults, overrides, JSON-LD structure, HTML-closer escaping, `lru_cache` behavior, `PUBLIC_SITE_URL`, lazy context processor. |
 | `StaticPagesViewTests` | Every public page renders 200; portfolio redirects; robots.txt and sitemap; 404 catch-all. |
 | `CartApiTests` | Full GET/POST add/set/remove/clear + all 400 error paths. |
@@ -369,20 +376,10 @@ Coverage map (read a test before making a semantically-loaded change):
 - **Don't commit `.env`**. `.env.example` is the template.
 - **Don't regress `core/seo.py` performance**: shallow copy + `lru_cache` are
   intentional. The `SeoTests` suite will catch accidental breakages.
-- **News article slugs live in four places.** Adding / renaming a news article
-  means touching all of them:
-  1. `core/views.py::news_article.title_map` — slug → human title (drives the
-     default `label`).
-  2. `templates/core/news.html` — listing card (image, link, headline, tag,
-     read-time, date).
-  3. `templates/core/news_article.html` — each of the slug-gated `{% if / elif
-     slug == "..." %}` branches (tag, title, date/read-time, hero image,
-     body). Inline in-body images use the same `{% static %}` pattern as the
-     hero.
-  4. `core/seo.py::NEWS_ARTICLE_SEO` — optional but recommended for any
-     real article. Without an entry, SEO falls back to a generic per-label
-     template (still correct, just less targeted). `views.news_article`
-     itself doesn't need to change.
+- **News articles are DB-backed (`NewsArticle`).** Create/edit from Django admin.
+  Public list/detail pages read only `status=published`; staff can preview draft
+  detail pages. For a richer snippet in SERP/OG, add optional per-slug overrides
+  in `core/seo.py::NEWS_ARTICLE_SEO` (title/description/keywords/og_image/article_ld).
 
   Hero / in-body images for news articles currently live under
   `static/images/news/` (see `gener1..gener8`, `Artcam2..4`, `model*`, `AI*`
@@ -401,7 +398,7 @@ Coverage map (read a test before making a semantically-loaded change):
 | Add a field to `Order` | `core/models.py` → new migration in `core/migrations/` → template + form if user-facing → tests. |
 | Change meta/SEO per page | `core/seo.py::PAGE_SEO` **or** pass override kwargs to `get_seo` in the view. |
 | Add rich SEO for a news article | `core/seo.py::NEWS_ARTICLE_SEO[<slug>]` — title / description / keywords / optional `og_image` / `article_ld`. `views.news_article` picks it up automatically. |
-| Add a new news article | Walk the 4-step checklist in §11 ("News article slugs live in four places"): `title_map` → `news.html` listing card → slug branches in `news_article.html` → optional `NEWS_ARTICLE_SEO` entry. |
+| Add a new news article | Create a `NewsArticle` in Django admin (`status=draft` or `published`). Public pages render DB data automatically; optional SEO enhancement goes to `core/seo.py::NEWS_ARTICLE_SEO[slug]`. |
 | Add images to a portfolio sub-gallery | Drop files in the right folder — `static/images/medals/` feeds `products`; `static/images/news/` with `model*` feeds `3d` and with `AI*` feeds `ai`. No code changes needed; for per-medal captions, extend `MEDAL_CAPTIONS` in `core/portfolio_gallery_data.py`. |
 | Change sitemap | `core/sitemaps.py`. |
 | Change checkout email body | `core/views.py::_send_order_email`. |

@@ -15,16 +15,20 @@ import json
 from unittest import mock
 
 from django.conf import settings
+from django.contrib import admin
+from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.core import mail
+from django.core.exceptions import PermissionDenied
 from django.template import Context, Template
 from django.test import Client, RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from core import cart_utils
+from core.admin import NewsArticleAdmin
 from core.forms import CheckoutForm, ContactForm, RegisterForm
-from core.models import ContactSubmission, Order, OrderItem
+from core.models import ContactSubmission, NewsArticle, Order, OrderItem
 from core.portfolio_gallery_data import gallery_context
 from core.pricing import (
     USD_TO_RUB_RATE,
@@ -231,6 +235,15 @@ class ModelTests(TestCase):
         )
         self.assertIn("Hello world", str(sub))
 
+    def test_news_article_str_returns_title(self):
+        article = NewsArticle.objects.create(
+            title="Заголовок",
+            slug="zagolovok",
+            excerpt="Коротко",
+            content="Контент",
+        )
+        self.assertEqual(str(article), "Заголовок")
+
 
 # ---------------------------------------------------------------------------
 # Forms
@@ -328,6 +341,81 @@ class PricingExtrasTemplateTagTests(TestCase):
 
     def test_filter_returns_original_on_invalid(self):
         self.assertEqual(self._render("not a number"), "not a number")
+
+
+class ArticleExtrasTemplateTagTests(TestCase):
+    def _render(self, value):
+        tpl = Template("{% load article_extras %}{{ value|render_article_body }}")
+        return tpl.render(Context({"value": value}))
+
+    def test_renders_heading_list_and_image(self):
+        source = (
+            "## Заголовок\n\n"
+            "Абзац текста.\n\n"
+            "- Первый пункт\n"
+            "- Второй пункт\n\n"
+            "![Подпись](images/news/model11.JPEG)\n"
+        )
+        html = self._render(source)
+        self.assertIn("<h3", html)
+        self.assertIn("Заголовок", html)
+        self.assertIn("<ul", html)
+        self.assertIn("Первый пункт", html)
+        self.assertIn('src="/static/images/news/model11.JPEG"', html)
+
+    def test_escapes_script_content(self):
+        html = self._render("## <script>alert(1)</script>")
+        self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", html)
+
+    def test_bold_and_italic_inline_markup(self):
+        html = self._render("Это **важно** и *курсив* внутри абзаца.")
+        self.assertIn("<strong>важно</strong>", html)
+        self.assertIn("<em>курсив</em>", html)
+
+    def test_inline_bold_inside_heading_and_list(self):
+        source = (
+            "## Заголовок с **акцентом**\n\n"
+            "- пункт с *курсивом*\n"
+            "- обычный пункт\n"
+        )
+        html = self._render(source)
+        self.assertIn("<h3", html)
+        self.assertIn("<strong>акцентом</strong>", html)
+        self.assertIn("<em>курсивом</em>", html)
+        self.assertIn("<ul", html)
+
+    def test_ordered_list_renders_ol(self):
+        source = "1. первый\n2. второй\n3. третий\n"
+        html = self._render(source)
+        self.assertIn("<ol", html)
+        self.assertIn("list-decimal", html)
+        self.assertIn("<li>первый</li>", html)
+        self.assertIn("<li>третий</li>", html)
+
+    def test_ordered_and_unordered_lists_do_not_mix(self):
+        source = "- bullet A\n- bullet B\n\n1. number A\n2. number B\n"
+        html = self._render(source)
+        self.assertEqual(html.count("<ul"), 1)
+        self.assertEqual(html.count("<ol"), 1)
+        self.assertLess(html.index("<ul"), html.index("<ol"))
+
+    def test_link_renders_anchor_for_safe_url(self):
+        html = self._render("Смотри [сайт](https://example.com/page) здесь.")
+        self.assertIn(
+            '<a href="https://example.com/page"', html
+        )
+        self.assertIn("rel=\"noopener noreferrer\"", html)
+        self.assertIn(">сайт</a>", html)
+
+    def test_link_rejects_javascript_scheme(self):
+        html = self._render("[click](javascript:alert(1))")
+        self.assertNotIn("<a ", html)
+        self.assertIn("[click]", html)
+
+    def test_inline_image_still_renders_and_does_not_become_link(self):
+        html = self._render("![alt](images/news/model11.JPEG)")
+        self.assertIn('src="/static/images/news/model11.JPEG"', html)
+        self.assertNotIn("<a ", html)
 
 
 # ---------------------------------------------------------------------------
@@ -435,6 +523,22 @@ class SeoTests(TestCase):
 
 
 class StaticPagesViewTests(TestCase):
+    def setUp(self):
+        self.article = NewsArticle.objects.create(
+            title="Публичная статья",
+            slug="public-article",
+            excerpt="Кратко",
+            content="Текст публичной статьи",
+            status=NewsArticle.Status.PUBLISHED,
+        )
+        self.draft_article = NewsArticle.objects.create(
+            title="Черновик",
+            slug="draft-article",
+            excerpt="Черновик",
+            content="Текст черновика",
+            status=NewsArticle.Status.DRAFT,
+        )
+
     def test_pages_render_successfully(self):
         c = Client()
         for name in (
@@ -454,7 +558,29 @@ class StaticPagesViewTests(TestCase):
 
     def test_news_article_renders(self):
         c = Client()
-        response = c.get(reverse("core:news_article", args=["some-slug"]))
+        response = c.get(reverse("core:news_article", args=[self.article.slug]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_news_article_404_for_unknown_slug(self):
+        c = Client()
+        response = c.get(reverse("core:news_article", args=["missing"]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_news_article_hides_drafts_for_anonymous(self):
+        c = Client()
+        response = c.get(reverse("core:news_article", args=[self.draft_article.slug]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_news_article_allows_staff_preview_for_drafts(self):
+        staff = User.objects.create_user(
+            username="staff",
+            email="staff@example.com",
+            password="Secret1234!",
+            is_staff=True,
+        )
+        c = Client()
+        c.force_login(staff)
+        response = c.get(reverse("core:news_article", args=[self.draft_article.slug]))
         self.assertEqual(response.status_code, 200)
 
     def test_shop_pagination_query_renders(self):
@@ -497,6 +623,8 @@ class StaticPagesViewTests(TestCase):
         response = Client().get("/sitemap.xml")
         self.assertEqual(response.status_code, 200)
         self.assertIn("urlset", response.content.decode())
+        self.assertIn(self.article.slug, response.content.decode())
+        self.assertNotIn(self.draft_article.slug, response.content.decode())
 
     def test_catchall_returns_404(self):
         response = Client().get("/definitely-does-not-exist/")
@@ -786,3 +914,52 @@ class AuthViewTests(TestCase):
         r = self.client.get(reverse("core:sign_up_login") + "?next=http://evil.example.com/")
         self.assertEqual(r.status_code, 302)
         self.assertEqual(r["Location"], settings.LOGIN_REDIRECT_URL)
+
+
+class NewsArticleAdminTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.model_admin = NewsArticleAdmin(NewsArticle, admin.site)
+        self.editor_group = Group.objects.create(name="Editors")
+
+    def _build_request(self, user):
+        request = self.factory.post("/admin/core/newsarticle/add/")
+        request.user = user
+        return request
+
+    def test_non_editor_cannot_publish(self):
+        staff = User.objects.create_user(
+            username="staff-only",
+            email="staff-only@example.com",
+            password="Secret1234!",
+            is_staff=True,
+        )
+        article = NewsArticle(
+            title="Test",
+            slug="test",
+            excerpt="",
+            content="Body",
+            status=NewsArticle.Status.PUBLISHED,
+        )
+        request = self._build_request(staff)
+        with self.assertRaises(PermissionDenied):
+            self.model_admin.save_model(request, article, form=None, change=False)
+
+    def test_editor_can_publish_and_gets_timestamp(self):
+        editor = User.objects.create_user(
+            username="editor",
+            email="editor@example.com",
+            password="Secret1234!",
+            is_staff=True,
+        )
+        editor.groups.add(self.editor_group)
+        article = NewsArticle(
+            title="Published",
+            slug="published",
+            excerpt="",
+            content="Body",
+            status=NewsArticle.Status.PUBLISHED,
+        )
+        request = self._build_request(editor)
+        self.model_admin.save_model(request, article, form=None, change=False)
+        self.assertIsNotNone(article.published_at)

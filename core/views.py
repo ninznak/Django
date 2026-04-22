@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator
 from django.http import Http404, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.templatetags.static import static
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -17,7 +17,7 @@ from django.views.decorators.http import require_http_methods
 from . import cart_utils
 from .portfolio_gallery_data import gallery_context
 from .forms import CheckoutForm, ContactForm, RegisterForm
-from .models import ContactSubmission, Order, OrderItem
+from .models import ContactSubmission, NewsArticle, Order, OrderItem
 from .pricing import format_minor_as_rub
 from .seo import get_seo, news_article_seo_overrides
 from .shop_data import SHOP_PRODUCTS, get_product
@@ -89,23 +89,29 @@ def about(request):
 
 def news(request):
     """Страница новостей"""
-    return render(request, 'core/news.html')
+    articles = NewsArticle.objects.filter(status=NewsArticle.Status.PUBLISHED)
+    featured_article = articles.first()
+    other_articles = articles[1:]
+    return render(
+        request,
+        "core/news.html",
+        {
+            "featured_article": featured_article,
+            "other_articles": other_articles,
+        },
+    )
 
 
 def news_article(request, slug):
     """Страница статьи новостей"""
-    title_map = {
-        "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush": "3D-моделирование: путь от базовых форм к коммерческому уровню",
-        "midjourney-v7-for-numismatic-concept-art": "Ключевые тренды 3D-графики в 2026 году",
-        "generative-design-technologies": "Технологии генеративного дизайна изделий",
-        "sora-and-kling-ai-video-for-3d-presentations": "ZBrush-скульптинг: как добиться выразительной формы и чистой детализации",
-        "artcam-vozmozhnosti-zadachi-i-praktika": "ArtCAM: возможности программы, ключевые задачи и практический workflow",
-    }
-    label = title_map.get(slug, slug.replace("-", " ").strip() or slug)
-    label = label[:1].upper() + label[1:] if label else slug
+    queryset = NewsArticle.objects.all() if request.user.is_staff else NewsArticle.objects.filter(
+        status=NewsArticle.Status.PUBLISHED
+    )
+    article = get_object_or_404(queryset, slug=slug)
+    label = article.title
     ctx = {
-        "slug": slug,
-        "seo": get_seo(request, **news_article_seo_overrides(request, slug, label)),
+        "article": article,
+        "seo": get_seo(request, **news_article_seo_overrides(request, article.slug, label)),
     }
     return render(request, "core/news_article.html", ctx)
 

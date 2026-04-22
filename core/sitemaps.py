@@ -2,6 +2,8 @@ from django.conf import settings
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
+from .models import NewsArticle
+
 
 class _BaseSitemap(Sitemap):
     def get_protocol(self, protocol=None):
@@ -39,27 +41,15 @@ class CoreViewSitemap(_BaseSitemap):
         return reverse(item)
 
 
-# --- News articles ---------------------------------------------------------
-#
-# Slugs mirror the ``title_map`` in ``core.views.news_article`` and the
-# ``{% if slug == "…" %}`` branches in ``templates/core/news_article.html``.
-# When a new article is added, append its slug here so crawlers discover the
-# page directly instead of relying only on the /news/ listing.
-NEWS_ARTICLE_SLUGS: tuple[str, ...] = (
-    "bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush",
-    "midjourney-v7-for-numismatic-concept-art",
-    "generative-design-technologies",
-    "sora-and-kling-ai-video-for-3d-presentations",
-    "artcam-vozmozhnosti-zadachi-i-praktika",
-)
-
-
 class NewsArticleSitemap(_BaseSitemap):
     changefreq = "monthly"
     priority = 0.6
 
     def items(self):
-        return list(NEWS_ARTICLE_SLUGS)
+        return NewsArticle.objects.filter(status=NewsArticle.Status.PUBLISHED)
 
-    def location(self, slug):
-        return reverse("core:news_article", kwargs={"slug": slug})
+    def location(self, article):
+        return reverse("core:news_article", kwargs={"slug": article.slug})
+
+    def lastmod(self, article):
+        return article.updated_at

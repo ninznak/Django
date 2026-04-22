@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -89,3 +90,51 @@ class ContactSubmission(models.Model):
 
     def __str__(self) -> str:
         return f"{self.created_at:%Y-%m-%d %H:%M} — {self.subject[:60]}"
+
+
+class NewsArticle(models.Model):
+    """News/blog article managed from Django admin."""
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Черновик"
+        PUBLISHED = "published", "Опубликовано"
+
+    title = models.CharField("Заголовок", max_length=220)
+    slug = models.SlugField("Slug", unique=True, max_length=220)
+    excerpt = models.TextField("Краткое описание", max_length=600, blank=True, default="")
+    content = models.TextField("Текст статьи")
+    tag = models.CharField("Категория", max_length=80, blank=True, default="Статья")
+    reading_time_minutes = models.PositiveSmallIntegerField("Время чтения (мин)", default=8)
+    cover_image = models.CharField(
+        "Обложка (путь в static/)",
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Например: images/news/model11.JPEG",
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="news_articles",
+        verbose_name="Автор",
+    )
+    status = models.CharField(
+        "Статус",
+        max_length=20,
+        choices=Status.choices,
+        default=Status.DRAFT,
+        db_index=True,
+    )
+    published_at = models.DateTimeField("Дата публикации", blank=True, null=True, db_index=True)
+    created_at = models.DateTimeField("Создано", auto_now_add=True)
+    updated_at = models.DateTimeField("Обновлено", auto_now=True)
+
+    class Meta:
+        ordering = ["-published_at", "-created_at"]
+        verbose_name = "статья"
+        verbose_name_plural = "статьи"
+
+    def __str__(self) -> str:
+        return self.title

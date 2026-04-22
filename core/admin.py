@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.core.exceptions import PermissionDenied
+from django.utils import timezone
 
-from .models import ContactSubmission, Order, OrderItem
+from .models import ContactSubmission, NewsArticle, Order, OrderItem
 from .pricing import format_minor_as_rub
 
 
@@ -58,4 +60,39 @@ class ContactSubmissionAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+
+@admin.register(NewsArticle)
+class NewsArticleAdmin(admin.ModelAdmin):
+    list_display = ("title", "status", "author", "tag", "published_at", "updated_at")
+    list_filter = ("status", "tag", "published_at", "author")
+    search_fields = ("title", "slug", "excerpt", "content")
+    prepopulated_fields = {"slug": ("title",)}
+    ordering = ("-published_at", "-created_at")
+    readonly_fields = ("created_at", "updated_at")
+    fieldsets = (
+        ("Основное", {"fields": ("title", "slug", "status", "tag", "author")}),
+        ("Содержимое", {"fields": ("excerpt", "content", "cover_image", "reading_time_minutes")}),
+        ("Публикация", {"fields": ("published_at",)}),
+        ("Тех. поля", {"fields": ("created_at", "updated_at")}),
+    )
+
+    @staticmethod
+    def _can_publish(request):
+        return request.user.is_superuser or request.user.groups.filter(name="Editors").exists()
+
+    def save_model(self, request, obj, form, change):
+        wants_publish = obj.status == NewsArticle.Status.PUBLISHED
+        if wants_publish and not self._can_publish(request):
+            raise PermissionDenied("Публиковать статьи может только группа Editors или superuser.")
+
+        if not obj.author_id and request.user.is_authenticated:
+            obj.author = request.user
+
+        if wants_publish and obj.published_at is None:
+            obj.published_at = timezone.now()
+        if obj.status == NewsArticle.Status.DRAFT:
+            obj.published_at = None
+
+        super().save_model(request, obj, form, change)
 
