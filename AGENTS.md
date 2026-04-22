@@ -389,6 +389,10 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
 - Header responsive contract: on narrow phones (`<sm`) top row keeps logo left
   and language switcher right; cart button moves to the lower row (`sm:hidden`)
   right after `Магазин` (burger + shop + cart + optional sign in for guests).
+- Flash messages (`{% if messages %}` block in `base.html`) must clear the fixed
+  header on mobile (no overlap), and homepage hero should reduce top padding when
+  flash is present to avoid a large visual gap before "Творческое Портфолио".
+  Flash message text is centered inside the pill (`text-center` on the `<p>`).
 - It already renders full meta + Open Graph + Twitter Card + JSON-LD using the
   `seo` context var. **Never hard-code meta tags in child templates** — extend
   `PAGE_SEO` or pass overrides to `get_seo` instead.
