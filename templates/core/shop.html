@@ -20,33 +20,41 @@
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for product in shop_products %}
-            <div class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col">
-                <div class="relative aspect-[4/3]">
-                    <img src="{% static product.img %}"
-                         alt="{{ product.alt }}"
-                         class="w-full h-full object-cover">
-                    {% if product.badge %}
-                    <div class="absolute top-4 left-4">
-                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-[#a8c957]">{{ product.badge }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="p-5 flex-1 flex flex-col">
-                    <p class="text-xs uppercase tracking-widest text-gray-400" data-i18="{{ product.type_i18 }}">3D Модель</p>
-                    <h4 class="font-semibold mt-2">{{ product.title }}</h4>
-                    {% if product.description %}
-                    <p class="text-sm text-gray-500 mt-2 flex-1">{{ product.description }}</p>
-                    {% endif %}
-                    <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100 gap-3">
-                        {% if product.not_for_sale %}
-                        <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider" data-i18="shop_not_for_sale">Нет в продаже</span>
-                        {% else %}
-                        <span class="text-xl font-bold text-[#3d7a4f]">{{ product.price }}</span>
-                        <button type="button" class="btn-primary text-sm py-2 px-4" data-add-to-cart data-product-id="{{ product.id }}" data-i18="shop_add_cart">Add to Cart</button>
+                {% if product.is_placeholder %}
+                <article class="free-placeholder-card">
+                    <div class="free-placeholder-box">+</div>
+                    <p class="free-placeholder-title">{{ product.title|default:"Скоро новый товар" }}</p>
+                    <p class="free-placeholder-sub">{{ product.description|default:"Место для будущего товара" }}</p>
+                </article>
+                {% else %}
+                <div class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col">
+                    <div class="relative aspect-[4/3]">
+                        <img src="{% static product.img %}"
+                             alt="{{ product.alt }}"
+                             class="w-full h-full object-cover">
+                        {% if product.badge %}
+                        <div class="absolute top-4 left-4">
+                            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-[#a8c957]">{{ product.badge }}</span>
+                        </div>
                         {% endif %}
                     </div>
+                    <div class="p-5 flex-1 flex flex-col">
+                        <p class="text-xs uppercase tracking-widest text-gray-400">{{ product.type_label }}</p>
+                        <h4 class="font-semibold mt-2">{{ product.title }}</h4>
+                        {% if product.description %}
+                        <p class="text-sm text-gray-500 mt-2 flex-1">{{ product.description|linebreaksbr }}</p>
+                        {% endif %}
+                        <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100 gap-3">
+                            {% if product.not_for_sale %}
+                            <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider" data-i18="shop_not_for_sale">Нет в продаже</span>
+                            {% else %}
+                            <span class="text-xl font-bold text-[#3d7a4f]">{{ product.price }}</span>
+                            <button type="button" class="btn-primary text-sm py-2 px-4" data-add-to-cart data-product-id="{{ product.id }}" data-i18="shop_add_cart">Add to Cart</button>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-            </div>
+                {% endif %}
             {% endfor %}
         </div>
 

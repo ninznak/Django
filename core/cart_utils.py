@@ -93,5 +93,5 @@ def get_cart_summary(request) -> dict[str, Any]:
 
 def catalog_for_api() -> list[dict[str, Any]]:
     """Minimal product list for clients (IDs and titles)."""
-    from .shop_data import SHOP_PRODUCTS
-    return [{"id": p["id"], "title": p["title"]} for p in SHOP_PRODUCTS]
+    from .shop_data import get_shop_products
+    return [{"id": p["id"], "title": p["title"]} for p in get_shop_products()]

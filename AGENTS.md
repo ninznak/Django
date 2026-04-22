@@ -38,14 +38,14 @@ Django/
 │
 ├── core/                               # The only first-party app
 │   ├── apps.py                         # AppConfig (name="core", verbose_name="My studio")
-│   ├── models.py                       # Order, OrderItem, ContactSubmission, NewsArticle
-│   ├── admin.py                        # Read-mostly admin for Order + ContactSubmission
+│   ├── models.py                       # Order, OrderItem, ContactSubmission, NewsArticle, Product, ProductImage
+│   ├── admin.py                        # Admin для Order, ContactSubmission, NewsArticle, Product (publish-gate для Editors/superuser)
 │   ├── forms.py                        # ContactForm, RegisterForm, CheckoutForm
 │   ├── urls.py                         # app_name="core" route table
 │   ├── views.py                        # All HTTP views (pages, cart API, checkout, auth)
 │   ├── cart_utils.py                   # Session cart primitives (add/set/remove/clear/build_lines)
 │   ├── pricing.py                      # format_minor_as_rub, usd_whole_to_rub_kopecks
-│   ├── shop_data.py                    # SHOP_PRODUCTS catalog + get_product()
+│   ├── shop_data.py                    # Адаптер над Product: get_shop_products/get_free_products/get_product
 │   ├── portfolio_gallery_data.py       # PORTFOLIO_GALLERIES static data + gallery_context()
 │   ├── context_processors.py           # site_seo (lazy), shop_cart
 │   ├── seo.py                          # get_seo(), PAGE_SEO, JSON-LD builder (cached)
@@ -122,7 +122,7 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `portfolio` | `/portfolio/` | `views.portfolio` | `?category=3d\|ai\|all` redirects to anchors or base. The homepage carousel (`templates/core/homepage.html`) links its three cards to `/portfolio/#portfolio-3d`, `#portfolio-products`, `#portfolio-ai` — keep those anchors in sync with `templates/core/portfolio.html`. |
 | `portfolio_gallery` | `/portfolio/<slug>/` | `views.portfolio_gallery` | Slugs: `3d`, `ai`, `products`. Unknown → `Http404`. |
 | `shop` | `/shop/` | `views.shop` | Data comes from context processor. Header includes a CTA button to `core:free_models`. |
-| `free_models` | `/free-models/` | `views.free_models` | Dedicated free-download page with top folder-style tabs: `Хоббийные модели` / `Художественные модели` / `Технические модели`. Active tab uses site dark green (`#1a2e1a`) with white text. Real cards are currently in the hobby tab; all tabs include 4 placeholder cards for future photos. Rows use a single light translucent background. Model cards use a click-driven image switcher (dots + image click). |
+| `free_models` | `/free-models/` | `views.free_models` | Dedicated free-download page with top folder-style tabs: `Художественные модели` / `Хоббийные модели` / `Технические модели` (порядок — из `Product.FreeCategory.choices`). Active tab uses site dark green (`#1a2e1a`) with white text. Карточки приходят из `Product` (`kind=free`, фильтр по `free_category`); пустые «Скоро новая модель» — это `Product.is_placeholder=True` (никакого хардкода в шаблоне). Названия табов переводятся через `data-i18="shop_free_tab_{{ tab.key }}"` (ключи `shop_free_tab_art`/`_hobby`/`_tech` — в `base.html::translations.ru/en`). Rows use a single light translucent background. Model cards use a click-driven image switcher (dots + image click). |
 | `cart_api` | `/api/cart/` | `views.cart_api` | GET returns cart JSON; POST body `{action, product_id, qty}` with `action ∈ {add,set,remove,clear}`. CSRF-protected. |
 | `sign_up_login` | `/sign-up-login/` | `views.sign_up_login` | Login always; registration gated by `AUTH_SHOW_REGISTRATION`. Honors `?next=` (same-host only). |
 | `logout` | `/logout/` | `views.logout_view` | |
@@ -147,13 +147,70 @@ def format_minor_as_rub(minor: int) -> str          # "1 000 ₽" / "12.34 ₽"
 def usd_whole_to_rub_kopecks(usd_whole: int) -> tuple[str, int]  # (display, kopecks)
 ```
 
-### `core/shop_data.py`
+### `core/shop_data.py` — адаптер над `Product`
 
-- `SHOP_PRODUCTS: list[dict]` — catalog of 6 products, ids `1..6`.
-- `SHOP_PREVIEW_PRODUCTS = SHOP_PRODUCTS[:4]`.
-- `get_product(product_id) -> dict | None` — by id (accepts int or numeric str).
+Данные товаров магазина и бесплатных моделей лежат в таблице
+`core_product` (см. модель `Product` ниже); этот модуль — тонкая обёртка,
+которая отдаёт им словарную форму, совместимую со старым контрактом.
 
-Product dict keys: `id, title, type_i18, img, alt, badge, description, price, price_cents`.
+```python
+def get_shop_products() -> list[dict]              # опубликованные товары магазина
+def get_shop_preview_products(limit: int = 4) -> list[dict]   # превью на главной (только покупабельные)
+def get_free_products() -> list[dict]              # опубликованные бесплатные модели
+def get_product(product_id) -> dict | None         # любого kind; None если черновик
+def get_product_instance(product_id) -> Product | None  # то же, но инстанс модели
+```
+
+Словарь товара (`Product.as_cart_dict()`) содержит ключи:
+`id, title, description, img, alt, badge, type_label, price, price_cents,
+price_rub, not_for_sale, is_sold_out, is_free, download_url, slug`.
+
+- `not_for_sale` и `is_sold_out` — алиасы одного и того же флага
+  (оставлено для совместимости старых шаблонов/тестов).
+- `type_label` заменил прежний `type_i18` — это готовая русская метка
+  из `Product.FileType.choices` (i18n-ключа больше нет).
+
+**Запрещено** импортировать `SHOP_PRODUCTS` / `SHOP_PREVIEW_PRODUCTS` —
+этих модульных констант больше нет. Модуль не делает запросов на импорте,
+поэтому его можно загрузить на чистой БД без ошибок (это важно для
+`manage.py migrate` и `dumpdata`).
+
+### `Product` / `ProductImage` (модели)
+
+- `Product.kind`: `shop` | `free` — дискриминатор; один `ModelAdmin`
+  обслуживает обе страницы `/shop/` и `/free_models/`.
+- `Product.file_type`: `3d` | `2d` | `other` — подпись «3D модель» / «2D файл»
+  в карточке берётся из `get_file_type_display()`, без i18n.
+- `Product.free_category`: `hobby` | `art` | `tech` — в какой таб на
+  `/free_models/` попадёт карточка (пусто для `kind=shop`).
+- `Product.price_rub` — целое число в **рублях**. Копейки нигде не хранятся,
+  но `Product.price_cents` (property = `price_rub * 100`) сохранён для
+  совместимости с `Order.total_cents` / `OrderItem.product_price_cents`.
+- `Product.is_sold_out` — показывать «Распродано» и отключить кнопку купить/
+  скачать. `cart_utils.add_item` / `set_qty` такие товары не добавят
+  (`as_cart_dict()["not_for_sale"] == True`).
+- `Product.is_placeholder` — «Скоро новая модель». Заменяет прежний хардкод
+  placeholder-карточек в `templates/core/free_models.html`. Позволяет
+  редактору создать пустую карточку без `image`/`description`/`download_url`
+  (поле `image` — `blank=True`). Шаблоны `shop.html` и `free_models.html`
+  для таких товаров рендерят `<article class="free-placeholder-card">` (CSS
+  в `static/css/enhancements.css`). Placeholder никогда не попадёт в
+  корзину (`not_for_sale=True` независимо от `is_sold_out`) и скрыт из
+  `get_shop_preview_products()` (главная не должна показывать «скелет»).
+- `Product.image` — путь относительно `static/` (например,
+  `images/shop/battletoad.png`). Необязателен, если товар — placeholder.
+- `Product.download_url` — для бесплатных моделей. Если начинается с `http`,
+  шаблон подставляет значение как есть; иначе оборачивает в `{% static %}`
+  (A + C из обсуждения — допустимы и внешние URL, и локальные файлы в
+  `static/files/free/`).
+- `ProductImage(product=, image=, alt=, display_order=)` — доп. ракурсы для
+  switcher'а (точки под картинкой). Главная картинка всё равно берётся из
+  `Product.image`; `product.all_image_paths()` возвращает `[(path, alt), …]`
+  главная + все `extra_images`.
+- IDs 1..14 зарезервированы под исторические товары магазина (их знают
+  `OrderItem.product_id` и сессии корзин); бесплатные модели начинаются
+  со 101. После data-миграции `0012_seed_products` Postgres-последовательность
+  выставляется так, чтобы admin-товары получили `id > max(id)`.
 
 ### `core/cart_utils.py`
 
@@ -219,6 +276,28 @@ Recognized special overrides: `canonical_path`, `og_image_url`, `article_ld`
 To add rich SEO for a new article, just add a `NEWS_ARTICLE_SEO[<slug>]`
 entry — no view edits needed. Keep values plain strings / lists / small dicts
 (the module stays shallow-copy-safe).
+
+**SEO и DB-контент — что обновляется автоматически, а что нет.**
+
+| Действие редактора в админке                  | `PAGE_SEO` | `NEWS_ARTICLE_SEO` | `sitemap.xml` | Нужно ли править код? |
+|-----------------------------------------------|------------|---------------------|---------------|-----------------------|
+| Опубликовал новую `NewsArticle`               | —          | fallback (generic)  | **+** (авто)  | По желанию — добавить `NEWS_ARTICLE_SEO[slug]` для «богатой» SEO (custom og_image + `article_ld` + ключи). |
+| Добавил `Product` (shop/free) через админку   | —          | —                   | —             | **Нет.** У товара нет собственного URL; он отображается на `/shop/` или `/free_models/`, SEO которых уже задан. |
+| Хочу расширить ключи `/shop/` или `/free-models/` под новый ассортимент | **да**, `PAGE_SEO[...]["keywords"]` | — | — | Редактирование `core/seo.py` + деплой. |
+| Скрыл товар (`is_published=False` / `is_placeholder=True`) | — | — | — | Не влияет: страницы `/shop/` и `/free_models/` всё равно индексируются. |
+
+Ключевое правило: **SEO привязано к URL-маршрутам, а не к строкам в БД.**
+Товары/бесплатные модели не имеют собственных страниц, поэтому их добавление
+не требует изменения SEO. Новые статьи получают свой `/news/<slug>/`, он
+сразу попадает в `NewsArticleSitemap` (см. `core/sitemaps.py`) и получает
+дефолтную SEO-обёртку через generic ветку `news_article_seo_overrides`;
+«богатую» SEO заведёшь, когда действительно захочешь выделить статью.
+
+Картинки на `og:image` для товаров не нужны — если однажды появится
+товарная страница `/shop/<slug>/`, добавь соответствующий `url_name` в
+`PAGE_SEO` и в зависимости от задачи — либо `og_image_url=…` через
+override в view, либо свой `PRODUCT_SEO[slug]`-словарь по аналогии с
+`NEWS_ARTICLE_SEO`.
 
 Performance contract (don't regress):
 
@@ -326,7 +405,7 @@ edited via Django admin between deploys (see §11 "Content vs code" rule).
 
 ## 10. Tests (`core/tests.py`) — **use these as the contract**
 
-89 tests. Run with:
+108 tests. Run with:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test core
@@ -343,7 +422,10 @@ Coverage map (read a test before making a semantically-loaded change):
 | Class | What it pins |
 |---|---|
 | `PricingTests` | Formatting, RUB conversion. |
-| `ShopDataTests` | Catalog shape, unique ids, `get_product`. |
+| `ShopDataTests` | Форма словарей, уникальность id, `get_product` (включая отбраковку черновиков), превью без sold-out, `get_free_products`. |
+| `ProductModelTests` | `price_cents`/`price_display`, `is_purchasable` (с учётом placeholder), `all_image_paths`, `as_cart_dict` (sold-out + placeholder). Фичу placeholder прикрывают `test_is_purchasable_respects_flags` и `test_placeholder_product_not_for_sale_and_image_optional`. |
+| `ProductAdminTests` | Публикация `Product.is_published=True` — только superuser/Editors; staff может сохранять черновик. |
+| `ShopFreeViewsTests` | `/shop/` и `/free_models/` рендерят посеянных товаров, табы всегда присутствуют, external-download URL остаётся как есть, sold-out отключает кнопку, непубликованные не видны. Placeholder-продукт рендерится как `.free-placeholder-card`, в корзину не попадает. |
 | `PortfolioGalleryDataTests` | `gallery_context` for known/unknown slugs. |
 | `CartUtilsTests` | Add/set/remove/clear, sort order, malformed session data. Uses a `dict` subclass that accepts `.modified = True`. |
 | `ModelTests` | `__str__`s + `OrderItem.total_cents`. |
@@ -411,14 +493,45 @@ Coverage map (read a test before making a semantically-loaded change):
     before `migrate`) so an accidental clobber can be reverted from
     `/var/backups/creativesphere/`.
 
+- **То же правило — для `Product` (товары магазина и бесплатные модели).**
+  Каталог лежит в таблице `core_product`, и редакторы правят его через админку.
+  Data-миграции должны быть идемпотентны и никогда не затирать админские
+  правки:
+  - Первичный посев `core/migrations/0012_seed_products.py` использует
+    `get_or_create(pk=…, defaults={...})` — если запись с таким `id`
+    уже есть в прод-БД (например, `id=1..14` из легаси-магазина),
+    миграция её не трогает.
+  - Доп. ракурсы (`ProductImage`) добавляются только если у товара ещё нет
+    ни одного ракурса — чтобы при повторном прогоне не клонировать их.
+  - Placeholder-карточки «Скоро» посеяны отдельной миграцией
+    `0015_seed_placeholder_products.py` (id 201..299, зарезервированный
+    коридор). Тот же паттерн `get_or_create(pk=…)` + обновление
+    Postgres-sequence. Дополнительные placeholder'ы заводятся через
+    админку (`Product.is_placeholder=True`), а не миграциями.
+  - Новые товары/модели добавляются **через админку**, а не через миграции.
+  - После массового `INSERT ... (id=…)` Postgres-последовательность
+    выставляется через `setval(pg_get_serial_sequence(...), MAX(id), true)` —
+    иначе следующий admin-товар получит конфликт по первичному ключу.
+  - `scripts/update-safe.sh` делает `pg_dump` **всей** БД перед миграцией,
+    так что `core_product` тоже покрыт бэкапом.
+  - Порядок табов на `/free_models/` определяется **порядком enum-членов**
+    `Product.FreeCategory` (не полем `display_order`). `views.free_models`
+    строит табы через `for key, label in FreeCategory.choices`, поэтому
+    изменение порядка в модели == изменение порядка табов (см.
+    `0014_reorder_free_categories`). Django генерирует на это миграцию
+    (`AlterField` для `choices`), схема БД при этом не меняется.
+
 ---
 
 ## 12. Quick "I need to change X" cheat sheet
 
 | I want to… | Edit |
 |---|---|
-| Add a product | `core/shop_data.py` (append to `SHOP_PRODUCTS`; ids are integers, unique). |
-| Edit free downloads section/page | `templates/core/free_models.html` (folder tabs, cards, placeholders, single row background style, media switcher, links), `core/urls.py` + `core/views.py` (route/view), and `core/seo.py::PAGE_SEO["free_models"]`. |
+| Add a product | Создайте `Product` в Django admin (`kind=shop`, заполните title/slug/image/alt/price_rub/description; при необходимости добавьте доп. ракурсы через инлайн `ProductImage`). Публиковать (`is_published=True`) может только superuser или группа Editors. Код трогать не нужно. |
+| Add a free model | То же, но `kind=free`, `price_rub=0`, выбрать `free_category` (`hobby`/`art`/`tech`) — именно этот таб будет содержать карточку. В `download_url` — полный `https://…`-URL или путь `files/free/xxx.zip` (последний прогонится через `{% static %}`). |
+| Mark a product as "Распродано" | Включить `is_sold_out` на карточке в админке. Кнопка «Купить/Скачать» станет неактивной, `cart_utils.add_item` такие товары больше не добавит. |
+| Add a «Скоро» placeholder-card | Создайте `Product` и включите `is_placeholder` (раздел «Публикация»). Можно оставить `image`/`description`/`download_url` пустыми. Карточка отрисуется как `free-placeholder-card` в шаблонах `shop.html`/`free_models.html`, не попадёт в корзину и исчезнет, как только вы снимете галочку `is_placeholder` и заполните остальные поля. |
+| Edit free downloads section/page | Контент — через админку (`Product`, в т.ч. placeholder'ы). Вёрстка табов/карточек — `templates/core/free_models.html`; стили placeholder-карточек — `static/css/enhancements.css`. Список и **порядок** табов определяется `Product.FreeCategory.choices` в `core/models.py` (после правки — `makemigrations`, получится `AlterField` без изменения схемы). Перевод названий табов — ключи `shop_free_tab_art`/`_hobby`/`_tech` в `base.html::translations.ru/en`; шаблон подставляет их через `data-i18="shop_free_tab_{{ tab.key }}"`. SEO — `core/seo.py::PAGE_SEO["free_models"]`. |
 | Change product pricing logic | `core/pricing.py` (+ its tests). |
 | Add a new public page | `core/urls.py` (route) + `core/views.py` (view) + `templates/core/<page>.html` + optionally `core/seo.py::PAGE_SEO`. |
 | Add a field to `Order` | `core/models.py` → new migration in `core/migrations/` → template + form if user-facing → tests. |

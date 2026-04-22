@@ -4,7 +4,7 @@ from django.utils.functional import SimpleLazyObject
 from .cart_utils import get_cart_summary
 from .pricing import format_minor_as_rub
 from .seo import get_seo
-from .shop_data import SHOP_PREVIEW_PRODUCTS, SHOP_PRODUCTS
+from .shop_data import get_shop_preview_products, get_shop_products
 
 
 def site_seo(request):
@@ -30,11 +30,14 @@ def analytics(request):
 
 
 def shop_cart(request):
+    # ``shop_products`` / ``shop_preview_products`` читаются из БД при каждом
+    # рендере — это дёшево (десятки строк) и всегда отражает админские правки
+    # без перезапуска процесса.
     summary = get_cart_summary(request)
     cents = summary["cart_subtotal_cents"]
     return {
-        "shop_products": SHOP_PRODUCTS,
-        "shop_preview_products": SHOP_PREVIEW_PRODUCTS,
+        "shop_products": get_shop_products(),
+        "shop_preview_products": get_shop_preview_products(),
         **summary,
         "cart_subtotal_formatted": format_minor_as_rub(cents),
     }

@@ -130,3 +130,43 @@ footer a:hover {
     justify-content: center;
   }
 }
+
+/* ── Placeholder-карточка («Скоро новая модель») ──────────────────────
+   Используется и на /free_models/, и на /shop/ для Product.is_placeholder=True.
+   Общие правила живут здесь, чтобы оба шаблона рисовали карточку одинаково
+   без дублирования <style>. */
+.free-placeholder-card {
+  position: relative;
+  min-height: 260px;
+  border-radius: 24px;
+  border: 2px dashed rgba(61, 122, 79, 0.45);
+  background: rgba(255, 255, 255, 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  text-align: center;
+}
+.free-placeholder-box {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  border: 2px dashed rgba(61, 122, 79, 0.6);
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary, #3d7a4f);
+  margin-bottom: 14px;
+}
+.free-placeholder-title {
+  margin: 0;
+  color: var(--bg-dark, #1a2e1a);
+  font-weight: 700;
+}
+.free-placeholder-sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #5f6f5a;
+}

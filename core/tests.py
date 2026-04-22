@@ -26,9 +26,9 @@ from django.test import Client, RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from core import cart_utils
-from core.admin import NewsArticleAdmin
+from core.admin import NewsArticleAdmin, ProductAdmin
 from core.forms import CheckoutForm, ContactForm, RegisterForm
-from core.models import ContactSubmission, NewsArticle, Order, OrderItem
+from core.models import ContactSubmission, NewsArticle, Order, OrderItem, Product, ProductImage
 from core.portfolio_gallery_data import gallery_context
 from core.pricing import (
     USD_TO_RUB_RATE,
@@ -36,9 +36,31 @@ from core.pricing import (
     usd_whole_to_rub_kopecks,
 )
 from core.seo import get_seo
-from core.shop_data import SHOP_PRODUCTS, get_product
+from core.shop_data import (
+    get_free_products,
+    get_product,
+    get_product_instance,
+    get_shop_preview_products,
+    get_shop_products,
+)
 
 User = get_user_model()
+
+
+def _purchasable_shop_pair():
+    """Две доступные к покупке позиции магазина (нужно для тестов корзины).
+
+    Возвращает кортеж ``(Product, Product)``; оба товара гарантированно
+    ``is_published=True`` и ``is_sold_out=False``. Набор берётся из
+    data-миграции ``0012_seed_products`` — если её кто-то заменит,
+    достаточно поправить только эту функцию.
+    """
+    qs = (
+        Product.objects
+        .filter(kind=Product.Kind.SHOP, is_published=True, is_sold_out=False)
+        .order_by("display_order", "id")
+    )
+    return qs[0], qs[1]
 
 
 # ---------------------------------------------------------------------------
@@ -70,7 +92,9 @@ class PricingTests(TestCase):
 class ShopDataTests(TestCase):
     def test_every_product_has_required_fields(self):
         required = {"id", "title", "price", "price_cents", "img", "alt"}
-        for p in SHOP_PRODUCTS:
+        shop = get_shop_products()
+        self.assertTrue(shop, "Seed migration must populate at least one shop product")
+        for p in shop:
             with self.subTest(product=p["id"]):
                 self.assertTrue(required.issubset(p.keys()))
                 self.assertIsInstance(p["id"], int)
@@ -78,17 +102,98 @@ class ShopDataTests(TestCase):
                 self.assertGreater(p["price_cents"], 0)
 
     def test_product_ids_are_unique(self):
-        ids = [p["id"] for p in SHOP_PRODUCTS]
+        ids = [p["id"] for p in get_shop_products()]
         self.assertEqual(len(ids), len(set(ids)))
 
     def test_get_product_found_and_missing(self):
-        first = SHOP_PRODUCTS[0]
-        self.assertEqual(get_product(first["id"])["title"], first["title"])
+        first = Product.objects.filter(kind=Product.Kind.SHOP).order_by("display_order", "id").first()
+        self.assertEqual(get_product(first.pk)["title"], first.title)
         self.assertIsNone(get_product(9999))
 
     def test_get_product_accepts_numeric_strings(self):
-        first = SHOP_PRODUCTS[0]
-        self.assertEqual(get_product(str(first["id"])), first)
+        first = Product.objects.filter(kind=Product.Kind.SHOP).order_by("display_order", "id").first()
+        self.assertEqual(get_product(str(first.pk)), first.as_cart_dict())
+
+    def test_get_product_hides_unpublished(self):
+        draft = Product.objects.create(
+            kind=Product.Kind.SHOP,
+            slug="draft-shop",
+            title="Черновик",
+            image="images/shop/battletoad.png",
+            price_rub=100,
+            is_published=False,
+        )
+        self.assertIsNone(get_product(draft.pk))
+
+    def test_preview_hides_sold_out(self):
+        preview = get_shop_preview_products()
+        self.assertTrue(preview)
+        self.assertTrue(all(not p["not_for_sale"] for p in preview))
+        self.assertLessEqual(len(preview), 4)
+
+    def test_free_products_seeded(self):
+        free = get_free_products()
+        self.assertGreaterEqual(len(free), 1)
+        for p in free:
+            with self.subTest(product=p["id"]):
+                self.assertTrue(p["is_free"])
+                self.assertEqual(p["price_cents"], 0)
+
+
+class ProductModelTests(TestCase):
+    def test_price_cents_and_display_match_rub(self):
+        p = Product.objects.create(
+            slug="price-check",
+            title="Pricecheck",
+            image="images/x.png",
+            price_rub=3800,
+        )
+        self.assertEqual(p.price_cents, 380_000)
+        self.assertEqual(p.price_display, "3 800 ₽")
+
+    def test_is_purchasable_respects_flags(self):
+        p = Product.objects.create(
+            slug="purch", title="t", image="x.png", price_rub=100
+        )
+        self.assertTrue(p.is_purchasable)
+        p.is_sold_out = True
+        self.assertFalse(p.is_purchasable)
+        p.is_sold_out = False
+        p.is_published = False
+        self.assertFalse(p.is_purchasable)
+        p.is_published = True
+        p.is_placeholder = True
+        self.assertFalse(p.is_purchasable)
+
+    def test_placeholder_product_not_for_sale_and_image_optional(self):
+        # Placeholder можно создать без image/description — это ключевой
+        # смысл фичи (редактор заводит "рамку на потом" одним кликом).
+        p = Product.objects.create(
+            slug="ph", title="Скоро", is_placeholder=True
+        )
+        self.assertEqual(p.image, "")
+        d = p.as_cart_dict()
+        self.assertTrue(d["is_placeholder"])
+        self.assertTrue(d["not_for_sale"])  # корзина его отсечёт
+
+    def test_all_image_paths_includes_extras_in_order(self):
+        p = Product.objects.create(
+            slug="multi", title="t", image="images/main.png", alt="main",
+        )
+        ProductImage.objects.create(product=p, image="images/b.png", alt="b", display_order=1)
+        ProductImage.objects.create(product=p, image="images/a.png", alt="a", display_order=0)
+        paths = p.all_image_paths()
+        self.assertEqual(paths[0], ("images/main.png", "main"))
+        self.assertEqual(paths[1][0], "images/a.png")
+        self.assertEqual(paths[2][0], "images/b.png")
+
+    def test_as_cart_dict_carries_sold_out_flag(self):
+        p = Product.objects.create(
+            slug="so", title="t", image="x.png", price_rub=500, is_sold_out=True
+        )
+        d = p.as_cart_dict()
+        self.assertTrue(d["not_for_sale"])
+        self.assertTrue(d["is_sold_out"])
 
 
 class PortfolioGalleryDataTests(TestCase):
@@ -121,8 +226,12 @@ class _SessionStub(dict):
 class CartUtilsTests(TestCase):
     def setUp(self):
         self.session = _SessionStub()
-        self.valid_id = SHOP_PRODUCTS[0]["id"]
-        self.other_id = SHOP_PRODUCTS[1]["id"]
+        first, second = _purchasable_shop_pair()
+        self.valid_id = first.pk
+        self.other_id = second.pk
+        self.sold_out = Product.objects.filter(
+            kind=Product.Kind.SHOP, is_sold_out=True
+        ).first()
 
     def test_add_item_increments_qty(self):
         cart_utils.add_item(self.session, self.valid_id, 2)
@@ -132,6 +241,11 @@ class CartUtilsTests(TestCase):
 
     def test_add_item_ignores_unknown_product(self):
         cart_utils.add_item(self.session, 9999, 1)
+        self.assertEqual(self.session, {})
+
+    def test_add_item_ignores_sold_out_product(self):
+        self.assertIsNotNone(self.sold_out, "Seed must include at least one sold-out product")
+        cart_utils.add_item(self.session, self.sold_out.pk, 1)
         self.assertEqual(self.session, {})
 
     def test_set_qty_overwrites_and_removes_when_zero(self):
@@ -640,7 +754,8 @@ class CartApiTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.url = reverse("core:cart_api")
-        self.product_id = SHOP_PRODUCTS[0]["id"]
+        first, _ = _purchasable_shop_pair()
+        self.product_id = first.pk
 
     def _post(self, payload):
         return self.client.post(
@@ -752,7 +867,10 @@ class ContactFormSubmissionTests(TestCase):
 class CheckoutFlowTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.product = SHOP_PRODUCTS[0]
+        first, _ = _purchasable_shop_pair()
+        # Keeping dict shape так, чтобы индексирование ``self.product["id"]``
+        # и ``self.product["price_cents"]`` ниже в тестах работало без правок.
+        self.product = first.as_cart_dict()
 
     def _add_to_cart(self, qty=2):
         self.client.post(
@@ -963,3 +1081,164 @@ class NewsArticleAdminTests(TestCase):
         request = self._build_request(editor)
         self.model_admin.save_model(request, article, form=None, change=False)
         self.assertIsNotNone(article.published_at)
+
+
+# ---------------------------------------------------------------------------
+# Product admin — publish gate
+# ---------------------------------------------------------------------------
+
+
+class ProductAdminTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.model_admin = ProductAdmin(Product, admin.site)
+        self.editor_group, _ = Group.objects.get_or_create(name="Editors")
+
+    def _build_request(self, user):
+        request = self.factory.post("/admin/core/product/add/")
+        request.user = user
+        return request
+
+    def _fresh_product(self, **overrides):
+        data = dict(
+            kind=Product.Kind.SHOP,
+            slug="new-slug",
+            title="Новый",
+            image="images/shop/battletoad.png",
+            price_rub=1000,
+            is_published=True,
+        )
+        data.update(overrides)
+        return Product(**data)
+
+    def test_non_editor_cannot_publish(self):
+        staff = User.objects.create_user(
+            username="staff-p", email="sp@example.com", password="Secret1234!", is_staff=True
+        )
+        product = self._fresh_product()
+        with self.assertRaises(PermissionDenied):
+            self.model_admin.save_model(
+                self._build_request(staff), product, form=None, change=False
+            )
+
+    def test_editor_can_publish(self):
+        editor = User.objects.create_user(
+            username="editor-p", email="ep@example.com", password="Secret1234!", is_staff=True
+        )
+        editor.groups.add(self.editor_group)
+        product = self._fresh_product()
+        self.model_admin.save_model(
+            self._build_request(editor), product, form=None, change=False
+        )
+        self.assertTrue(Product.objects.filter(slug="new-slug", is_published=True).exists())
+
+    def test_non_editor_can_save_as_draft(self):
+        staff = User.objects.create_user(
+            username="staff-d", email="sd@example.com", password="Secret1234!", is_staff=True
+        )
+        product = self._fresh_product(slug="draft-slug", is_published=False)
+        self.model_admin.save_model(
+            self._build_request(staff), product, form=None, change=False
+        )
+        saved = Product.objects.get(slug="draft-slug")
+        self.assertFalse(saved.is_published)
+
+
+# ---------------------------------------------------------------------------
+# Shop / Free models views — rendering DB-backed products
+# ---------------------------------------------------------------------------
+
+
+class ShopFreeViewsTests(TestCase):
+    def test_shop_page_lists_seeded_products(self):
+        response = Client().get(reverse("core:shop"))
+        self.assertEqual(response.status_code, 200)
+        seed_product = get_shop_products()[0]
+        self.assertContains(response, seed_product["title"])
+
+    def test_free_models_page_renders_tabs_and_products(self):
+        response = Client().get(reverse("core:free_models"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Халапеньо")
+        # Все три таба присутствуют, даже если пустые:
+        self.assertContains(response, 'data-tab-target="hobby"')
+        self.assertContains(response, 'data-tab-target="art"')
+        self.assertContains(response, 'data-tab-target="tech"')
+
+    def test_free_models_shows_external_download_link(self):
+        response = Client().get(reverse("core:free_models"))
+        # Для download_url, начинающегося с http, рендерим как есть —
+        # без {% static %}-префикса.
+        self.assertContains(response, "https://disk.yandex.ru/")
+
+    def test_free_models_respects_is_sold_out(self):
+        # Снимаем публикацию у всех hobby-товаров и создаём один sold-out.
+        Product.objects.filter(kind=Product.Kind.FREE, free_category="hobby").update(
+            is_published=False
+        )
+        Product.objects.create(
+            kind=Product.Kind.FREE,
+            free_category="hobby",
+            slug="sold-out-free",
+            title="Завершённая раздача",
+            image="images/shop/free/peper1.png",
+            price_rub=0,
+            download_url="https://example.com/file.zip",
+            is_sold_out=True,
+        )
+        response = Client().get(reverse("core:free_models"))
+        self.assertContains(response, "Завершённая раздача")
+        self.assertContains(response, "Распродано")
+        # Кнопка «Скачать» у sold-out карточки должна быть disabled.
+        self.assertContains(response, "disabled")
+
+    def test_shop_hides_unpublished_products(self):
+        Product.objects.create(
+            kind=Product.Kind.SHOP,
+            slug="hidden-shop",
+            title="Скрытый товар-XYZ",
+            image="images/shop/battletoad.png",
+            price_rub=999,
+            is_published=False,
+        )
+        response = Client().get(reverse("core:shop"))
+        self.assertNotContains(response, "Скрытый товар-XYZ")
+
+    def test_free_models_renders_placeholder_product(self):
+        # Placeholder-продукт в бесплатных моделях рендерится карточкой
+        # «Скоро новая модель» — это замена прежнему хардкоду в шаблоне.
+        Product.objects.create(
+            kind=Product.Kind.FREE,
+            free_category="hobby",
+            slug="ph-hobby-soon",
+            title="Скоро: Чумной доктор 2",
+            description="Тестовый placeholder",
+            is_placeholder=True,
+        )
+        response = Client().get(reverse("core:free_models"))
+        self.assertContains(response, "free-placeholder-card")
+        self.assertContains(response, "Скоро: Чумной доктор 2")
+        self.assertContains(response, "Тестовый placeholder")
+
+    def test_placeholder_product_cannot_be_added_to_cart(self):
+        # Ключевая гарантия: placeholder — визуальный «скелет», не товар.
+        # Попытка положить его в корзину должна мягко отсекаться get_product.
+        from core.cart_utils import add_item
+        from core.shop_data import get_product
+
+        ph = Product.objects.create(
+            kind=Product.Kind.SHOP,
+            slug="ph-shop-soon",
+            title="Скоро: новый товар",
+            is_placeholder=True,
+            price_rub=0,
+        )
+        # get_product возвращает dict; у placeholder-а not_for_sale=True,
+        # и add_item его игнорирует.
+        product_dict = get_product(ph.pk)
+        self.assertIsNotNone(product_dict)
+        self.assertTrue(product_dict["not_for_sale"])
+
+        session = {}
+        add_item(session, ph.pk, 1)
+        self.assertEqual(session.get("cart", {}), {})

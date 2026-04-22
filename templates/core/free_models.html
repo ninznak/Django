@@ -11,106 +11,73 @@
 
         <section class="free-folder">
             <div class="free-tabs" role="tablist" aria-label="Категории бесплатных моделей">
-                <button type="button" class="free-tab is-active" role="tab" data-tab-target="hobby" aria-selected="true" data-i18="shop_free_tab_hobby">Хоббийные модели</button>
-                <button type="button" class="free-tab" role="tab" data-tab-target="art" aria-selected="false" data-i18="shop_free_tab_art">Художественные модели</button>
-                <button type="button" class="free-tab" role="tab" data-tab-target="tech" aria-selected="false" data-i18="shop_free_tab_tech">Технические модели</button>
+                {% for tab in free_tabs %}
+                <button type="button"
+                        class="free-tab{% if forloop.first %} is-active{% endif %}"
+                        role="tab"
+                        data-tab-target="{{ tab.key }}"
+                        data-i18="shop_free_tab_{{ tab.key }}"
+                        aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ tab.label }}</button>
+                {% endfor %}
             </div>
 
-            <div class="free-panel is-active" data-tab-panel="hobby">
+            {% for tab in free_tabs %}
+            <div class="free-panel{% if forloop.first %} is-active{% endif %}" data-tab-panel="{{ tab.key }}"{% if not forloop.first %} hidden{% endif %}>
+                {% if tab.products %}
                 <div class="free-row">
                     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <article class="free-model-card bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col">
-                            <div class="relative aspect-[4/3] free-compare" data-compare-wrap>
-                                <img src="{% static 'images/shop/free/peper1.png' %}" alt="Бесплатная 3D-модель халапеньо, первый ракурс" class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none free-cycle-img is-active" data-cycle-img draggable="false">
-                                <img src="{% static 'images/shop/free/peper2.png' %}" alt="Бесплатная 3D-модель халапеньо, второй ракурс" class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none free-cycle-img" data-cycle-img draggable="false">
-                            </div>
-                            <div class="free-dots" data-cycle-dots aria-label="Выбор ракурса модели"></div>
-                            <div class="p-5 flex-1 flex flex-col">
-                                <p class="text-xs uppercase tracking-widest text-gray-400" data-i18="shop_free_type">3D Модель</p>
-                                <h4 class="font-semibold mt-2" data-i18="shop_free_item_title_jalapeno">Халапеньо (Jalapeno)</h4>
-                                <p class="text-sm text-gray-500 mt-2 flex-1" data-i18="shop_free_item_desc_jalapeno">Формат STL. Бесплатная модель для 3D-печати и тестовых распечаток.</p>
-                                <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100 gap-3">
-                                    <span class="text-xl font-bold text-[#3d7a4f]" data-i18="shop_free_price">Бесплатно</span>
-                                    <a href="https://disk.yandex.ru/d/FeBhoKfzXHrlxQ" target="_blank" rel="noopener noreferrer" class="btn-primary text-sm py-2 px-4" data-i18="shop_download">Скачать</a>
+                        {% for product in tab.products %}
+                            {% if product.is_placeholder %}
+                            <article class="free-placeholder-card">
+                                <div class="free-placeholder-box">+</div>
+                                <p class="free-placeholder-title">{{ product.title|default:"Скоро новая модель" }}</p>
+                                <p class="free-placeholder-sub">{{ product.description|default:"Место для будущего фото" }}</p>
+                            </article>
+                            {% else %}
+                            <article class="free-model-card bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col">
+                                <div class="relative aspect-[4/3] free-compare" data-compare-wrap>
+                                    {% for img_path, img_alt in product.all_image_paths %}
+                                    <img src="{% static img_path %}"
+                                         alt="{{ img_alt }}"
+                                         class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none free-cycle-img{% if forloop.first %} is-active{% endif %}"
+                                         data-cycle-img draggable="false">
+                                    {% endfor %}
                                 </div>
-                            </div>
-                        </article>
-
-                        <article class="free-model-card bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col">
-                            <div class="relative aspect-[4/3] free-compare" data-compare-wrap>
-                                <img src="{% static 'images/shop/free/kabbage1.png' %}" alt="Бесплатная 3D-модель, первый ракурс" class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none free-cycle-img" data-cycle-img draggable="false">
-                                <img src="{% static 'images/shop/free/kabbage2.png' %}" alt="Бесплатная 3D-модель, второй ракурс" class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none free-cycle-img is-active" data-cycle-img draggable="false">
-                            </div>
-                            <div class="free-dots" data-cycle-dots aria-label="Выбор ракурса модели"></div>
-                            <div class="p-5 flex-1 flex flex-col">
-                                <p class="text-xs uppercase tracking-widest text-gray-400" data-i18="shop_free_type">3D Модель</p>
-                                <h4 class="font-semibold mt-2" data-i18="shop_free_item_title">Злой кабачок</h4>
-                                <p class="text-sm text-gray-500 mt-2 flex-1" data-i18="shop_free_item_desc">Формат OBJ. Бесплатная загрузка для личных тестов и ознакомления.</p>
-                                <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100 gap-3">
-                                    <span class="text-xl font-bold text-[#3d7a4f]" data-i18="shop_free_price">Бесплатно</span>
-                                    <a href="https://disk.yandex.ru/d/BNZ0tmLTBh0kyA" target="_blank" rel="noopener noreferrer" class="btn-primary text-sm py-2 px-4" data-i18="shop_download">Скачать</a>
+                                <div class="free-dots" data-cycle-dots aria-label="Выбор ракурса модели"></div>
+                                <div class="p-5 flex-1 flex flex-col">
+                                    <p class="text-xs uppercase tracking-widest text-gray-400">{{ product.get_file_type_display }}</p>
+                                    <h4 class="font-semibold mt-2">{{ product.title }}</h4>
+                                    {% if product.description %}
+                                    <p class="text-sm text-gray-500 mt-2 flex-1">{{ product.description|linebreaksbr }}</p>
+                                    {% endif %}
+                                    <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100 gap-3">
+                                        {% if product.is_sold_out %}
+                                        <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Распродано</span>
+                                        <button type="button" class="btn-primary text-sm py-2 px-4 opacity-60 cursor-not-allowed" disabled aria-disabled="true">Скачать</button>
+                                        {% else %}
+                                        <span class="text-xl font-bold text-[#3d7a4f]">Бесплатно</span>
+                                        {% if product.download_url %}
+                                        <a href="{% if product.download_url|slice:':4' == 'http' %}{{ product.download_url }}{% else %}{% static product.download_url %}{% endif %}"
+                                           target="_blank"
+                                           rel="noopener noreferrer"
+                                           class="btn-primary text-sm py-2 px-4">Скачать</a>
+                                        {% else %}
+                                        <span class="text-sm text-gray-400">Скоро</span>
+                                        {% endif %}
+                                        {% endif %}
+                                    </div>
                                 </div>
-                            </div>
-                        </article>
-
-                        <article class="free-model-card bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col">
-                            <div class="relative aspect-[4/3] free-compare" data-compare-wrap>
-                                <img src="{% static 'images/shop/free/goroh1.png' %}" alt="Бесплатная 3D-модель горохострела, первый ракурс" class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none free-cycle-img is-active" data-cycle-img draggable="false">
-                                <img src="{% static 'images/shop/free/goroh2.png' %}" alt="Бесплатная 3D-модель горохострела, второй ракурс" class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none free-cycle-img" data-cycle-img draggable="false">
-                            </div>
-                            <div class="free-dots" data-cycle-dots aria-label="Выбор ракурса модели"></div>
-                            <div class="p-5 flex-1 flex flex-col">
-                                <p class="text-xs uppercase tracking-widest text-gray-400" data-i18="shop_free_type">3D Модель</p>
-                                <h4 class="font-semibold mt-2" data-i18="shop_free_item_title_goroh">Горохострел Ледяной</h4>
-                                <p class="text-sm text-gray-500 mt-2 flex-1" data-i18="shop_free_item_desc_goroh">Модель состоит из 2 отдельных частей, поддержек при печати FDM не требует.</p>
-                                <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100 gap-3">
-                                    <span class="text-xl font-bold text-[#3d7a4f]" data-i18="shop_free_price">Бесплатно</span>
-                                    <a href="https://disk.yandex.ru/d/24zTNbjkJiWb_g" target="_blank" rel="noopener noreferrer" class="btn-primary text-sm py-2 px-4" data-i18="shop_download">Скачать</a>
-                                </div>
-                            </div>
-                        </article>
+                            </article>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
-                <div class="free-row">
-                    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                    </div>
-                </div>
+                {% endif %}
                 <div class="free-pagination" data-pagination hidden>
                     <div class="shop-page-list" data-free-pages></div>
                 </div>
             </div>
-
-            <div class="free-panel" data-tab-panel="art" hidden>
-                <div class="free-row">
-                    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                    </div>
-                </div>
-                <div class="free-pagination" data-pagination hidden>
-                    <div class="shop-page-list" data-free-pages></div>
-                </div>
-            </div>
-
-            <div class="free-panel" data-tab-panel="tech" hidden>
-                <div class="free-row">
-                    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                        <article class="free-placeholder-card"><div class="free-placeholder-box">+</div><p class="free-placeholder-title" data-i18="shop_free_placeholder_title">Скоро новая модель</p><p class="free-placeholder-sub" data-i18="shop_free_placeholder_sub">Место для будущего фото</p></article>
-                    </div>
-                </div>
-                <div class="free-pagination" data-pagination hidden>
-                    <div class="shop-page-list" data-free-pages></div>
-                </div>
-            </div>
+            {% endfor %}
         </section>
     </div>
 </div>
@@ -166,45 +133,6 @@
 
 .free-row {
     background: rgba(225, 236, 198, 0.54);
-}
-
-.free-placeholder-card {
-    position: relative;
-    min-height: 260px;
-    border-radius: 24px;
-    border: 2px dashed rgba(61, 122, 79, 0.45);
-    background: rgba(255, 255, 255, 0.55);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 22px;
-    text-align: center;
-}
-
-.free-placeholder-box {
-    width: 72px;
-    height: 72px;
-    border-radius: 18px;
-    border: 2px dashed rgba(61, 122, 79, 0.6);
-    display: grid;
-    place-items: center;
-    font-size: 32px;
-    font-weight: 700;
-    color: #3d7a4f;
-    margin-bottom: 14px;
-}
-
-.free-placeholder-title {
-    margin: 0;
-    color: #1a2e1a;
-    font-weight: 700;
-}
-
-.free-placeholder-sub {
-    margin: 6px 0 0;
-    font-size: 13px;
-    color: #5f6f5a;
 }
 
 .free-model-card {

@@ -1,184 +1,88 @@
-"""Shop catalog.
+"""Адаптер над моделью :class:`core.models.Product` для остального кода.
 
-Порядок элементов ``SHOP_PRODUCTS`` определяет порядок карточек на странице
-``/shop/``. Превью на главной (``SHOP_PREVIEW_PRODUCTS``) формируется явной
-фильтрацией по ``not_for_sale`` — это гарантирует, что превью всегда показывает
-только доступные к покупке товары, даже если в каталоге ``not_for_sale``-позиции
-перемешаны с продаваемыми.
+Исторически каталог магазина жил как питоновский список словарей
+``SHOP_PRODUCTS``. Сейчас источник данных — таблица ``core_product``,
+которую можно редактировать через админку. Этот модуль оставлен как
+тонкая обёртка, чтобы:
 
-``price_cents`` держим положительным даже для "Нет в продаже", чтобы не ломать
-``test_every_product_has_required_fields`` — доступность покупки решает флаг
-``not_for_sale`` в UI (``shop.html`` / ``homepage.html``) и в ``cart_utils``.
+* шаблоны/тесты продолжали работать со словарной формой товара
+  (``{"id", "title", "price", "price_cents", "img", "alt", ...}``),
+* корзина и ``OrderItem`` продолжали видеть минорные единицы (копейки),
+* новые места могли обращаться напрямую к queryset'у
+  ``Product.objects.filter(kind="shop", is_published=True)``.
 
-Идентификаторы (``id``) у существующих товаров стабильны — их используют
-корзина, заказы в БД и тесты. Новым товарам выдаются следующие свободные ``id``.
+``SHOP_PRODUCTS`` и ``SHOP_PREVIEW_PRODUCTS`` больше **не** модульные
+константы — это функции, потому что:
+
+1. импорт модуля не должен делать запросы в БД (иначе падает
+   ``manage.py migrate`` на чистой БД);
+2. свежесть данных важна — после редактирования в админке страница
+   /shop/ должна сразу видеть новое состояние.
 """
 
 from __future__ import annotations
 
-from .pricing import rub_whole_to_kopecks
+from typing import Any
+
+from .models import Product
 
 
-def _product(rub_price: int, **kwargs) -> dict:
-    price, price_cents = rub_whole_to_kopecks(rub_price)
-    return {"price": price, "price_cents": price_cents, **kwargs}
+def _shop_queryset():
+    return Product.objects.filter(
+        kind=Product.Kind.SHOP,
+        is_published=True,
+    ).order_by("display_order", "id")
 
 
-SHOP_PRODUCTS: list[dict] = [
-    _product(
-        3800,
-        id=8,
-        title="Медаль Толстова «Переход за Рейн»",
-        type_i18="shop_3d_model",
-        img="images/shop/tolst.png",
-        alt="3D-модель: Медаль Толстова «Переход за Рейн»",
-        badge=None,
-        description="Трёхмерный файл отсканированной медали.",
-    ),
-    _product(
-        1600,
-        id=12,
-        title="Отсканированный бюст Давид Микеланджело",
-        type_i18="shop_3d_model",
-        img="images/news/david.jpg",
-        alt="3D-модель: отсканированный бюст Давид Микеланджело",
-        badge=None,
-        description="Трёхмерный файл отсканированного бюста.",
-    ),
-    _product(
-        1300,
-        id=13,
-        title="Чумной доктор",
-        type_i18="shop_3d_model",
-        img="images/news/plague.jpg",
-        alt="3D-модель: Чумной доктор",
-        badge=None,
-        description="3D-модель для печати.",
-    ),
-    _product(
-        1300,
-        id=14,
-        title="Давид Донателло",
-        type_i18="shop_3d_model",
-        img="images/news/DavidDonatello.jpg",
-        alt="3D-модель: Давид Донателло",
-        badge=None,
-        description="Трёхмерная модель для печати.",
-    ),
-    _product(
-        1800,
-        id=9,
-        title="Скан стороны медали «Игры новых развивающихся сил»",
-        type_i18="shop_3d_model",
-        img="images/shop/emerging.png",
-        alt="3D-модель: скан стороны медали «Игры новых развивающихся сил»",
-        badge=None,
-        description="Трёхмерный файл отсканированной медали.",
-    ),
-    _product(
-        2300,
-        id=10,
-        title="Модель академика Ю. Орлова (сканирование)",
-        type_i18="shop_3d_model",
-        img="images/shop/Orlov.png",
-        alt="3D-модель: портрет академика Ю. Орлова (сканирование)",
-        badge=None,
-        description="Трёхмерный файл отсканированной модели.",
-    ),
-    _product(
-        4500,
-        id=4,
-        title="Урал — автомобиль геологоразведки",
-        type_i18="shop_3d_model",
-        img="images/shop/ural.JPEG",
-        alt="3D-модель автомобиля Урал геологоразведки",
-        badge=None,
-        description="Состоит из разделяющихся частей.",
-    ),
-    _product(
-        1000,
-        id=11,
-        title="Барельеф — герб Адыгеи",
-        type_i18="shop_3d_model",
-        img="images/shop/adygeya.png",
-        alt="3D-модель: барельеф герба Республики Адыгея",
-        badge=None,
-        description="Трёхмерный барельеф, готовый к печати.",
-    ),
-    # ── Not for sale ──────────────────────────────────────────────────────
-    # price_cents is preserved only so data-integrity tests pass; the UI and
-    # cart gate purchase via the ``not_for_sale`` flag, never via price.
-    _product(
-        5000,
-        id=5,
-        title="Леди Диметреску",
-        type_i18="shop_3d_model",
-        img="images/shop/Dimetresku.png",
-        alt="3D-модель: Леди Диметреску из Resident Evil Village",
-        badge=None,
-        description="Модель по мотивам игры Resident Evil Village.",
-        not_for_sale=True,
-    ),
-    _product(
-        4000,
-        id=6,
-        title="Червяк Джимм",
-        type_i18="shop_3d_model",
-        img="images/shop/EarthWormJim.png",
-        alt="3D-модель: Червяк Джимм",
-        badge=None,
-        description="Модель для печати, возможно разделение по частям.",
-        not_for_sale=True,
-    ),
-    _product(
-        2300,
-        id=2,
-        title="Малыш Марио в горшочке",
-        type_i18="shop_3d_model",
-        img="images/shop/mario.JPEG",
-        alt="3D-модель: фигурка ребёнок Марио в горшочке",
-        badge=None,
-        description="Трёхмерная модель для печати.",
-    ),
-    _product(
-        3600,
-        id=3,
-        title="Фигурка из игры Neverhood",
-        type_i18="shop_3d_model",
-        img="images/shop/shop1.png",
-        alt="3D-модель: фигурка из игры Neverhood",
-        badge=None,
-        description="Фигурка для печати.",
-    ),
-    _product(
-        3300,
-        id=1,
-        title="Боевая Жаба",
-        type_i18="shop_3d_model",
-        img="images/shop/battletoad.png",
-        alt="3D-модель Боевая Жаба",
-        badge=None,
-        description="Трёхмерная модель, готовая для печати.",
-    ),
-    _product(
-        4500,
-        id=7,
-        title="Робот-сгибальщик Бендер",
-        type_i18="shop_3d_model",
-        img="images/shop/Bender.png",
-        alt="3D-модель: Робот-сгибальщик Бендер",
-        badge=None,
-        description="Коллекционная 3D-модель.",
-        not_for_sale=True,
-    ),
-]
-
-# Превью на главной — только товары, доступные к покупке; первые 4 в порядке
-# каталога. Явная фильтрация делает превью устойчивым к перестановкам.
-SHOP_PREVIEW_PRODUCTS = [p for p in SHOP_PRODUCTS if not p.get("not_for_sale")][:4]
-
-_BY_ID = {p["id"]: p for p in SHOP_PRODUCTS}
+def _free_queryset():
+    return Product.objects.filter(
+        kind=Product.Kind.FREE,
+        is_published=True,
+    ).order_by("display_order", "id")
 
 
-def get_product(product_id: int) -> dict | None:
-    return _BY_ID.get(int(product_id))
+def get_shop_products() -> list[dict[str, Any]]:
+    """Опубликованные товары магазина в словарной форме."""
+    return [p.as_cart_dict() for p in _shop_queryset()]
+
+
+def get_shop_preview_products(limit: int = 4) -> list[dict[str, Any]]:
+    """Первые ``limit`` *доступных к покупке* товаров для превью на главной.
+
+    Превью на ``homepage.html`` должно показывать только покупабельное —
+    распроданные позиции и placeholder-карточки («Скоро новый товар»)
+    скрыты независимо от их ``display_order``: визуально «скелет» в
+    компактном превью только путает.
+    """
+    qs = _shop_queryset().filter(is_sold_out=False, is_placeholder=False)[:limit]
+    return [p.as_cart_dict() for p in qs]
+
+
+def get_free_products() -> list[dict[str, Any]]:
+    """Опубликованные бесплатные модели в словарной форме."""
+    return [p.as_cart_dict() for p in _free_queryset()]
+
+
+def get_product(product_id) -> dict[str, Any] | None:
+    """Товар по ``id`` (любого ``kind``), либо ``None``.
+
+    Оставлена та же сигнатура, что у прежней реализации — чтобы не
+    переписывать ``cart_utils``, ``views.cart_api`` и тесты корзины.
+    Возвращает словарь ``Product.as_cart_dict()``; для непубликованных
+    или отсутствующих товаров — ``None``.
+    """
+    try:
+        pid = int(product_id)
+    except (TypeError, ValueError):
+        return None
+    product = Product.objects.filter(pk=pid, is_published=True).first()
+    return product.as_cart_dict() if product else None
+
+
+def get_product_instance(product_id) -> Product | None:
+    """Как ``get_product``, но отдаёт модельный инстанс (для шаблонов)."""
+    try:
+        pid = int(product_id)
+    except (TypeError, ValueError):
+        return None
+    return Product.objects.filter(pk=pid, is_published=True).first()

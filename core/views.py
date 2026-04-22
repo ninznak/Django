@@ -17,10 +17,10 @@ from django.views.decorators.http import require_http_methods
 from . import cart_utils
 from .portfolio_gallery_data import gallery_context
 from .forms import CheckoutForm, ContactForm, RegisterForm
-from .models import ContactSubmission, NewsArticle, Order, OrderItem
+from .models import ContactSubmission, NewsArticle, Order, OrderItem, Product
 from .pricing import format_minor_as_rub
 from .seo import get_seo, news_article_seo_overrides
-from .shop_data import SHOP_PRODUCTS, get_product
+from .shop_data import get_product, get_shop_products
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -154,8 +154,8 @@ def portfolio_gallery(request, slug):
 
 
 def shop(request):
-    """Страница магазина"""
-    paginator = Paginator(SHOP_PRODUCTS, 10)
+    """Страница магазина — карточки из БД с пагинацией по 10."""
+    paginator = Paginator(get_shop_products(), 10)
     page_obj = paginator.get_page(request.GET.get("page"))
     return render(
         request,
@@ -168,8 +168,32 @@ def shop(request):
 
 
 def free_models(request):
-    """Отдельная страница с бесплатными 3D-моделями."""
-    return render(request, "core/free_models.html")
+    """Бесплатные 3D-модели, сгруппированные по табам ``free_category``.
+
+    Мы читаем сразу инстансы ``Product`` (не ``as_cart_dict()``), чтобы
+    шаблон мог пройтись по ``extra_images`` для switcher'а ракурсов.
+    Группировка делается в Python — товаров несколько десятков, запрос
+    и так один.
+    """
+    products = list(
+        Product.objects.filter(kind=Product.Kind.FREE, is_published=True)
+        .order_by("display_order", "id")
+        .prefetch_related("extra_images")
+    )
+
+    # Все табы существуют всегда (даже если пока пустые) — это сохраняет
+    # привычный UI с тремя заголовками и плейсхолдерами.
+    tabs = [
+        {"key": key, "label": label, "products": []}
+        for key, label in Product.FreeCategory.choices
+    ]
+    by_key = {tab["key"]: tab for tab in tabs}
+    for product in products:
+        bucket = by_key.get(product.free_category)
+        if bucket is not None:
+            bucket["products"].append(product)
+
+    return render(request, "core/free_models.html", {"free_tabs": tabs})
 
 
 def _serialize_cart_line(line):
