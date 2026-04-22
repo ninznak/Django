@@ -168,51 +168,6 @@
     padding: 12px 18px 20px;
 }
 
-.shop-page-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
-}
-
-.shop-page-link,
-.shop-page-current {
-    min-width: 35px;
-    height: 35px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 16px;
-    line-height: 1;
-    text-decoration: none;
-}
-
-.shop-page-link {
-    color: #1a2e1a;
-    background: rgba(225, 236, 198, 0.54);
-    border: 1px solid var(--line);
-}
-
-.shop-page-link:hover {
-    background: #dce8cf;
-}
-
-.shop-page-current {
-    color: #ffffff;
-    background: #1a2e1a;
-    border: 1px solid #1a2e1a;
-}
-
-.shop-page-dots {
-    min-width: 19px;
-    text-align: center;
-    font-size: 18px;
-    color: #5f6f5a;
-}
-
 .free-compare {
     background: #f5f5f5;
 }
@@ -298,47 +253,11 @@
             });
         }
 
+        const pagination = window.PaginationUtils;
+        if (!pagination) return;
+
         const TARGET_MODELS_PER_PAGE = 102;
-        // НОК для сетки free-cards: sm=2 колонки, lg=3 колонки.
-        // Все промежуточные страницы стараемся делать кратными 6 карточкам,
-        // чтобы ряд не обрывался при наличии следующей страницы.
-        const ROW_LCM = 6;
-
-        const buildPageWindows = (totalCards, targetPerPage, rowLcm) => {
-            const windows = [];
-            let from = 0;
-
-            while (from < totalCards) {
-                const remaining = totalCards - from;
-                if (remaining <= targetPerPage) {
-                    windows.push({ from, to: totalCards });
-                    break;
-                }
-
-                let size = targetPerPage;
-                const remainder = size % rowLcm;
-                if (remainder !== 0) {
-                    const need = rowLcm - remainder;
-                    const availableFromNext = remaining - size;
-
-                    if (availableFromNext >= need) {
-                        // Можем «добрать» начало следующей страницы и закрыть ряд.
-                        size += need;
-                    } else {
-                        // Добрать не хватает — сдвигаем границу назад до полного ряда.
-                        const down = size - remainder;
-                        if (down > 0 && (remaining - down) > 0) {
-                            size = down;
-                        }
-                    }
-                }
-
-                windows.push({ from, to: from + size });
-                from += size;
-            }
-
-            return windows;
-        };
+        const ROW_LCM = 6; // НОК для free-grid: sm=2 и lg=3
 
         const panelsWithPagination = document.querySelectorAll('[data-tab-panel]');
         panelsWithPagination.forEach((panel) => {
@@ -348,60 +267,13 @@
             const pageHost = pager ? pager.querySelector('[data-free-pages]') : null;
             if (!pager || !cards.length) return;
 
-            const pageWindows = buildPageWindows(cards.length, TARGET_MODELS_PER_PAGE, ROW_LCM);
+            const pageWindows = pagination.buildRowAlignedWindows(
+                cards.length,
+                TARGET_MODELS_PER_PAGE,
+                ROW_LCM
+            );
             const totalPages = Math.max(1, pageWindows.length);
             let page = 1;
-
-            const renderPageLinks = () => {
-                if (!pageHost) return;
-                pageHost.innerHTML = "";
-
-                const addDots = () => {
-                    const dots = document.createElement('span');
-                    dots.className = 'shop-page-dots';
-                    dots.textContent = '...';
-                    pageHost.appendChild(dots);
-                };
-                const addPage = (p) => {
-                    if (p === page) {
-                        const cur = document.createElement('span');
-                        cur.className = 'shop-page-current';
-                        cur.textContent = String(p);
-                        pageHost.appendChild(cur);
-                        return;
-                    }
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'shop-page-link';
-                    btn.textContent = String(p);
-                    btn.addEventListener('click', () => {
-                        page = p;
-                        renderPage();
-                    });
-                    pageHost.appendChild(btn);
-                };
-
-                if (totalPages <= 7) {
-                    for (let p = 1; p <= totalPages; p += 1) addPage(p);
-                    return;
-                }
-
-                let start = Math.max(2, page - 1);
-                let end = Math.min(totalPages - 1, page + 1);
-                if (page <= 3) {
-                    start = 2;
-                    end = 4;
-                } else if (page >= totalPages - 2) {
-                    start = totalPages - 3;
-                    end = totalPages - 1;
-                }
-
-                addPage(1);
-                if (start > 2) addDots();
-                for (let p = start; p <= end; p += 1) addPage(p);
-                if (end < totalPages - 1) addDots();
-                addPage(totalPages);
-            };
 
             const renderPage = () => {
                 const window = pageWindows[page - 1] || { from: 0, to: cards.length };
@@ -410,7 +282,16 @@
                 cards.forEach((card, idx) => {
                     card.hidden = idx < from || idx >= to;
                 });
-                renderPageLinks();
+                if (pageHost) {
+                    pagination.renderNumberedPager(pageHost, {
+                        current: page,
+                        total: totalPages,
+                        onNavigate: (p) => {
+                            page = p;
+                            renderPage();
+                        },
+                    });
+                }
             };
 
             pager.hidden = false;

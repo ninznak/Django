@@ -170,3 +170,44 @@ footer a:hover {
   font-size: 13px;
   color: #5f6f5a;
 }
+
+/* ── Shared pager styles (/shop and /free_models) ───────────────────── */
+.shop-page-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+.shop-page-link,
+.shop-page-current {
+  min-width: 35px;
+  height: 35px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  text-decoration: none;
+}
+.shop-page-link {
+  color: #1a2e1a;
+  background: rgba(225, 236, 198, 0.54);
+  border: 1px solid var(--line);
+}
+.shop-page-link:hover {
+  background: #dce8cf;
+}
+.shop-page-current {
+  color: #ffffff;
+  background: #1a2e1a;
+  border: 1px solid #1a2e1a;
+}
+.shop-page-dots {
+  min-width: 19px;
+  text-align: center;
+  font-size: 18px;
+  color: #5f6f5a;
+}

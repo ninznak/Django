@@ -122,7 +122,7 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `portfolio` | `/portfolio/` | `views.portfolio` | `?category=3d\|ai\|all` redirects to anchors or base. The homepage carousel (`templates/core/homepage.html`) links its three cards to `/portfolio/#portfolio-3d`, `#portfolio-products`, `#portfolio-ai` — keep those anchors in sync with `templates/core/portfolio.html`. |
 | `portfolio_gallery` | `/portfolio/<slug>/` | `views.portfolio_gallery` | Slugs: `3d`, `ai`, `products`. Unknown → `Http404`. |
 | `shop` | `/shop/` | `views.shop` | Data comes from context processor. Header includes a CTA button to `core:free_models`. |
-| `free_models` | `/free-models/` | `views.free_models` | Dedicated free-download page with top folder-style tabs: `Художественные модели` / `Хоббийные модели` / `Технические модели` (порядок — из `Product.FreeCategory.choices`). Active tab uses site dark green (`#1a2e1a`) with white text. Карточки приходят из `Product` (`kind=free`, фильтр по `free_category`); пустые «Скоро новая модель» — это `Product.is_placeholder=True` (никакого хардкода в шаблоне). Названия табов переводятся через `data-i18="shop_free_tab_{{ tab.key }}"` (ключи `shop_free_tab_art`/`_hobby`/`_tech` — в `base.html::translations.ru/en`). Rows use a single light translucent background. Model cards use a click-driven image switcher (dots + image click). |
+| `free_models` | `/free-models/` | `views.free_models` | Dedicated free-download page with top folder-style tabs: `Художественные модели` / `Хоббийные модели` / `Технические модели` (порядок — из `Product.FreeCategory.choices`). Active tab uses site dark green (`#1a2e1a`) with white text. Карточки приходят из `Product` (`kind=free`, фильтр по `free_category`); пустые «Скоро новая модель» — это `Product.is_placeholder=True` (никакого хардкода в шаблоне). Названия табов переводятся через `data-i18="shop_free_tab_{{ tab.key }}"` (ключи `shop_free_tab_art`/`_hobby`/`_tech` — в `base.html::translations.ru/en`). Rows use a single light translucent background. Model cards use a click-driven image switcher (dots + image click). Клиентская пагинация в этом шаблоне использует общий helper `window.PaginationUtils` из `static/js/enhancements.js` (row-aligned окна страниц). |
 | `cart_api` | `/api/cart/` | `views.cart_api` | GET returns cart JSON; POST body `{action, product_id, qty}` with `action ∈ {add,set,remove,clear}`. CSRF-protected. |
 | `sign_up_login` | `/sign-up-login/` | `views.sign_up_login` | Login always; registration gated by `AUTH_SHOW_REGISTRATION`. Honors `?next=` (same-host only). |
 | `logout` | `/logout/` | `views.logout_view` | |
@@ -174,6 +174,11 @@ price_rub, not_for_sale, is_sold_out, is_free, download_url, slug`.
 этих модульных констант больше нет. Модуль не делает запросов на импорте,
 поэтому его можно загрузить на чистой БД без ошибок (это важно для
 `manage.py migrate` и `dumpdata`).
+
+`views.shop` использует `SHOP_PAGE_SIZE=12` (кратно НОК сетки 2/3 = 6), чтобы
+все страницы, кроме последней, имели полные ряды карточек на `sm` и `lg`.
+Это серверная часть правила "если есть следующая страница — текущая не
+заканчивается дыркой в ряду".
 
 ### `Product` / `ProductImage` (модели)
 
@@ -405,7 +410,7 @@ edited via Django admin between deploys (see §11 "Content vs code" rule).
 
 ## 10. Tests (`core/tests.py`) — **use these as the contract**
 
-108 tests. Run with:
+109 tests. Run with:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test core
@@ -462,6 +467,13 @@ Coverage map (read a test before making a semantically-loaded change):
 - **Windows dev**: PowerShell doesn't accept `&&` on old versions — use `;` or
   separate commands. The venv is at `.venv\Scripts\python.exe`.
 - **Don't commit `.env`**. `.env.example` is the template.
+- **Shared front-end pagination helpers** live in `static/js/enhancements.js`
+  as `window.PaginationUtils`:
+  - `buildRowAlignedWindows(totalItems, targetPerPage, rowLcm)` — page windows
+    with row-filling from next page start when possible.
+  - `renderNumberedPager(host, {current,total,makeHref|onNavigate})` — unified
+    shop/free_models pager rendering.
+  Do not re-implement pager math in templates; call helper from inline scripts.
 - **Don't regress `core/seo.py` performance**: shallow copy + `lru_cache` are
   intentional. The `SeoTests` suite will catch accidental breakages.
 - **News articles are DB-backed (`NewsArticle`).** Create/edit from Django admin.
@@ -531,7 +543,7 @@ Coverage map (read a test before making a semantically-loaded change):
 | Add a free model | То же, но `kind=free`, `price_rub=0`, выбрать `free_category` (`hobby`/`art`/`tech`) — именно этот таб будет содержать карточку. В `download_url` — полный `https://…`-URL или путь `files/free/xxx.zip` (последний прогонится через `{% static %}`). |
 | Mark a product as "Распродано" | Включить `is_sold_out` на карточке в админке. Кнопка «Купить/Скачать» станет неактивной, `cart_utils.add_item` такие товары больше не добавит. |
 | Add a «Скоро» placeholder-card | Создайте `Product` и включите `is_placeholder` (раздел «Публикация»). Можно оставить `image`/`description`/`download_url` пустыми. Карточка отрисуется как `free-placeholder-card` в шаблонах `shop.html`/`free_models.html`, не попадёт в корзину и исчезнет, как только вы снимете галочку `is_placeholder` и заполните остальные поля. |
-| Edit free downloads section/page | Контент — через админку (`Product`, в т.ч. placeholder'ы). Вёрстка табов/карточек — `templates/core/free_models.html`; стили placeholder-карточек — `static/css/enhancements.css`. Список и **порядок** табов определяется `Product.FreeCategory.choices` в `core/models.py` (после правки — `makemigrations`, получится `AlterField` без изменения схемы). Перевод названий табов — ключи `shop_free_tab_art`/`_hobby`/`_tech` в `base.html::translations.ru/en`; шаблон подставляет их через `data-i18="shop_free_tab_{{ tab.key }}"`. SEO — `core/seo.py::PAGE_SEO["free_models"]`. |
+| Edit free downloads section/page | Контент — через админку (`Product`, в т.ч. placeholder'ы). Вёрстка табов/карточек — `templates/core/free_models.html`; общие стили placeholder + pagination — `static/css/enhancements.css`; общая логика пагинации — `static/js/enhancements.js` (`window.PaginationUtils`). Список и **порядок** табов определяется `Product.FreeCategory.choices` в `core/models.py` (после правки — `makemigrations`, получится `AlterField` без изменения схемы). Перевод названий табов — ключи `shop_free_tab_art`/`_hobby`/`_tech` в `base.html::translations.ru/en`; шаблон подставляет их через `data-i18="shop_free_tab_{{ tab.key }}"`. SEO — `core/seo.py::PAGE_SEO["free_models"]`. |
 | Change product pricing logic | `core/pricing.py` (+ its tests). |
 | Add a new public page | `core/urls.py` (route) + `core/views.py` (view) + `templates/core/<page>.html` + optionally `core/seo.py::PAGE_SEO`. |
 | Add a field to `Order` | `core/models.py` → new migration in `core/migrations/` → template + form if user-facing → tests. |
