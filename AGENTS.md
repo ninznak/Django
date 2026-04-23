@@ -405,6 +405,9 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
   a `<style>` block at the top of `base.html`. **No build step.**
 - `base.html` also owns the light/dark theme switcher (`#theme-toggle`):
   - Theme state is stored in `localStorage["themePreference"]` (`light|dark`).
+  - First visit / empty localStorage must default to **light** theme. Do not
+    auto-switch by `prefers-color-scheme`; dark is enabled only by saved user
+    choice (`themePreference="dark"`).
   - `<html data-theme="...">` drives CSS variable palettes; keep dark colors in
     the dedicated `html[data-theme="dark"]` block to retheme in one place.
   - Toggle UI is rendered as a fixed floating action button (`.theme-fab`) near
@@ -418,6 +421,13 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
     (gradients + glow), and keep movement shape in shared `@keyframes orbFloat*`.
   - A tiny preload script in `<head>` applies saved theme before first paint
     (prevents light flash before JS init).
+  - Scrolled header color contract: `static/css/enhancements.css` sets
+    `.site-header.is-scrolled` background via
+    `var(--header-bg-scrolled, rgba(220, 232, 207, 0.92))`; therefore both
+    light and dark values of `--header-bg-scrolled` must be defined in
+    `templates/core/base.html`. If dark header turns green on scroll in prod,
+    verify this variable in the dark block and redeploy with `collectstatic`
+    so updated `enhancements.css` reaches Nginx-served staticfiles.
   - Hero gradient text (`.text-gradient-animated`) has a dual-path contract:
     - `html.can-clip-text` → classic background-clip gradient text.
     - `html.no-clip-text` → JS fallback `applyGradientTextFallback()` wraps text
