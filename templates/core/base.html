@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="ru" data-lang="ru">
+<html lang="ru" data-lang="ru" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,14 +38,13 @@
     <script type="application/ld+json">{{ seo.json_ld }}</script>
     {% endif %}
 
-    <!-- Night mode preload (prevents flash before CSS/DOM ready). -->
+    <!-- Theme preload (prevents flash). First visit / no saved key → always light. -->
     <script>
         (function () {
             try {
                 const key = "themePreference";
                 const saved = localStorage.getItem(key);
-                const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-                const theme = saved === "dark" || saved === "light" ? saved : (prefersDark ? "dark" : "light");
+                const theme = saved === "dark" || saved === "light" ? saved : "light";
                 const savedLang = localStorage.getItem("lang");
                 const lang = savedLang === "en" ? "en" : "ru";
                 document.documentElement.setAttribute("data-theme", theme);
