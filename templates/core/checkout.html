@@ -236,6 +236,7 @@
             <div class="lg:col-span-2 space-y-8">
                 <form method="post" action="{% url 'core:checkout' %}" class="space-y-8" id="checkout-form">
                     {% csrf_token %}
+                    <input type="hidden" name="idempotency_key" value="{{ checkout_idempotency_key }}">
 
                     <!-- Контактные данные -->
                     <div class="card p-8">

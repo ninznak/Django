@@ -44,7 +44,7 @@
 }
 .site-header.is-scrolled {
   box-shadow: 0 4px 24px rgba(26, 46, 26, 0.12);
-  background: rgba(220, 232, 207, 0.92) !important;
+  background: var(--header-bg-scrolled, rgba(220, 232, 207, 0.92)) !important;
 }
 
 /* ── Nav links: calm underline + hover ───────────────────────────────── */

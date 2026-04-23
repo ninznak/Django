@@ -80,7 +80,7 @@
 
                 <!-- Card 0 — 3D Models (back-left) -->
                 <a href="{% url 'core:portfolio' %}#portfolio-3d" class="cs-card" data-idx="0" aria-label="3D Models">
-                    <div class="cs-card-inner">
+                    <div class="cs-card-inner night-glow-surface">
                         <img src="{% static 'images/news/model8.jpg' %}"
                              alt="3D Models" class="cs-img" loading="eager">
                         <div class="cs-overlay"></div>
@@ -96,7 +96,7 @@
 
                 <!-- Card 1 — Finished Products (mid) -->
                 <a href="{% url 'core:portfolio' %}#portfolio-products" class="cs-card" data-idx="1" aria-label="Finished Products">
-                    <div class="cs-card-inner">
+                    <div class="cs-card-inner night-glow-surface">
                         <img src="{% static 'images/medals/medal5.JPEG' %}"
                              alt="Finished medal" class="cs-img" loading="eager">
                         <div class="cs-overlay"></div>
@@ -112,7 +112,7 @@
 
                 <!-- Card 2 — Saint George (front-right) -->
                 <a href="{% url 'core:portfolio' %}#portfolio-3d" class="cs-card" data-idx="2" aria-label="Георгий Победоносец">
-                    <div class="cs-card-inner">
+                    <div class="cs-card-inner night-glow-surface">
                         <img src="{% static 'images/news/Georg1.jpg' %}"
                              alt="Георгий Победоносец" class="cs-img" loading="eager">
                         <div class="cs-overlay"></div>
@@ -296,6 +296,12 @@
     left: 12px;
 }
 
+html[data-theme="dark"] .cs-deck .tag-pill {
+    background: #031956;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.92);
+}
+
 .cs-caption {
     position: absolute;
     bottom: 16px;
@@ -338,6 +344,21 @@
 .btn-busy[data-busy-tier="open"]    { background: #0d9488; border-color: #0f766e; }
 .btn-busy[data-busy-tier="partial"] { background: #eab308; border-color: #b8870a; color: #1a2e1a; }
 .btn-busy[data-busy-tier="busy"]    { background: #dc2626; border-color: #a61b1b; }
+
+html[data-theme="dark"] .btn-busy[data-busy-tier] {
+    background: var(--primary);
+    border-color: var(--primary-light);
+    color: #eef4ff;
+    box-shadow: var(--night-button-glow);
+}
+html[data-theme="dark"] .btn-busy:hover,
+html[data-theme="dark"] .btn-busy:focus-visible,
+html[data-theme="dark"] .btn-busy:active {
+    background: var(--primary-light);
+    border-color: #89abff;
+    color: #ffffff;
+    box-shadow: var(--night-button-glow-strong);
+}
 
 /* ── Busyness modal ────────────────────────────────────────────────────── */
 .busy-modal {
@@ -418,6 +439,47 @@
     from { opacity: 0; transform: translateY(8px) scale(0.96); }
     to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
+
+/* Featured works colors (theme-aware) */
+.featured-works-section {
+    background: #1a2e1a;
+}
+.featured-works-backdrop {
+    background: radial-gradient(ellipse 70% 50% at 30% 50%, rgba(61,122,79,0.15) 0%, transparent 70%);
+}
+.featured-works-label,
+.featured-card-tag {
+    color: #a8c957;
+}
+.featured-works-sub {
+    color: rgba(255, 255, 255, 0.6);
+}
+.featured-card-overlay {
+    background: linear-gradient(to top, rgba(26,46,26,0.9) 0%, rgba(26,46,26,0.2) 52%, transparent 100%);
+}
+
+html[data-theme="dark"] .featured-works-section {
+    background: linear-gradient(150deg, #031441 0%, #031956 56%, #11369c 100%);
+}
+html[data-theme="dark"] .featured-works-backdrop {
+    background: radial-gradient(ellipse 70% 52% at 30% 50%, rgba(51,109,243,0.22) 0%, rgba(246,34,189,0.16) 40%, transparent 75%);
+}
+html[data-theme="dark"] .featured-works-label,
+html[data-theme="dark"] .featured-card-tag {
+    color: #f622bd;
+}
+html[data-theme="dark"] .featured-works-sub {
+    color: rgba(220, 233, 255, 0.76);
+}
+html[data-theme="dark"] .featured-card-overlay {
+    background: linear-gradient(to top, rgba(3,20,65,0.9) 0%, rgba(17,54,156,0.22) 52%, transparent 100%);
+}
+
+.home-shop-section {
+    background: radial-gradient(circle at 18% 10%, var(--bg-radial-1), transparent 46%),
+                radial-gradient(circle at 84% 6%, var(--bg-radial-2), transparent 42%),
+                linear-gradient(150deg, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 42%, var(--bg-gradient-end) 100%);
+}
 </style>
 
 <script>
@@ -450,71 +512,71 @@
 </script>
 
 <!-- Featured Works Section -->
-<section class="py-20 bg-[#1a2e1a] relative">
-    <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse 70% 50% at 30% 50%, rgba(61,122,79,0.15) 0%, transparent 70%);"></div>
+<section class="featured-works-section py-20 relative">
+    <div class="featured-works-backdrop absolute inset-0 pointer-events-none"></div>
     
     <div class="max-w-7xl mx-auto px-6 relative z-10">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
-                <span class="section-label text-[#a8c957]" data-i18="featured_label">Избранные Работы</span>
+                <span class="section-label featured-works-label" data-i18="featured_label">Избранные Работы</span>
                 <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-white mt-3" data-i18="featured_title">Двойная Творческая Практика</h2>
             </div>
-            <p class="text-white/60 text-sm max-w-xs" data-i18="featured_sub">Рукотворные 3D-модели и AI-контент, каждое направление обогащает другое.</p>
+            <p class="featured-works-sub text-sm max-w-xs" data-i18="featured_sub">Рукотворные 3D-модели и AI-контент, каждое направление обогащает другое.</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Card 1 -->
-            <a href="/portfolio/" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block">
+            <a href="/portfolio/" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block night-glow-surface">
                 <div class="aspect-[4/5] overflow-hidden">
                     <img src="{% static 'images/news/modelmid.JPEG' %}"
                          alt="Здание МИД Российской Федерации"
                          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/90 via-[#1a2e1a]/20 to-transparent"></div>
+                    <div class="featured-card-overlay absolute inset-0"></div>
                 </div>
                 <div class="absolute bottom-0 left-0 right-0 p-7">
-                    <span class="text-[10px] uppercase tracking-widest font-medium text-[#a8c957]" data-i18="featured_mid_cat">3D Барельеф</span>
+                    <span class="featured-card-tag text-[10px] uppercase tracking-widest font-medium" data-i18="featured_mid_cat">3D Барельеф</span>
                     <p class="font-display text-xl font-semibold text-white mt-2" data-i18="featured_mid_title">Здание МИД Российской Федерации</p>
                 </div>
             </a>
 
             <!-- Card 2 — Saint George / portfolio -->
-            <a href="{% url 'core:portfolio' %}" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block">
+            <a href="{% url 'core:portfolio' %}" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block night-glow-surface">
                 <div class="aspect-[4/5] overflow-hidden">
                     <img src="{% static 'images/news/Georg2.jpg' %}"
                          alt="Георгий Победоносец"
                          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/90 via-[#1a2e1a]/20 to-transparent"></div>
+                    <div class="featured-card-overlay absolute inset-0"></div>
                 </div>
                 <div class="absolute bottom-0 left-0 right-0 p-7">
-                    <span class="text-[10px] uppercase tracking-widest font-medium text-[#a8c957]" data-i18="featured_georg_cat">Частный заказ</span>
+                    <span class="featured-card-tag text-[10px] uppercase tracking-widest font-medium" data-i18="featured_georg_cat">Частный заказ</span>
                     <p class="font-display text-xl font-semibold text-white mt-2" data-i18="featured_georg_title">Георгий Победоносец</p>
                 </div>
             </a>
             
             <!-- Card 3 — David -->
-            <a href="/portfolio/" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block">
+            <a href="/portfolio/" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block night-glow-surface">
                 <div class="aspect-[4/5] overflow-hidden">
                     <img src="{% static 'images/news/david.jpg' %}" 
                          alt="Давид Микеланджело" 
                          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/90 via-[#1a2e1a]/20 to-transparent"></div>
+                    <div class="featured-card-overlay absolute inset-0"></div>
                 </div>
                 <div class="absolute bottom-0 left-0 right-0 p-7">
-                    <span class="text-[10px] uppercase tracking-widest font-medium text-[#a8c957]" data-i18="featured_david_cat">Эпоха Возрождения</span>
+                    <span class="featured-card-tag text-[10px] uppercase tracking-widest font-medium" data-i18="featured_david_cat">Эпоха Возрождения</span>
                     <p class="font-display text-xl font-semibold text-white mt-2" data-i18="featured_david_title">Давид Микеланджело</p>
                 </div>
             </a>
 
             <!-- Card 5 — 3D Scanning -->
-            <a href="/portfolio/" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block">
+            <a href="/portfolio/" class="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer block night-glow-surface">
                 <div class="aspect-[4/5] overflow-hidden">
                     <img src="{% static 'images/shop/tolst.png' %}"
                          alt="Трехмерное сканирование барельефов"
                          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/90 via-[#1a2e1a]/20 to-transparent"></div>
+                    <div class="featured-card-overlay absolute inset-0"></div>
                 </div>
                 <div class="absolute bottom-0 left-0 right-0 p-7">
-                    <span class="text-[10px] uppercase tracking-widest font-medium text-[#a8c957]" data-i18="featured_scan_cat">3D Сканирование</span>
+                    <span class="featured-card-tag text-[10px] uppercase tracking-widest font-medium" data-i18="featured_scan_cat">3D Сканирование</span>
                     <p class="font-display text-xl font-semibold text-white mt-2" data-i18="featured_scan_title">Трехмерное сканирование барельефов</p>
                 </div>
             </a>
@@ -523,14 +585,14 @@
 </section>
 
 <!-- News Section -->
-<section class="py-20">
+<section class="home-news-section py-20">
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
                 <span class="section-label" data-i18="news_label">Обновления</span>
                 <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-semibold mt-3" data-i18="news_title">Новости и Статьи</h2>
             </div>
-            <p class="text-gray-500 text-sm max-w-xs" data-i18="news_sub">Материалы о 3D-моделировании, AI-генерации контента и их взаимодействии.</p>
+            <p class="home-muted-note text-gray-500 text-sm max-w-xs" data-i18="news_sub">Материалы о 3D-моделировании, AI-генерации контента и их взаимодействии.</p>
         </div>
         
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -543,12 +605,12 @@
 
             <!-- Featured Article -->
             <a href="/news/bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush/" class="lg:col-span-7 group block">
-                <div class="relative overflow-hidden rounded-3xl bg-white border border-primary/10 shadow-lg h-full">
+                <div class="home-news-card relative overflow-hidden rounded-3xl bg-white border border-primary/10 shadow-lg h-full night-glow-surface">
                     <div class="aspect-[16/10] overflow-hidden">
                         <img src="{% static 'images/news/model11.JPEG' %}"
                              alt="3D-моделирование"
                              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/80 via-[#1a2e1a]/10 to-transparent"></div>
+                        <div class="home-news-featured-overlay absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/80 via-[#1a2e1a]/10 to-transparent"></div>
                     </div>
                     <div class="absolute bottom-0 left-0 right-0 p-8">
                         <div class="flex items-center gap-3 mb-4">
@@ -567,7 +629,7 @@
             <!-- Secondary Articles -->
             <div class="lg:col-span-5 flex flex-col gap-5">
                 <!-- Article 1 — ArtCAM -->
-                <a href="/news/artcam-vozmozhnosti-zadachi-i-praktika/" class="group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
+                <a href="/news/artcam-vozmozhnosti-zadachi-i-praktika/" class="home-news-card group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all night-glow-surface">
                     <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                         <img src="{% static 'images/news/artcam1.png' %}"
                              alt="ArtCAM"
@@ -585,7 +647,7 @@
                 </a>
 
                 <!-- Article 2 — Generative design -->
-                <a href="/news/generative-design-technologies/" class="group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
+                <a href="/news/generative-design-technologies/" class="home-news-card group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all night-glow-surface">
                     <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                         <img src="{% static 'images/news/gener1.jpg' %}"
                              alt="Генеративный дизайн"
@@ -603,7 +665,7 @@
                 </a>
 
                 <!-- Article 3 — 3D trends 2026 -->
-                <a href="/news/midjourney-v7-for-numismatic-concept-art/" class="group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all">
+                <a href="/news/midjourney-v7-for-numismatic-concept-art/" class="home-news-card group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all night-glow-surface">
                     <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                         <img src="{% static 'images/news/midjourney-1920x1200.png' %}"
                              alt="Тренды 3D-графики"
@@ -632,20 +694,20 @@
 </section>
 
 <!-- Shop Preview Section -->
-<section class="py-20 bg-white/40">
+<section class="home-shop-section py-20">
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
                 <span class="section-label" data-i18="shop_label">Магазин</span>
                 <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-semibold mt-3" data-i18="shop_title">Приобрести Работу</h2>
-                <p class="text-gray-500 mt-3 max-w-md" data-i18="shop_sub">Цифровые загрузки, файлы 3D-моделей и эксклюзивные принты.</p>
+                <p class="home-muted-note text-gray-500 mt-3 max-w-md" data-i18="shop_sub">Цифровые загрузки, файлы 3D-моделей и эксклюзивные принты.</p>
             </div>
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {% for product in shop_preview_products %}
-            <div class="group bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col">
-                <div class="relative aspect-[4/3] overflow-hidden">
+            <div class="home-shop-card group bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col night-glow-surface">
+                <div class="relative aspect-[16/10] overflow-hidden">
                     <img src="{% static product.img %}"
                          alt="{{ product.alt }}"
                          class="w-full h-full object-cover">
@@ -668,18 +730,24 @@
                     </div>
                     {% endif %}
                 </div>
-                <div class="p-5 flex-1 flex flex-col">
-                    <p class="text-[10px] uppercase tracking-widest text-gray-400 font-medium">{{ product.type_label }}</p>
-                    <h4 class="font-display text-base font-semibold text-gray-800 mt-1">{{ product.title }}</h4>
+                <div class="home-shop-body p-5 flex-1 flex flex-col">
+                    <div class="home-shop-meta-row">
+                        <span class="home-shop-meta-chip">{{ product.type_label }}</span>
+                        {% if product.badge %}
+                        <span class="home-shop-meta-sep">•</span>
+                        <span class="home-shop-meta-muted">{{ product.badge }}</span>
+                        {% endif %}
+                    </div>
+                    <h4 class="home-shop-title font-display text-base font-semibold text-gray-800 mt-1">{{ product.title }}</h4>
                     {% if product.description %}
-                    <p class="text-sm text-gray-500 mt-2 flex-1">{{ product.description }}</p>
+                    <p class="home-shop-desc text-sm text-gray-500 mt-2 flex-1">{{ product.description }}</p>
                     {% endif %}
-                    <div class="flex items-center justify-between mt-3 gap-3">
+                    <div class="home-shop-actions flex items-center justify-between mt-3 gap-3">
                         {% if product.not_for_sale %}
-                        <span class="text-sm font-semibold text-gray-400 uppercase tracking-wider" data-i18="shop_not_for_sale">Нет в продаже</span>
+                        <span class="home-shop-status text-sm font-semibold text-gray-400 uppercase tracking-wider" data-i18="shop_not_for_sale">Нет в продаже</span>
                         {% else %}
-                        <span class="font-display text-xl font-semibold text-[#3d7a4f]">{{ product.price }}</span>
-                        <button type="button" class="btn-primary text-xs py-2 px-4" data-add-to-cart data-product-id="{{ product.id }}" data-i18="shop_add_cart">Add to Cart</button>
+                        <span class="home-shop-price font-display text-xl font-semibold text-[#3d7a4f]">{{ product.price }}</span>
+                        <button type="button" class="home-shop-cta btn-primary text-xs py-2 px-4" data-add-to-cart data-product-id="{{ product.id }}" data-i18="shop_add_cart">Add to Cart</button>
                         {% endif %}
                     </div>
                 </div>
@@ -750,7 +818,7 @@ Also uncomment forum in core/urls.py, core/sitemaps.py, and nav/footer links in 
         
         <!-- Contact Form -->
         <div class="max-w-xl mx-auto mt-12">
-            <form class="bg-white rounded-3xl p-8 border border-primary/10 shadow-lg" method="post" action="{% url 'core:homepage' %}#contact">
+            <form class="bg-white rounded-3xl p-8 border border-primary/10 shadow-lg night-glow-surface" method="post" action="{% url 'core:homepage' %}#contact">
                 {% csrf_token %}
                 <input type="hidden" name="contact_form" value="1">
                 <div class="space-y-5">

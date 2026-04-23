@@ -19,6 +19,15 @@ def _parse_domain_list(raw: str) -> list[str]:
     return [p.strip().lower() for p in raw.split(',') if p.strip()]
 
 
+def _env_int(name: str, default: int, *, minimum: int = 1) -> int:
+    raw = (os.getenv(name, str(default)) or "").strip()
+    try:
+        value = int(raw)
+    except ValueError:
+        value = default
+    return max(minimum, value)
+
+
 # Production apex hostnames (comma-separated). Used for ALLOWED_HOSTS / CSRF when not overridden.
 _DEFAULT_SITE_DOMAINS = 'kurilenkoart.ru'
 
@@ -110,6 +119,21 @@ DEFAULT_FROM_EMAIL = (os.getenv('DEFAULT_FROM_EMAIL', '') or SEO_CONTACT_EMAIL).
 CONTACT_FORM_RECIPIENT = (os.getenv('CONTACT_FORM_RECIPIENT', '') or SEO_CONTACT_EMAIL).strip()
 # If true, also attempt SMTP/console notification after saving to the database (failures are logged only).
 CONTACT_FORM_TRY_EMAIL = os.getenv('CONTACT_FORM_TRY_EMAIL', '1').strip() == '1'
+
+# Abuse protection / throttling (cache-backed in core.views)
+CONTACT_FORM_POST_LIMIT = _env_int("CONTACT_FORM_POST_LIMIT", 5)
+CONTACT_FORM_WINDOW_SECONDS = _env_int("CONTACT_FORM_WINDOW_SECONDS", 600)
+AUTH_POST_LIMIT = _env_int("AUTH_POST_LIMIT", 20)
+AUTH_WINDOW_SECONDS = _env_int("AUTH_WINDOW_SECONDS", 300)
+CART_API_POST_LIMIT = _env_int("CART_API_POST_LIMIT", 120)
+CART_API_WINDOW_SECONDS = _env_int("CART_API_WINDOW_SECONDS", 60)
+CHECKOUT_POST_LIMIT = _env_int("CHECKOUT_POST_LIMIT", 8)
+CHECKOUT_WINDOW_SECONDS = _env_int("CHECKOUT_WINDOW_SECONDS", 600)
+CHECKOUT_IDEMPOTENCY_TTL_SECONDS = _env_int("CHECKOUT_IDEMPOTENCY_TTL_SECONDS", 60 * 60 * 24)
+CHECKOUT_IDEMPOTENCY_SESSION_KEY = (
+    os.getenv("CHECKOUT_IDEMPOTENCY_SESSION_KEY", "checkout_idempotency_key").strip()
+    or "checkout_idempotency_key"
+)
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

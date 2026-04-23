@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
+<div class="portfolio-gallery-page min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
     <div class="max-w-7xl mx-auto px-6">
         <nav class="mb-8" aria-label="Breadcrumb">
             <a href="{% url 'core:portfolio' %}#{{ gallery.portfolio_hash }}" class="btn-outline text-sm inline-flex items-center gap-2" data-i18="portfolio_gallery_back">Back to portfolio</a>
@@ -32,7 +32,7 @@
                 </div>
                 <figcaption class="p-5 md:p-6">
                     <p class="font-display text-lg font-semibold text-[var(--text)]" data-i18="{{ item.title_i18 }}">—</p>
-                    <p class="mt-1 text-sm text-gray-500" data-i18="{{ item.subtitle_i18 }}">—</p>
+                    <p class="portfolio-gallery-subtitle mt-1 text-sm text-gray-500" data-i18="{{ item.subtitle_i18 }}">—</p>
                 </figcaption>
             </figure>
             {% endfor %}

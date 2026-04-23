@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
+from django.core.cache import cache
 from django.core import mail
 from django.core.exceptions import PermissionDenied
 from django.template import Context, Template
@@ -752,6 +753,7 @@ class StaticPagesViewTests(TestCase):
 
 class CartApiTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.client = Client()
         self.url = reverse("core:cart_api")
         first, _ = _purchasable_shop_pair()
@@ -806,6 +808,16 @@ class CartApiTests(TestCase):
         r = self.client.post(self.url, data=b"not-json", content_type="application/json")
         self.assertEqual(r.status_code, 400)
         self.assertEqual(r.json()["error"], "invalid_json")
+
+    def test_post_rate_limited_returns_429(self):
+        with mock.patch("core.views.CART_API_POST_LIMIT", 1), mock.patch(
+            "core.views.CART_API_WINDOW_SECONDS", 60
+        ):
+            first = self._post({"action": "add", "product_id": self.product_id, "qty": 1})
+            self.assertEqual(first.status_code, 200)
+            second = self._post({"action": "add", "product_id": self.product_id, "qty": 1})
+            self.assertEqual(second.status_code, 429)
+            self.assertEqual(second.json()["error"], "rate_limited")
 
 
 # ---------------------------------------------------------------------------
@@ -866,6 +878,7 @@ class ContactFormSubmissionTests(TestCase):
 
 class CheckoutFlowTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.client = Client()
         first, _ = _purchasable_shop_pair()
         # Keeping dict shape так, чтобы индексирование ``self.product["id"]``
@@ -948,6 +961,33 @@ class CheckoutFlowTests(TestCase):
 
         r = self.client.get(reverse("core:order_confirmation", args=[999_999]))
         self.assertRedirects(r, reverse("core:shop"))
+
+    def test_checkout_idempotency_key_prevents_duplicate_order(self):
+        self._add_to_cart(qty=1)
+        checkout_url = reverse("core:checkout")
+        checkout_page = self.client.get(checkout_url)
+        self.assertEqual(checkout_page.status_code, 200)
+        idem = checkout_page.context["checkout_idempotency_key"]
+        payload = {
+            "name": "Иван",
+            "email": "ivan@example.com",
+            "phone": "",
+            "country": "Россия",
+            "city": "Москва",
+            "address": "",
+            "postal_code": "",
+            "notes": "",
+            "pd_consent": "on",
+            "license_ack": "on",
+            "idempotency_key": idem,
+        }
+        first = self.client.post(checkout_url, payload)
+        self.assertEqual(Order.objects.count(), 1)
+        order_id = Order.objects.get().id
+        self.assertRedirects(first, reverse("core:order_confirmation", args=[order_id]))
+        second = self.client.post(checkout_url, payload)
+        self.assertEqual(Order.objects.count(), 1)
+        self.assertRedirects(second, reverse("core:order_confirmation", args=[order_id]))
 
 
 # ---------------------------------------------------------------------------

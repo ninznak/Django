@@ -130,14 +130,14 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `portfolio_gallery` | `/portfolio/<slug>/` | `views.portfolio_gallery` | Slugs: `3d`, `ai`, `products`. Unknown → `Http404`. |
 | `shop` | `/shop/` | `views.shop` | Data comes from context processor. Header includes a CTA button to `core:free_models`. |
 | `free_models` | `/free-models/` | `views.free_models` | Dedicated free-download page with top folder-style tabs: `Художественные модели` / `Хоббийные модели` / `Технические модели` (порядок — из `Product.FreeCategory.choices`). Active tab uses site dark green (`#1a2e1a`) with white text. Карточки приходят из `Product` (`kind=free`, фильтр по `free_category`); пустые «Скоро новая модель» — это `Product.is_placeholder=True` (никакого хардкода в шаблоне). Названия табов переводятся через `data-i18="shop_free_tab_{{ tab.key }}"` (ключи `shop_free_tab_art`/`_hobby`/`_tech` — в `base.html::translations.ru/en`). Rows use a single light translucent background. Model cards use a click-driven image switcher (dots + image click). Клиентская пагинация в этом шаблоне использует общий helper `window.PaginationUtils` из `static/js/enhancements.js` (row-aligned окна страниц). |
-| `cart_api` | `/api/cart/` | `views.cart_api` | GET returns cart JSON; POST body `{action, product_id, qty}` with `action ∈ {add,set,remove,clear}`. CSRF-protected. |
+| `cart_api` | `/api/cart/` | `views.cart_api` | GET returns cart JSON; POST body `{action, product_id, qty}` with `action ∈ {add,set,remove,clear}`. CSRF-protected. **IP-throttled** (`429 {"error":"rate_limited"}` when burst exceeds per-window limit in `core/views.py`). |
 | `sign_up_login` | `/sign-up-login/` | `views.sign_up_login` | Login always; registration gated by `AUTH_SHOW_REGISTRATION`. Honors `?next=` (same-host only). |
 | `logout` | `/logout/` | `views.logout_view` | |
 | `profile` | `/profile/` | `views.profile` | Личный кабинет авторизованного пользователя. Анонимным — redirect на `core:sign_up_login?next=/profile/`. Staff/Editors/superuser (`can_manage_content(user)`) дополнительно видят блок «Управление контентом» со ссылками на формы добавления. Роль отдаётся шаблону как `profile_role` (русская подпись) + `profile_role_key` (ключ i18n: `admin`/`editor`/`staff`/`user`/`guest`). SEO — `noindex, nofollow`, без JSON-LD. |
 | `profile_add_product` | `/profile/products/add/` | `views.profile_add_product` | UI-дружелюбный дубль `ProductAdmin` (форма `ProductCreateForm`). Gated декоратором `@require_content_manager` из `core.permissions`; публикацию (`is_published=True`) форма блокирует для обычного staff (только Editors/superuser). |
 | `profile_add_article` | `/profile/articles/add/` | `views.profile_add_article` | UI-дружелюбный дубль `NewsArticleAdmin` (форма `NewsArticleCreateForm`). Те же правила прав + синхронизация `published_at` со `status`, как в `NewsArticleAdmin.save_model`. |
 | `copyright` | `/copyright/` | `views.copyright` | |
-| `checkout` | `/checkout/` | `views.checkout` | Empty cart → redirect to `core:shop`. Creates `Order` + `OrderItem`s, clears cart, emails admin. |
+| `checkout` | `/checkout/` | `views.checkout` | Empty cart → redirect to `core:shop`. Creates `Order` + `OrderItem`s, clears cart, emails admin. POST is **IP-throttled** and supports idempotency key (`idempotency_key` hidden form field or `X-Idempotency-Key` header) to prevent duplicate orders on retries. |
 | `order_confirmation` | `/order/<int>/confirmation/` | `views.order_confirmation` | Missing order → redirect to shop. |
 | `forum`, `forum_topic` | — | views exist, routes **commented out**. Re-enable by uncommenting in `core/urls.py` + `core/sitemaps.py` + templates (search `FORUM DISABLED`). |
 
@@ -380,6 +380,11 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
 - `_username_for_login(raw)` — resolves username **or** email (case-insensitive) to the actual username before `authenticate`.
 - `_send_contact_email(cleaned)` / `_send_order_email(order, data)` — plain `EmailMessage` → `settings.CONTACT_FORM_RECIPIENT` via whatever email backend is configured. Both call sites wrap the send in `try/except` and log via `logger.exception`; never let email failures break a response.
 - `sensitive_post_parameters` decorates `sign_up_login` — keep password fields listed there if you add any.
+- `_is_rate_limited(request, scope, limit, window_seconds)` — cache-backed IP throttling helper for POST-heavy endpoints (`homepage` contact submit, `sign_up_login`, `cart_api`, `checkout`). Keep error contract stable: JSON endpoints return `429` with machine-readable error; HTML endpoints render with messages and `429` status.
+- Checkout idempotency contract:
+  - `templates/core/checkout.html` sends hidden `idempotency_key`.
+  - `views.checkout` also accepts `X-Idempotency-Key`.
+  - If the same key was already processed for that client IP within TTL, view redirects to existing `order_confirmation` instead of creating a duplicate order.
 
 ---
 
@@ -398,12 +403,55 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
   `PAGE_SEO` or pass overrides to `get_seo` instead.
 - Tailwind is loaded from the CDN script tag; site theme tokens are defined in
   a `<style>` block at the top of `base.html`. **No build step.**
+- `base.html` also owns the light/dark theme switcher (`#theme-toggle`):
+  - Theme state is stored in `localStorage["themePreference"]` (`light|dark`).
+  - `<html data-theme="...">` drives CSS variable palettes; keep dark colors in
+    the dedicated `html[data-theme="dark"]` block to retheme in one place.
+  - Toggle UI is rendered as a fixed floating action button (`.theme-fab`) near
+    the bottom-right, intentionally outside the header nav cluster to avoid
+    responsive-header layout regressions.
+  - Current baseline keeps dark-token colors aligned with light theme values;
+    visual dark styling is expected to be tuned by editing only
+    `html[data-theme="dark"]` in `base.html`.
+  - Animated background spheres are also theme-scoped in the same file:
+    tune their dark look only via `html[data-theme="dark"] .orb-a/.orb-b/.orb-c`
+    (gradients + glow), and keep movement shape in shared `@keyframes orbFloat*`.
+  - A tiny preload script in `<head>` applies saved theme before first paint
+    (prevents light flash before JS init).
+  - Hero gradient text (`.text-gradient-animated`) has a dual-path contract:
+    - `html.can-clip-text` → classic background-clip gradient text.
+    - `html.no-clip-text` → JS fallback `applyGradientTextFallback()` wraps text
+      into `.gradient-char` spans and animates per-character color wave (no
+      `-webkit-text-fill-color` dependency, no rectangle artifacts).
+  - `updatePageTranslations()` must keep calling `applyGradientTextFallback()`
+    after `[data-i18]` updates, otherwise language switch will revert the hero
+    lines to plain text in no-clip browsers.
+  - Rollback path: remove the preload script + `#theme-toggle` button +
+    `setupThemeToggle/applyTheme` JS block and dark-override CSS in
+    `templates/core/base.html`.
 - `{% load pricing_extras %}` unlocks `{{ kopecks|rub_minor }}`.
 - `{% load article_extras %}` unlocks `{{ article.content|render_article_body }}` for news body markup. Input is HTML-escaped first, then the following markup is transformed:
   - Block-level: `## heading` → `<h3>`, `- item` → `<ul><li>`, `1. item` (any positive integer) → `<ol><li>`, `![alt](images/news/file.jpg)` on its own line → styled `<img>` block, blank line separates paragraphs.
   - Inline (works inside paragraphs, headings and list items): `**bold**` → `<strong>`, `*italic*` → `<em>`, `[label](url)` → `<a>` with `rel="noopener noreferrer"`. Only `http://`, `https://`, `mailto:`, `tel:`, `#`, `/`, `./` and `../` URLs are allowed — `javascript:`, `data:` and unknown schemes are rendered as plain text.
   - Cover image is rendered separately by the template from `NewsArticle.cover_image`; don't duplicate it inside `content` via `![]()`.
 - `homepage.html` hero carousel (`.cs-card`) should keep hover motion smooth and calm (no spring overshoot curves that cause visual jerk on pointer hover). Prefer gentle `ease-out`-style cubic-bezier and moderate lift/scale. **Stacking:** the middle card uses the highest base `z-index` (fan “front”), so it is never covered by both side cards at once; sides use lower layers (`0→1`, `1→3`, `2→2`); hovered card still uses `z-index: 10`.
+- Homepage dark-mode card contract:
+  - News section wrapper uses `.home-news-section`; article cards use
+    `.home-news-card`.
+  - Featured news image overlay is normalized via
+    `.home-news-featured-overlay` (prevents legacy green tint in dark mode).
+  - Shop preview cards use `.home-shop-card`; product price uses
+    `.home-shop-price` for dark-mode contrast tokening.
+  - Keep these classes if card markup is edited; dark-mode palette is applied
+    in `templates/core/base.html` through these hooks.
+- Portfolio dark-mode text contract:
+  - `templates/core/portfolio.html` uses `.portfolio-page .portfolio-muted-note`
+    for the subtitle under the main H1 (`portfolio_subtitle`); in dark mode this
+    is intentionally the same soft-contrast token as homepage muted notes.
+  - `templates/core/portfolio_gallery.html` uses
+    `.portfolio-gallery-page .portfolio-gallery-subtitle` for card category
+    captions (e.g. "Барельеф / медаль", "AI изображение"); in dark mode these
+    captions are forced to dark-blue text for contrast on light cards.
 
 ### 7.1 i18n (клиентская — `data-i18` в `base.html`)
 
@@ -475,6 +523,7 @@ Env vars (see `.env.example`):
 | `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` | Fully override the derived values. |
 | `EMAIL_*`, `DEFAULT_FROM_EMAIL`, `SEO_CONTACT_EMAIL`, `CONTACT_FORM_RECIPIENT`, `CONTACT_FORM_TRY_EMAIL` | Email wiring. Dev default: console backend. |
 | `AUTH_SHOW_REGISTRATION` | `"1"` to expose the sign-up form on `/sign-up-login/`. Default off. |
+| `*_POST_LIMIT`, `*_WINDOW_SECONDS`, `CHECKOUT_IDEMPOTENCY_TTL_SECONDS`, `CHECKOUT_IDEMPOTENCY_SESSION_KEY` | Abuse-protection tuning (contact/auth/cart/checkout throttles + idempotency retention/session key name). See `.env.example` keys. |
 | `SECURE_*`, `SECURE_HSTS_*` | HTTPS hardening switches (only active when `DEBUG=0`). |
 
 Apps installed: `django.contrib.{admin,auth,contenttypes,sessions,messages,staticfiles,sites,sitemaps}` + `core`. `SITE_ID = 1`.
@@ -546,9 +595,9 @@ Coverage map (read a test before making a semantically-loaded change):
 | `ArticleExtrasTemplateTagTests` | `\|render_article_body` — headings, ordered & unordered lists, inline images, bold / italic, safe links (and rejection of `javascript:`), HTML escaping. |
 | `SeoTests` | Defaults, overrides, JSON-LD structure, HTML-closer escaping, `lru_cache` behavior, `PUBLIC_SITE_URL`, lazy context processor. |
 | `StaticPagesViewTests` | Every public page renders 200; portfolio redirects; robots.txt and sitemap; 404 catch-all. |
-| `CartApiTests` | Full GET/POST add/set/remove/clear + all 400 error paths. |
+| `CartApiTests` | Full GET/POST add/set/remove/clear + all 400 error paths + `429 rate_limited` branch. |
 | `ContactFormSubmissionTests` | Happy path + invalid form + SMTP failure path. |
-| `CheckoutFlowTests` | Empty cart redirect, full POST creates `Order` + items + email + clears cart, pd_consent blocks. |
+| `CheckoutFlowTests` | Empty cart redirect, full POST creates `Order` + items + email + clears cart, pd_consent blocks, idempotency-key repeat does not create duplicate order. |
 | `AuthViewTests` | Login by username/email, wrong password, authenticated redirect, logout, registration gated, `?next=` open-redirect guard. |
 
 ---
@@ -567,6 +616,24 @@ Coverage map (read a test before making a semantically-loaded change):
   via `get_seo(...)`. Base template reads every field it needs.
 - **Cart**: mutate through `cart_utils.*` so `session.modified = True` is set
   correctly and unknown product ids are filtered.
+- **Gradient fallback gotchas** (`templates/core/base.html`):
+  - Runtime feature-detection adds either `can-clip-text` or `no-clip-text` to
+    `<html>`; keep this detection in `<head>` so first paint is stable.
+  - In `no-clip-text` mode the hero gradient words are rendered as many
+    `.gradient-char` spans. This can affect CSS selectors targeting raw text
+    nodes or scripts that expect `el.firstChild` to be a text node.
+  - If the hero heading starts stuttering on low-end phones, tune
+    `@keyframes gradientCharFlow` duration and per-char delay before changing
+    the fallback architecture.
+- **Abuse controls**:
+  - POST endpoints with side effects are IP-throttled in `core/views.py` via
+    `_is_rate_limited(...)` (contact form, auth form submits, cart API POST,
+    checkout POST).
+  - Preserve `429` behavior contracts (`{"error":"rate_limited"}` for JSON API,
+    status-429 page render + message for HTML forms).
+  - Checkout uses idempotency keys (`idempotency_key` form field or
+    `X-Idempotency-Key`) to collapse accidental duplicate submits/retries into
+    one order.
 - **152-ФЗ personal data consent**: `CheckoutForm.pd_consent` must stay
   required (checked in `CheckoutFlowTests`). `Order.pd_consent` and
   `pd_consent_date` must be persisted.

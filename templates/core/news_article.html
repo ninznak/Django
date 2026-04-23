@@ -2,8 +2,8 @@
 {% load static article_extras %}
 
 {% block content %}
-<div class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
-    <div class="max-w-3xl mx-auto px-6">
+<div class="news-article-page min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
+    <div class="news-article-shell max-w-3xl mx-auto px-6">
         <a href="{% url 'core:news' %}" class="text-[#3d7a4f] hover:underline mb-8 inline-block" data-i18="news_back">← Назад к новостям</a>
 
         <span class="tag-pill">{{ article.tag|default:"Статья" }}</span>

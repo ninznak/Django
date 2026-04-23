@@ -4,12 +4,14 @@ import logging
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.core.cache import cache
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.templatetags.static import static
+from django.utils.crypto import get_random_string
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_http_methods
@@ -37,6 +39,48 @@ from .shop_data import get_product, get_shop_products
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
+
+CONTACT_FORM_POST_LIMIT = getattr(settings, "CONTACT_FORM_POST_LIMIT", 5)
+CONTACT_FORM_WINDOW_SECONDS = getattr(settings, "CONTACT_FORM_WINDOW_SECONDS", 600)
+AUTH_POST_LIMIT = getattr(settings, "AUTH_POST_LIMIT", 20)
+AUTH_WINDOW_SECONDS = getattr(settings, "AUTH_WINDOW_SECONDS", 300)
+CART_API_POST_LIMIT = getattr(settings, "CART_API_POST_LIMIT", 120)
+CART_API_WINDOW_SECONDS = getattr(settings, "CART_API_WINDOW_SECONDS", 60)
+CHECKOUT_POST_LIMIT = getattr(settings, "CHECKOUT_POST_LIMIT", 8)
+CHECKOUT_WINDOW_SECONDS = getattr(settings, "CHECKOUT_WINDOW_SECONDS", 600)
+CHECKOUT_IDEMPOTENCY_SESSION_KEY = getattr(
+    settings, "CHECKOUT_IDEMPOTENCY_SESSION_KEY", "checkout_idempotency_key"
+)
+CHECKOUT_IDEMPOTENCY_TTL_SECONDS = getattr(
+    settings, "CHECKOUT_IDEMPOTENCY_TTL_SECONDS", 60 * 60 * 24
+)
+
+
+def _client_ip(request) -> str:
+    forwarded_for = (request.META.get("HTTP_X_FORWARDED_FOR") or "").strip()
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip() or "unknown"
+    return (request.META.get("REMOTE_ADDR") or "unknown").strip() or "unknown"
+
+
+def _is_rate_limited(request, scope: str, limit: int, window_seconds: int) -> bool:
+    key = f"rate:{scope}:{_client_ip(request)}"
+    if cache.add(key, 1, timeout=window_seconds):
+        return False
+    try:
+        hits = cache.incr(key)
+    except ValueError:
+        cache.set(key, 1, timeout=window_seconds)
+        hits = 1
+    return hits > limit
+
+
+def _checkout_idempotency_key(request) -> str:
+    key = (request.session.get(CHECKOUT_IDEMPOTENCY_SESSION_KEY) or "").strip()
+    if not key:
+        key = get_random_string(32)
+        request.session[CHECKOUT_IDEMPOTENCY_SESSION_KEY] = key
+    return key
 
 
 def _safe_contact_subject(raw: str, max_len: int = 200) -> str:
@@ -68,6 +112,16 @@ def _send_contact_email(cleaned: dict) -> None:
 def homepage(request):
     """Главная страница — портфолио KurilenkoArt"""
     if request.method == "POST" and request.POST.get("contact_form"):
+        if _is_rate_limited(
+            request, "contact_form", CONTACT_FORM_POST_LIMIT, CONTACT_FORM_WINDOW_SECONDS
+        ):
+            messages.error(request, "Too many contact form submissions. Please wait a bit and try again.")
+            return render(
+                request,
+                "core/homepage.html",
+                {"contact_form": ContactForm(request.POST)},
+                status=429,
+            )
         form = ContactForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
@@ -255,6 +309,11 @@ def cart_api(request):
     if request.method == "GET":
         return JsonResponse(_cart_json(request))
 
+    if _is_rate_limited(
+        request, "cart_api_post", CART_API_POST_LIMIT, CART_API_WINDOW_SECONDS
+    ):
+        return JsonResponse({"ok": False, "error": "rate_limited"}, status=429)
+
     try:
         data = json.loads(request.body.decode())
     except (json.JSONDecodeError, UnicodeDecodeError):
@@ -360,6 +419,10 @@ def sign_up_login(request):
             ctx["auth_tab"] = "login"
         return render(request, "core/sign-up-login.html", ctx)
 
+    if _is_rate_limited(request, "auth_post", AUTH_POST_LIMIT, AUTH_WINDOW_SECONDS):
+        ctx["login_error"] = "Too many attempts. Please wait a few minutes and try again."
+        return render(request, "core/sign-up-login.html", ctx, status=429)
+
     action = (request.POST.get("auth_action") or "").strip().lower()
     next_url = _safe_next_url(request, settings.LOGIN_REDIRECT_URL)
 
@@ -413,6 +476,19 @@ def checkout(request):
     """Страница оформления заказа (без регистрации)."""
     summary = cart_utils.get_cart_summary(request)
     lines = summary["cart_lines"]
+    submitted_idempotency_key = (
+        request.POST.get("idempotency_key")
+        or request.headers.get("X-Idempotency-Key")
+        or ""
+    ).strip()
+    ip_addr = _client_ip(request)
+
+    if request.method == "POST" and submitted_idempotency_key:
+        idem_cache_key = f"idem:checkout:{ip_addr}:{submitted_idempotency_key}"
+        existing_order_id = cache.get(idem_cache_key)
+        if existing_order_id:
+            messages.info(request, f"Заказ №{existing_order_id} уже был оформлен ранее.")
+            return redirect("core:order_confirmation", order_id=existing_order_id)
 
     # Если корзина пуста — перенаправляем в магазин
     if not lines:
@@ -420,8 +496,29 @@ def checkout(request):
         return redirect("core:shop")
 
     total_cents = summary["cart_subtotal_cents"]
-
+    idempotency_key = _checkout_idempotency_key(request)
+    effective_idempotency_key = submitted_idempotency_key or idempotency_key
     if request.method == "POST":
+        if _is_rate_limited(
+            request, "checkout_post", CHECKOUT_POST_LIMIT, CHECKOUT_WINDOW_SECONDS
+        ):
+            messages.error(request, "Слишком много попыток оформления заказа. Попробуйте позже.")
+            form = CheckoutForm(request.POST)
+            ctx = {
+                "form": form,
+                "cart_lines": lines,
+                "total_cents": total_cents,
+                "total_formatted": format_minor_as_rub(total_cents),
+                "checkout_idempotency_key": idempotency_key,
+                "seo": get_seo(
+                    request,
+                    title="Оформление заказа — KurilenkoArt",
+                    description="Оформите заказ на 3D-модели и цифровое искусство.",
+                    canonical_path=request.path,
+                ),
+            }
+            return render(request, "core/checkout.html", ctx, status=429)
+
         form = CheckoutForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
@@ -438,7 +535,7 @@ def checkout(request):
                 total_cents=total_cents,
                 notes=data.get("notes", ""),
                 pd_consent=data["pd_consent"],
-                ip_address=request.META.get("REMOTE_ADDR"),
+                ip_address=ip_addr,
             )
 
             # Добавляем позиции заказа
@@ -462,6 +559,11 @@ def checkout(request):
                 except Exception:
                     logger.exception("Order notification email failed (order id=%s)", order.pk)
 
+            idem_cache_key = f"idem:checkout:{ip_addr}:{effective_idempotency_key}"
+            cache.set(
+                idem_cache_key, order.id, timeout=CHECKOUT_IDEMPOTENCY_TTL_SECONDS
+            )
+            request.session.pop(CHECKOUT_IDEMPOTENCY_SESSION_KEY, None)
             messages.success(request, f"Заказ №{order.id} успешно оформлен! Мы свяжемся с вами в ближайшее время.")
             return redirect("core:order_confirmation", order_id=order.id)
 
@@ -477,6 +579,7 @@ def checkout(request):
         "cart_lines": lines,
         "total_cents": total_cents,
         "total_formatted": format_minor_as_rub(total_cents),
+        "checkout_idempotency_key": idempotency_key,
         "seo": get_seo(
             request,
             title="Оформление заказа — KurilenkoArt",
