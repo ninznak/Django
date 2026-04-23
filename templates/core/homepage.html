@@ -22,12 +22,12 @@
 {% endcomment %}
 {% with sculptor_busy=85 %}
 <!-- Hero Section -->
-<section class="home-hero-section pt-24 max-sm:pt-[8.5rem] pb-20">
+<section class="home-hero-section relative pt-24 max-sm:pt-[8.5rem] pb-20">
     <div class="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-12 gap-8 items-start">
         <!-- LEFT: Typography -->
         <div class="lg:col-span-6 text-center lg:text-left">
             <span class="section-label" data-i18="hero_label">Творческое Портфолио</span>
-            <h1 class="font-display font-bold leading-[0.88] tracking-display text-4xl md:text-6xl lg:text-7xl mt-4 text-shadow">
+            <h1 class="hero-title-main font-display font-bold leading-[0.88] tracking-display text-4xl md:text-6xl lg:text-7xl mt-4 text-shadow">
                 <span data-i18="hero_title1">Где Мастерство</span><br>
                 <span class="text-gradient-animated italic" data-i18="hero_title2">Встречает</span><br>
                 <span class="text-gradient-animated italic" data-i18="hero_title3">Интеллект</span>
@@ -75,7 +75,7 @@
         </div>
         
         <!-- RIGHT: Carousel -->
-        <div class="lg:col-span-6 hidden md:flex items-center justify-center pt-0">
+        <div class="lg:col-span-6 hidden md:flex items-center justify-center pt-0 relative z-20">
             <div class="cs-deck" aria-label="Portfolio preview">
 
                 <!-- Card 0 — 3D Models (back-left) -->
@@ -163,6 +163,14 @@
     .has-flash-messages .home-hero-section {
         padding-top: 1.25rem !important;
     }
+}
+
+/* RU heading: prevent descenders clipping in italic gradient lines */
+html[data-lang="ru"] .hero-title-main {
+    line-height: 0.96 !important;
+}
+html[data-lang="ru"] .hero-title-main .text-gradient-animated {
+    padding-bottom: 0.08em;
 }
 
 /* ── Carousel deck ─────────────────────────────────────────────────────── */
@@ -309,6 +317,38 @@ html[data-theme="dark"] .cs-deck .tag-pill {
     right: 16px;
 }
 
+/* Responsive stacked mode (carousel below headings on <lg). */
+@media (max-width: 1023px) and (min-width: 768px) {
+    .cs-deck {
+        width: min(100%, 760px);
+        height: clamp(300px, 52vw, 396px);
+        margin-top: 22px;
+        --stack-card-w: clamp(150px, 27vw, 220px);
+        --stack-card-h: calc(var(--stack-card-w) * 1.386);
+    }
+
+    .cs-card {
+        width: var(--stack-card-w);
+        height: var(--stack-card-h);
+    }
+
+    /* Equal spread left/center/right; naturally converge as viewport shrinks. */
+    .cs-card[data-idx="0"] {
+        left: 0;
+        top: clamp(54px, 8.4vw, 82px);
+    }
+
+    .cs-card[data-idx="1"] {
+        left: calc((100% - var(--stack-card-w)) / 2);
+        top: clamp(24px, 4.8vw, 44px);
+    }
+
+    .cs-card[data-idx="2"] {
+        left: calc(100% - var(--stack-card-w));
+        top: 0;
+    }
+}
+
 /* ── Sculptor busyness button (third CTA) ──────────────────────────────── */
 .btn-busy {
     display: inline-flex;
@@ -443,6 +483,7 @@ html[data-theme="dark"] .btn-busy:active {
 /* Featured works colors (theme-aware) */
 .featured-works-section {
     background: #1a2e1a;
+    z-index: 5;
 }
 .featured-works-backdrop {
     background: radial-gradient(ellipse 70% 50% at 30% 50%, rgba(61,122,79,0.15) 0%, transparent 70%);
@@ -512,7 +553,7 @@ html[data-theme="dark"] .featured-card-overlay {
 </script>
 
 <!-- Featured Works Section -->
-<section class="featured-works-section py-20 relative">
+<section class="featured-works-section pt-8 pb-20 relative">
     <div class="featured-works-backdrop absolute inset-0 pointer-events-none"></div>
     
     <div class="max-w-7xl mx-auto px-6 relative z-10">
@@ -585,7 +626,7 @@ html[data-theme="dark"] .featured-card-overlay {
 </section>
 
 <!-- News Section -->
-<section class="home-news-section py-20">
+<section class="home-news-section pt-8 pb-20">
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
@@ -694,7 +735,7 @@ html[data-theme="dark"] .featured-card-overlay {
 </section>
 
 <!-- Shop Preview Section -->
-<section class="home-shop-section py-20">
+<section class="home-shop-section pt-8 pb-20">
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
@@ -808,7 +849,7 @@ Also uncomment forum in core/urls.py, core/sitemaps.py, and nav/footer links in 
 {% endcomment %}
 
 <!-- Contact Section -->
-<section id="contact" class="py-20">
+<section id="contact" class="pt-8 pb-20">
     <div class="max-w-7xl mx-auto px-6">
         <div class="max-w-2xl mx-auto text-center">
             <span class="section-label" data-i18="contact_label">Связаться</span>
