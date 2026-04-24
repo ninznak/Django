@@ -445,6 +445,10 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
   - Inline (works inside paragraphs, headings and list items): `**bold**` → `<strong>`, `*italic*` → `<em>`, `[label](url)` → `<a>` with `rel="noopener noreferrer"`. Only `http://`, `https://`, `mailto:`, `tel:`, `#`, `/`, `./` and `../` URLs are allowed — `javascript:`, `data:` and unknown schemes are rendered as plain text.
   - Cover image is rendered separately by the template from `NewsArticle.cover_image`; don't duplicate it inside `content` via `![]()`.
 - `homepage.html` hero carousel (`.cs-card`) should keep hover motion smooth and calm (no spring overshoot curves that cause visual jerk on pointer hover). Prefer gentle `ease-out`-style cubic-bezier and moderate lift/scale. **Stacking:** the middle card uses the highest base `z-index` (fan “front”), so it is never covered by both side cards at once; sides use lower layers (`0→1`, `1→3`, `2→2`); hovered card still uses `z-index: 10`.
+- Hero copy contract in `templates/core/homepage.html`:
+  - Primary line under H1 uses `data-i18="hero_medals_line"` with underlined text (`text-xl md:text-3xl`, normal weight).
+  - Secondary line uses `data-i18="hero_medals_subline"` (muted helper sentence).
+  - Desktop alignment keeps the carousel slightly lower than the headline block via `lg:pt-10` on the right hero column wrapper; keep this offset unless the headline layout is redesigned.
 - Homepage dark-mode card contract:
   - News section wrapper uses `.home-news-section`; article cards use
     `.home-news-card`.
