@@ -10,9 +10,16 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret-key-change-in-production')
+_DEV_SECRET_FALLBACK = 'dev-secret-key-change-in-production'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', _DEV_SECRET_FALLBACK)
 
 DEBUG = os.getenv('DEBUG', '1') == '1'
+
+if not DEBUG and SECRET_KEY == _DEV_SECRET_FALLBACK:
+    raise ImproperlyConfigured(
+        'Set DJANGO_SECRET_KEY to a strong random value when DEBUG=0 '
+        '(see .env.example).'
+    )
 
 
 def _parse_domain_list(raw: str) -> list[str]:
@@ -140,6 +147,8 @@ if not DEBUG:
     USE_X_FORWARDED_HOST = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    # Mitigate cross-origin opener attacks when embedded / linked from other sites.
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
     # Redirect HTTP→HTTPS (requires proxy to set X-Forwarded-Proto: https).
     SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', '1').strip() != '0'
     SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -270,3 +279,13 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Registration UI on /sign-up-login/ (Sign up link + form). Set AUTH_SHOW_REGISTRATION=1 in .env to show again.
 AUTH_SHOW_REGISTRATION = os.getenv('AUTH_SHOW_REGISTRATION', '0').strip() == '1'
+
+# Rate limiting and checkout idempotency use Django's cache. LocMem is process-local;
+# with multiple Gunicorn workers each worker has its own counters (stricter overall).
+# For shared limits across workers, configure Redis/Memcached here.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'OPTIONS': {'MAX_ENTRIES': 10_000},
+    }
+}

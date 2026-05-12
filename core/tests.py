@@ -728,6 +728,8 @@ class StaticPagesViewTests(TestCase):
         body = response.content.decode()
         self.assertIn("User-agent: *", body)
         self.assertIn("Disallow: /admin/", body)
+        self.assertIn("Disallow: /profile/", body)
+        self.assertIn("Disallow: /checkout/", body)
 
     @override_settings(PUBLIC_SITE_URL="https://example.com")
     def test_robots_txt_includes_sitemap_when_public_url_set(self):

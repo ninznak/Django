@@ -95,8 +95,9 @@ Anything under `.venv/`, `venv/`, `.idea/`, `.vscode/`, `.gigaide/`,
    `creativesphere/settings.py` → `TEMPLATES[0].OPTIONS.context_processors`):
    - `core.context_processors.site_seo` — adds `seo` (lazy) + `contact_email`.
    - `core.context_processors.shop_cart` — adds `shop_products`,
-     `shop_preview_products`, `cart_lines`, `cart_total_items`,
-     `cart_subtotal_cents`, `cart_subtotal_formatted`.
+     `shop_preview_products` (**lazy** `SimpleLazyObject`: DB hit only when the
+     template iterates them — e.g. главная и `/shop/`), `cart_lines`,
+     `cart_total_items`, `cart_subtotal_cents`, `cart_subtotal_formatted`.
 4. Views typically render `core/<page>.html` extending `templates/core/base.html`,
    which reads `seo.*` for every meta tag.
 
@@ -120,7 +121,7 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 
 | URL name (`core:…`) | Path | View | Notes |
 |---|---|---|---|
-| `robots_txt` | `/robots.txt` | `views.robots_txt` | Plain text; appends `Sitemap:` line when `PUBLIC_SITE_URL` is set. |
+| `robots_txt` | `/robots.txt` | `views.robots_txt` | Plain text; `Disallow` for `/admin/`, `/api/`, `/profile/`, `/sign-up-login/`, `/checkout/`, `/order/`; appends `Sitemap:` when `PUBLIC_SITE_URL` is set. |
 | `homepage` | `/` | `views.homepage` | Hosts the contact form POST (hidden field `contact_form=1`). |
 | `homepage_path` | `/homepage/` | `views.homepage` | Alias. Not in sitemap. |
 | `about` | `/about/` | `views.about` | |
@@ -529,7 +530,7 @@ Env vars (see `.env.example`):
 
 | Var | Meaning |
 |---|---|
-| `DJANGO_SECRET_KEY` | Required in prod. Dev default is a throwaway. |
+| `DJANGO_SECRET_KEY` | **Required** when `DEBUG=0`: startup raises `ImproperlyConfigured` if the key was left at the built-in dev placeholder. Otherwise dev default is a throwaway. |
 | `DEBUG` | `"1"` → DEBUG on. |
 | `DJANGO_SITE_DOMAINS` | Comma-separated apices. Prod default: `kurilenkoart.ru`. Derives `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` for both apex and `www.`. |
 | `DJANGO_CANONICAL_DOMAIN` | Override for `PRIMARY_DOMAIN`. Defaults to first of `SITE_DOMAINS`. |
@@ -537,8 +538,8 @@ Env vars (see `.env.example`):
 | `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` | Fully override the derived values. |
 | `EMAIL_*`, `DEFAULT_FROM_EMAIL`, `SEO_CONTACT_EMAIL`, `CONTACT_FORM_RECIPIENT`, `CONTACT_FORM_TRY_EMAIL` | Email wiring. Dev default: console backend. |
 | `AUTH_SHOW_REGISTRATION` | `"1"` to expose the sign-up form on `/sign-up-login/`. Default off. |
-| `*_POST_LIMIT`, `*_WINDOW_SECONDS`, `CHECKOUT_IDEMPOTENCY_TTL_SECONDS`, `CHECKOUT_IDEMPOTENCY_SESSION_KEY` | Abuse-protection tuning (contact/auth/cart/checkout throttles + idempotency retention/session key name). See `.env.example` keys. |
-| `SECURE_*`, `SECURE_HSTS_*` | HTTPS hardening switches (only active when `DEBUG=0`). |
+| `*_POST_LIMIT`, `*_WINDOW_SECONDS`, `CHECKOUT_IDEMPOTENCY_TTL_SECONDS`, `CHECKOUT_IDEMPOTENCY_SESSION_KEY` | Abuse-protection tuning (contact/auth/cart/checkout throttles + idempotency retention/session key name). See `.env.example` keys. Backed by `CACHES['default']` (LocMem in repo; per-worker — replace with Redis/Memcached for shared limits). |
+| `SECURE_*`, `SECURE_HSTS_*` | HTTPS hardening switches (only active when `DEBUG=0`). Production also sets `SECURE_CROSS_ORIGIN_OPENER_POLICY = same-origin`. |
 
 Apps installed: `django.contrib.{admin,auth,contenttypes,sessions,messages,staticfiles,sites,sitemaps}` + `core`. `SITE_ID = 1`.
 
@@ -580,7 +581,7 @@ edited via Django admin between deploys (see §11 "Content vs code" rule).
 
 ## 10. Tests (`core/tests.py`) — **use these as the contract**
 
-109 tests. Run with:
+124 tests. Run with:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test core

@@ -30,14 +30,13 @@ def analytics(request):
 
 
 def shop_cart(request):
-    # ``shop_products`` / ``shop_preview_products`` читаются из БД при каждом
-    # рендере — это дёшево (десятки строк) и всегда отражает админские правки
-    # без перезапуска процесса.
+    # Lazy: только страницы, которые реально обходят ``shop_products`` / ``shop_preview_products``
+    # в шаблоне (``/shop/``, главная), делают запрос к каталогу — остальные страницы экономят 1–2 SELECT.
     summary = get_cart_summary(request)
     cents = summary["cart_subtotal_cents"]
     return {
-        "shop_products": get_shop_products(),
-        "shop_preview_products": get_shop_preview_products(),
+        "shop_products": SimpleLazyObject(get_shop_products),
+        "shop_preview_products": SimpleLazyObject(lambda: get_shop_preview_products()),
         **summary,
         "cart_subtotal_formatted": format_minor_as_rub(cents),
     }

@@ -156,8 +156,10 @@ def about(request):
 
 def news(request):
     """Страница новостей"""
-    articles = NewsArticle.objects.filter(status=NewsArticle.Status.PUBLISHED)
-    featured_article = articles.first()
+    articles = list(
+        NewsArticle.objects.filter(status=NewsArticle.Status.PUBLISHED)
+    )
+    featured_article = articles[0] if articles else None
     other_articles = articles[1:]
     return render(
         request,
@@ -792,6 +794,10 @@ def robots_txt(request):
         "User-agent: *",
         "Disallow: /admin/",
         "Disallow: /api/",
+        "Disallow: /profile/",
+        "Disallow: /sign-up-login/",
+        "Disallow: /checkout/",
+        "Disallow: /order/",
     ]
     base = getattr(settings, "PUBLIC_SITE_URL", "") or ""
     if base:
