@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.templatetags.static import static
 from django.utils.crypto import get_random_string
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_http_methods
 
@@ -54,6 +54,42 @@ CHECKOUT_IDEMPOTENCY_SESSION_KEY = getattr(
 CHECKOUT_IDEMPOTENCY_TTL_SECONDS = getattr(
     settings, "CHECKOUT_IDEMPOTENCY_TTL_SECONDS", 60 * 60 * 24
 )
+
+CONFIRMED_ORDERS_SESSION_KEY = "confirmed_order_ids"
+CONFIRMED_ORDERS_MAX_KEPT = 20
+
+
+def _remember_confirmed_order(request, order_id: int) -> None:
+    """Привязываем заказ к текущей сессии, чтобы потом разрешить только
+    своему чекаут-пользователю смотреть ``/order/<id>/confirmation/``.
+
+    Хранится небольшое окно последних подтверждённых заказов (FIFO),
+    чтобы не разрастаться при многократных покупках с одного устройства.
+    """
+    ids = list(request.session.get(CONFIRMED_ORDERS_SESSION_KEY) or [])
+    if order_id in ids:
+        return
+    ids.append(int(order_id))
+    if len(ids) > CONFIRMED_ORDERS_MAX_KEPT:
+        ids = ids[-CONFIRMED_ORDERS_MAX_KEPT:]
+    request.session[CONFIRMED_ORDERS_SESSION_KEY] = ids
+
+
+def _session_owns_order(request, order_id: int) -> bool:
+    """Видит ли текущая сессия данный заказ.
+
+    Staff/superuser видят любой заказ (для службы поддержки). Остальным
+    нужна запись в ``session[CONFIRMED_ORDERS_SESSION_KEY]`` — её ставит
+    ``checkout`` после успешного оформления.
+    """
+    user = getattr(request, "user", None)
+    if user is not None and getattr(user, "is_staff", False):
+        return True
+    ids = request.session.get(CONFIRMED_ORDERS_SESSION_KEY) or []
+    try:
+        return int(order_id) in {int(x) for x in ids}
+    except (TypeError, ValueError):
+        return False
 
 
 def _client_ip(request) -> str:
@@ -155,9 +191,15 @@ def about(request):
 
 
 def news(request):
-    """Страница новостей"""
+    """Страница новостей.
+
+    Шаблон ``news.html`` рендерит только заголовок, тег, обложку,
+    ``excerpt`` и время чтения — поле ``content`` (часто десятки кБ)
+    не используется. Откладываем его, чтобы не таскать тяжёлый blob
+    из БД по сети для списочной страницы.
+    """
     articles = list(
-        NewsArticle.objects.filter(status=NewsArticle.Status.PUBLISHED)
+        NewsArticle.objects.filter(status=NewsArticle.Status.PUBLISHED).defer("content")
     )
     featured_article = articles[0] if articles else None
     other_articles = articles[1:]
@@ -489,6 +531,7 @@ def checkout(request):
         idem_cache_key = f"idem:checkout:{ip_addr}:{submitted_idempotency_key}"
         existing_order_id = cache.get(idem_cache_key)
         if existing_order_id:
+            _remember_confirmed_order(request, existing_order_id)
             messages.info(request, f"Заказ №{existing_order_id} уже был оформлен ранее.")
             return redirect("core:order_confirmation", order_id=existing_order_id)
 
@@ -566,6 +609,7 @@ def checkout(request):
                 idem_cache_key, order.id, timeout=CHECKOUT_IDEMPOTENCY_TTL_SECONDS
             )
             request.session.pop(CHECKOUT_IDEMPOTENCY_SESSION_KEY, None)
+            _remember_confirmed_order(request, order.id)
             messages.success(request, f"Заказ №{order.id} успешно оформлен! Мы свяжемся с вами в ближайшее время.")
             return redirect("core:order_confirmation", order_id=order.id)
 
@@ -632,9 +676,20 @@ def _send_order_email(order: Order, data: dict) -> None:
 
 
 def order_confirmation(request, order_id):
-    """Страница подтверждения заказа."""
+    """Страница подтверждения заказа.
+
+    Доступ к чужим заказам — IDOR-уязвимость (имя/email/телефон/адрес/сумма
+    в заказе считаются ПДн, см. 152-ФЗ). Поэтому страницу видит только
+    автор заказа (его сессия после успешного checkout) либо staff/superuser
+    (для службы поддержки). Всем остальным URL ведёт себя так же, как
+    несуществующий заказ — редирект в магазин без раскрытия информации.
+    """
+    if not _session_owns_order(request, order_id):
+        messages.error(request, "Заказ не найден.")
+        return redirect("core:shop")
+
     try:
-        order = Order.objects.get(id=order_id)
+        order = Order.objects.prefetch_related("items").get(id=order_id)
     except Order.DoesNotExist:
         messages.error(request, "Заказ не найден.")
         return redirect("core:shop")
@@ -685,7 +740,8 @@ def _profile_seo(request, title: str, description: str) -> dict:
 def profile(request):
     """Страница профиля: логин, email, ссылки на управление контентом."""
     if not request.user.is_authenticated:
-        return redirect(f"{reverse('core:sign_up_login')}?next={request.path}")
+        login_url = reverse("core:sign_up_login")
+        return redirect(f"{login_url}?{urlencode({'next': request.path})}")
 
     user = request.user
     can_manage = can_manage_content(user)

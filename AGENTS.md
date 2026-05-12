@@ -139,7 +139,7 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `profile_add_article` | `/profile/articles/add/` | `views.profile_add_article` | UI-дружелюбный дубль `NewsArticleAdmin` (форма `NewsArticleCreateForm`). Те же правила прав + синхронизация `published_at` со `status`, как в `NewsArticleAdmin.save_model`. |
 | `copyright` | `/copyright/` | `views.copyright` | |
 | `checkout` | `/checkout/` | `views.checkout` | Empty cart → redirect to `core:shop`. Creates `Order` + `OrderItem`s, clears cart, emails admin. POST is **IP-throttled** and supports idempotency key (`idempotency_key` hidden form field or `X-Idempotency-Key` header) to prevent duplicate orders on retries. |
-| `order_confirmation` | `/order/<int>/confirmation/` | `views.order_confirmation` | Missing order → redirect to shop. |
+| `order_confirmation` | `/order/<int>/confirmation/` | `views.order_confirmation` | **Session-scoped** to prevent IDOR / 152-ФЗ PII leak: only the session that placed the order (`session["confirmed_order_ids"]`, seeded by `checkout`) or `is_staff`/`superuser` may view; everyone else gets the same "Заказ не найден" redirect as a missing id (no info disclosed). |
 | `forum`, `forum_topic` | — | views exist, routes **commented out**. Re-enable by uncommenting in `core/urls.py` + `core/sitemaps.py` + templates (search `FORUM DISABLED`). |
 
 Root-level URLs (in `creativesphere/urls.py`): `admin/`, `sitemap.xml`, and the
@@ -386,6 +386,10 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
   - `templates/core/checkout.html` sends hidden `idempotency_key`.
   - `views.checkout` also accepts `X-Idempotency-Key`.
   - If the same key was already processed for that client IP within TTL, view redirects to existing `order_confirmation` instead of creating a duplicate order.
+- Order ownership contract:
+  - `views.checkout` calls `_remember_confirmed_order(request, order.id)` after both successful order creation **and** idempotency-replay redirects, so the resulting `/order/<id>/confirmation/` is always viewable by the session that triggered the checkout.
+  - Session list `session["confirmed_order_ids"]` is capped at `CONFIRMED_ORDERS_MAX_KEPT` (FIFO).
+  - `views.order_confirmation` uses `_session_owns_order(request, order_id)`; staff bypass is intentional and pinned by `CheckoutFlowTests.test_order_confirmation_visible_to_staff`. The IDOR regression is pinned by `test_order_confirmation_denies_other_sessions`.
 
 ---
 
@@ -581,7 +585,7 @@ edited via Django admin between deploys (see §11 "Content vs code" rule).
 
 ## 10. Tests (`core/tests.py`) — **use these as the contract**
 
-124 tests. Run with:
+126 tests. Run with:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test core
@@ -612,7 +616,7 @@ Coverage map (read a test before making a semantically-loaded change):
 | `StaticPagesViewTests` | Every public page renders 200; portfolio redirects; robots.txt and sitemap; 404 catch-all. |
 | `CartApiTests` | Full GET/POST add/set/remove/clear + all 400 error paths + `429 rate_limited` branch. |
 | `ContactFormSubmissionTests` | Happy path + invalid form + SMTP failure path. |
-| `CheckoutFlowTests` | Empty cart redirect, full POST creates `Order` + items + email + clears cart, pd_consent blocks, idempotency-key repeat does not create duplicate order. |
+| `CheckoutFlowTests` | Empty cart redirect, full POST creates `Order` + items + email + clears cart, pd_consent blocks, idempotency-key repeat does not create duplicate order, **session-owned order_confirmation visible only to its session and to staff** (IDOR regression). |
 | `AuthViewTests` | Login by username/email, wrong password, authenticated redirect, logout, registration gated, `?next=` open-redirect guard. |
 
 ---

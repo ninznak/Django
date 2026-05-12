@@ -958,11 +958,58 @@ class CheckoutFlowTests(TestCase):
             total_cents=1000,
             pd_consent=True,
         )
+        session = self.client.session
+        session["confirmed_order_ids"] = [order.id]
+        session.save()
         r = self.client.get(reverse("core:order_confirmation", args=[order.id]))
         self.assertEqual(r.status_code, 200)
 
         r = self.client.get(reverse("core:order_confirmation", args=[999_999]))
         self.assertRedirects(r, reverse("core:shop"))
+
+    def test_order_confirmation_denies_other_sessions(self):
+        """IDOR-регрессия: чужая сессия не должна видеть данные заказа.
+
+        Заказ создаётся напрямую через ORM (как будто его оформил другой
+        пользователь). Текущий клиент НЕ имеет id заказа в session, поэтому
+        страница должна вести себя как «заказ не найден» (redirect в shop),
+        не раскрывая ни статус, ни PII в HTML.
+        """
+        other_order = Order.objects.create(
+            name="Чужой Клиент",
+            email="leak@example.com",
+            city="Сочи",
+            total_cents=4242,
+            pd_consent=True,
+        )
+        r = self.client.get(
+            reverse("core:order_confirmation", args=[other_order.id])
+        )
+        self.assertRedirects(r, reverse("core:shop"))
+        body = r.content.decode(errors="ignore")
+        self.assertNotIn("leak@example.com", body)
+        self.assertNotIn("Чужой Клиент", body)
+
+    def test_order_confirmation_visible_to_staff(self):
+        """Staff/superuser обходят whitelist — это нужно поддержке.
+
+        Не покупатель, но залогинен как staff → видит заказ напрямую.
+        """
+        order = Order.objects.create(
+            name="Покупатель",
+            email="buyer@example.com",
+            city="Москва",
+            total_cents=1000,
+            pd_consent=True,
+        )
+        from django.contrib.auth import get_user_model
+
+        staff_user = get_user_model().objects.create_user(
+            username="support", password="StaffPass123!", is_staff=True
+        )
+        self.client.force_login(staff_user)
+        r = self.client.get(reverse("core:order_confirmation", args=[order.id]))
+        self.assertEqual(r.status_code, 200)
 
     def test_checkout_idempotency_key_prevents_duplicate_order(self):
         self._add_to_cart(qty=1)
