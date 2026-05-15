@@ -43,7 +43,7 @@
                 </div>
                 
                 <div class="mt-10">
-                    <a href="/homepage/#contact" class="btn-primary" data-i18="about_cta">
+                    <a href="{% url 'core:homepage' %}#contact" class="btn-primary" data-i18="about_cta">
                         Get in Touch
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
@@ -159,6 +159,12 @@
                 <p class="text-sm text-gray-500 mt-2" data-i18="about_response">Response Time</p>
             </div>
         </div>
+
+        <section class="mt-16 max-w-xl" id="contact-about">
+            <h2 class="font-display text-2xl font-semibold mb-4" data-i18="footer_contact_form">Быстрая форма</h2>
+            {% url 'core:about' as about_url %}
+            {% include "core/includes/contact_form_light.html" with contact_form_action=about_url %}
+        </section>
     </div>
 </div>
 {% endblock %}

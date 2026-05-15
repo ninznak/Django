@@ -21,7 +21,7 @@
 <label class="flex items-start gap-3 cursor-pointer">
     {{ field }}
     <span class="flex-1 text-sm">
-        <span class="font-medium text-[#263120]">
+        <span class="font-medium text-[#263120]"{% if label_i18 %} data-i18-label="{{ label_i18 }}"{% endif %}>
             {{ field.label }}{% if field.field.required %} <span class="text-red-600">*</span>{% endif %}
         </span>
         {% if help_i18 %}
@@ -38,7 +38,7 @@
 </label>
 {% else %}
 <div>
-    <label class="block text-sm font-medium text-[#263120] mb-1" for="{{ field.id_for_label }}">
+    <label class="block text-sm font-medium text-[#263120] mb-1" for="{{ field.id_for_label }}"{% if label_i18 %} data-i18-label="{{ label_i18 }}"{% endif %}>
         {{ field.label }}{% if field.field.required %} <span class="text-red-600">*</span>{% endif %}
     </label>
     {{ field }}

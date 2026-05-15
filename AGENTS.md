@@ -40,11 +40,15 @@ Django/
 │
 ├── core/                               # The only first-party app
 │   ├── apps.py                         # AppConfig (name="core", verbose_name="My studio")
-│   ├── models.py                       # Order, OrderItem, ContactSubmission, NewsArticle, Product, ProductImage
+│   ├── models.py                       # Order, OrderItem, ContactSubmission, NewsArticle, Product, ProductImage, SiteSetting
 │   ├── admin.py                        # Admin для Order, ContactSubmission, NewsArticle, Product (publish-gate для Editors/superuser)
 │   ├── forms.py                        # ContactForm, RegisterForm, CheckoutForm, ProductCreateForm, NewsArticleCreateForm
 │   ├── urls.py                         # app_name="core" route table
-│   ├── views.py                        # All HTTP views (pages, cart API, checkout, auth, profile)
+│   ├── views/                          # HTTP views package (pages, shop, auth, checkout, profile, errors)
+│   ├── view_utils.py                   # rate limit, session orders, contact email helpers
+│   ├── checkout_service.py             # create_order + admin notification email
+│   ├── site_settings.py                # cached SiteSetting.load()
+│   ├── shop_types.py                   # CartProduct / CartLine TypedDict
 │   ├── permissions.py                  # Единая точка правды: can_publish_content / can_manage_content / role_key / @require_content_manager
 │   ├── cart_utils.py                   # Session cart primitives (add/set/remove/clear/build_lines)
 │   ├── pricing.py                      # format_minor_as_rub, usd_whole_to_rub_kopecks
@@ -111,6 +115,7 @@ Anything under `.venv/`, `venv/`, `.idea/`, `.vscode/`, `.gigaide/`,
 | `OrderItem` | Line in an `Order` (FK `related_name="items"`). | `product_id`, `product_name`, `product_price_cents`, `quantity`. Property `total_cents = price * qty`. |
 | `ContactSubmission` | Contact-form message stored in admin. | `name`, `email`, `subject`, `message`, `created_at`, `email_sent` (bool flag: notification actually delivered). |
 | `NewsArticle` | Admin-managed article with draft/publish flow. Public pages show only `published`. | `title`, `slug`, `excerpt`, `content`, `tag`, `reading_time_minutes`, `cover_image` (path in `static/`), `author` (nullable FK), `status` (`draft/published`), `published_at`, `created_at`, `updated_at`. |
+| `SiteSetting` | Singleton (pk=1): hero busyness + stat counters. | `sculptor_busy` (0–100), `stat_3d_value`, `stat_projects_value`, `stat_years_value`. Edit in admin or `/profile/site-settings/` (Editors). Context: `site_settings` via `core.context_processors.site_settings`. |
 
 **Money is stored as integer kopecks** (`*_cents` fields despite the name).
 Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
@@ -137,6 +142,9 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `profile` | `/profile/` | `views.profile` | Личный кабинет авторизованного пользователя. Анонимным — redirect на `core:sign_up_login?next=/profile/`. Staff/Editors/superuser (`can_manage_content(user)`) дополнительно видят блок «Управление контентом» со ссылками на формы добавления. Роль отдаётся шаблону как `profile_role` (русская подпись) + `profile_role_key` (ключ i18n: `admin`/`editor`/`staff`/`user`/`guest`). SEO — `noindex, nofollow`, без JSON-LD. |
 | `profile_add_product` | `/profile/products/add/` | `views.profile_add_product` | UI-дружелюбный дубль `ProductAdmin` (форма `ProductCreateForm`). Gated декоратором `@require_content_manager` из `core.permissions`; публикацию (`is_published=True`) форма блокирует для обычного staff (только Editors/superuser). |
 | `profile_add_article` | `/profile/articles/add/` | `views.profile_add_article` | UI-дружелюбный дубль `NewsArticleAdmin` (форма `NewsArticleCreateForm`). Те же правила прав + синхронизация `published_at` со `status`, как в `NewsArticleAdmin.save_model`. |
+| `profile_password_change` | `/profile/password/` | `views.profile_password_change` | `PasswordChangeForm`, noindex. |
+| `profile_site_settings` | `/profile/site-settings/` | `views.profile_site_settings` | `SiteSettingForm`; только Editors/superuser (`can_publish_content`). |
+| `password_reset` … `password_reset_complete` | `/password-reset/…` | `views.CorePasswordReset*` | Django auth reset flow + templates in `templates/core/password_reset*.html`. |
 | `copyright` | `/copyright/` | `views.copyright` | |
 | `checkout` | `/checkout/` | `views.checkout` | Empty cart → redirect to `core:shop`. Creates `Order` + `OrderItem`s, clears cart, emails admin. POST is **IP-throttled** and supports idempotency key (`idempotency_key` hidden form field or `X-Idempotency-Key` header) to prevent duplicate orders on retries. |
 | `order_confirmation` | `/order/<int>/confirmation/` | `views.order_confirmation` | **Session-scoped** to prevent IDOR / 152-ФЗ PII leak: only the session that placed the order (`session["confirmed_order_ids"]`, seeded by `checkout`) or `is_staff`/`superuser` may view; everyone else gets the same "Заказ не найден" redirect as a missing id (no info disclosed). |
@@ -215,6 +223,7 @@ price_rub, not_for_sale, is_sold_out, is_free, download_url, slug`.
   `get_shop_preview_products()` (главная не должна показывать «скелет»).
 - `Product.image` — путь относительно `static/` (например,
   `images/shop/battletoad.png`). Необязателен, если товар — placeholder.
+- `Product.file_size` — подпись размера ZIP на карточке free-models (например `12.4 MB`).
 - `Product.download_url` — для бесплатных моделей. Если начинается с `http`,
   шаблон подставляет значение как есть; иначе оборачивает в `{% static %}`
   (A + C из обсуждения — допустимы и внешние URL, и локальные файлы в
@@ -472,11 +481,14 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
     captions (e.g. "Барельеф / медаль", "AI изображение"); in dark mode these
     captions are forced to dark-blue text for contrast on light cards.
 
-### 7.1 i18n (клиентская — `data-i18` в `base.html`)
+### 7.1 i18n (клиентская — `data-i18` + JSON)
 
-Сайт не использует Django gettext/`LocaleMiddleware`. Переключение языка
-полностью клиентское: `base.html` содержит `const translations = { ru: {...}, en: {...} }`
-и функцию `updatePageTranslations()`, которая:
+Сайт не использует Django gettext/`LocaleMiddleware`. Словари переводов лежат в
+`static/js/i18n/ru.json` и `en.json`; `base.html` подгружает их через
+`loadTranslations()` перед `setLang()`. Подписи полей форм checkout/contact —
+через `data-i18-label` на `<label>` (см. `_form_field.html`).
+
+`updatePageTranslations()` в `base.html`:
 
 1. **Один обобщённый цикл** пробегает `[data-i18]` и ставит
    `el.textContent = t[key]` (если ключ есть). **Это покрывает все текстовые

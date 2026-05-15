@@ -211,3 +211,30 @@ footer a:hover {
   font-size: 18px;
   color: #5f6f5a;
 }
+
+.hero-mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.cart-toast {
+  position: fixed;
+  bottom: 5.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  z-index: 120;
+  padding: 0.65rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background: #1a2e1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.cart-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 
-from .models import NewsArticle, Product
+from .models import NewsArticle, Product, SiteSetting
 from .permissions import can_publish_content
 
 User = get_user_model()
@@ -165,6 +165,7 @@ class ProductCreateForm(forms.ModelForm):
             "alt",
             "price_rub",
             "download_url",
+            "file_size",
             "is_published",
             "is_sold_out",
             "is_placeholder",
@@ -182,6 +183,7 @@ class ProductCreateForm(forms.ModelForm):
             "alt": forms.TextInput(attrs={"class": _CONTENT_INPUT_CLASS, "placeholder": "Alt-текст для картинки"}),
             "price_rub": forms.NumberInput(attrs={"class": _CONTENT_INPUT_CLASS, "min": 0}),
             "download_url": forms.TextInput(attrs={"class": _CONTENT_INPUT_CLASS, "placeholder": "https://... или files/free/xxx.zip"}),
+            "file_size": forms.TextInput(attrs={"class": _CONTENT_INPUT_CLASS, "placeholder": "12.4 MB"}),
             "display_order": forms.NumberInput(attrs={"class": _CONTENT_INPUT_CLASS, "min": 0}),
             "is_published": forms.CheckboxInput(attrs={"class": _CONTENT_CHECKBOX_CLASS}),
             "is_sold_out": forms.CheckboxInput(attrs={"class": _CONTENT_CHECKBOX_CLASS}),
@@ -269,6 +271,35 @@ class ProductCreateForm(forms.ModelForm):
             )
 
         return cleaned
+
+
+class SiteSettingForm(forms.ModelForm):
+    """Настройки главной (singleton pk=1)."""
+
+    class Meta:
+        model = SiteSetting
+        fields = (
+            "sculptor_busy",
+            "stat_3d_value",
+            "stat_projects_value",
+            "stat_years_value",
+        )
+        widgets = {
+            "sculptor_busy": forms.NumberInput(
+                attrs={"class": _CONTENT_INPUT_CLASS, "min": 0, "max": 100}
+            ),
+            "stat_3d_value": forms.TextInput(attrs={"class": _CONTENT_INPUT_CLASS}),
+            "stat_projects_value": forms.TextInput(attrs={"class": _CONTENT_INPUT_CLASS}),
+            "stat_years_value": forms.TextInput(attrs={"class": _CONTENT_INPUT_CLASS}),
+        }
+
+    def clean_sculptor_busy(self):
+        value = self.cleaned_data.get("sculptor_busy")
+        if value is None:
+            return value
+        if value < 0 or value > 100:
+            raise ValidationError("Загруженность должна быть от 0 до 100.")
+        return value
 
 
 class NewsArticleCreateForm(forms.ModelForm):

@@ -812,8 +812,8 @@ class CartApiTests(TestCase):
         self.assertEqual(r.json()["error"], "invalid_json")
 
     def test_post_rate_limited_returns_429(self):
-        with mock.patch("core.views.CART_API_POST_LIMIT", 1), mock.patch(
-            "core.views.CART_API_WINDOW_SECONDS", 60
+        with mock.patch("core.views.shop.CART_API_POST_LIMIT", 1), mock.patch(
+            "core.views.shop.CART_API_WINDOW_SECONDS", 60
         ):
             first = self._post({"action": "add", "product_id": self.product_id, "qty": 1})
             self.assertEqual(first.status_code, 200)
@@ -860,7 +860,7 @@ class ContactFormSubmissionTests(TestCase):
 
     @override_settings(CONTACT_FORM_TRY_EMAIL=True)
     def test_email_failure_still_saves_submission(self):
-        with mock.patch("core.views._send_contact_email", side_effect=RuntimeError("smtp boom")):
+        with mock.patch("core.views.pages.send_contact_email", side_effect=RuntimeError("smtp boom")):
             r = Client().post(reverse("core:homepage"), {
                 "contact_form": "1",
                 "name": "Jane",

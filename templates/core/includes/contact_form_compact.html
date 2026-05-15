@@ -1,0 +1,24 @@
+{% comment %}Компактная контактная форма (footer / about). POST на главную с contact_form=1.{% endcomment %}
+<form method="post" action="{% url 'core:homepage' %}" class="space-y-3 mt-4 text-left">
+    {% csrf_token %}
+    <input type="hidden" name="contact_form" value="1">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+            <label class="block text-xs font-semibold text-white/80 mb-1" for="footer-contact-name" data-i18-label="form_contact_name">Имя</label>
+            <input id="footer-contact-name" type="text" name="name" required maxlength="120" class="w-full px-3 py-2 rounded-lg border border-white/20 bg-white/10 text-white text-sm placeholder:text-white/40" data-i18-placeholder="form_contact_name" placeholder="Имя">
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-white/80 mb-1" for="footer-contact-email" data-i18-label="form_contact_email">Email</label>
+            <input id="footer-contact-email" type="email" name="email" required class="w-full px-3 py-2 rounded-lg border border-white/20 bg-white/10 text-white text-sm placeholder:text-white/40" data-i18-placeholder="form_contact_email" placeholder="Email">
+        </div>
+    </div>
+    <div>
+        <label class="block text-xs font-semibold text-white/80 mb-1" for="footer-contact-subject" data-i18-label="form_contact_subject">Тема</label>
+        <input id="footer-contact-subject" type="text" name="subject" required maxlength="200" class="w-full px-3 py-2 rounded-lg border border-white/20 bg-white/10 text-white text-sm placeholder:text-white/40" data-i18-placeholder="form_contact_subject" placeholder="Тема">
+    </div>
+    <div>
+        <label class="block text-xs font-semibold text-white/80 mb-1" for="footer-contact-message" data-i18-label="form_contact_message">Сообщение</label>
+        <textarea id="footer-contact-message" name="message" required rows="3" maxlength="5000" class="w-full px-3 py-2 rounded-lg border border-white/20 bg-white/10 text-white text-sm placeholder:text-white/40 resize-y" data-i18-placeholder="form_contact_message" placeholder="Сообщение"></textarea>
+    </div>
+    <button type="submit" class="btn-primary w-full justify-center text-sm py-2.5" data-i18="form_contact_send">Отправить</button>
+</form>

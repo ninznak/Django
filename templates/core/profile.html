@@ -44,10 +44,16 @@ ru/en ключей в ``translations`` и используйте ``data-i18="<ke
                 </div>
             </dl>
 
-            <form method="post" action="{% url 'core:logout' %}" class="mt-8 inline-flex">
-                {% csrf_token %}
-                <button type="submit" class="btn-outline" data-i18="profile_logout">Выйти</button>
-            </form>
+            <div class="mt-8 flex flex-wrap gap-3">
+                <a href="{% url 'core:profile_password_change' %}" class="btn-outline" data-i18="profile_change_password">Сменить пароль</a>
+                {% if can_edit_site_settings %}
+                <a href="{% url 'core:profile_site_settings' %}" class="btn-outline" data-i18="profile_site_settings">Настройки главной</a>
+                {% endif %}
+                <form method="post" action="{% url 'core:logout' %}" class="inline-flex">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-outline" data-i18="profile_logout">Выйти</button>
+                </form>
+            </div>
         </div>
 
         {% if can_manage_content %}

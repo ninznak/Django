@@ -145,4 +145,25 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
   }
+
+  var toastEl = null;
+  window.showCartToast = function () {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'cart-toast';
+      toastEl.setAttribute('role', 'status');
+      toastEl.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toastEl);
+    }
+    var msg = 'Товар добавлен в корзину';
+    if (window.__CART_I18N__ && window.__CART_I18N__.addedToast) {
+      msg = window.__CART_I18N__.addedToast;
+    }
+    toastEl.textContent = msg;
+    toastEl.classList.add('is-visible');
+    clearTimeout(window._cartToastTimer);
+    window._cartToastTimer = setTimeout(function () {
+      toastEl.classList.remove('is-visible');
+    }, 2600);
+  };
 })();

@@ -223,6 +223,9 @@
         if (!id) return;
         postAction({ action: 'add', product_id: id, qty: 1 })
           .then(function () {
+            if (typeof window.showCartToast === 'function') {
+              window.showCartToast();
+            }
             if (drawer) drawer.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             applyDrawerLabels();

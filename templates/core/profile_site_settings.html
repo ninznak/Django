@@ -1,0 +1,24 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<section class="min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
+    <div class="max-w-lg mx-auto px-6">
+        <div class="card p-6 sm:p-10">
+            <p class="section-label mb-2" data-i18="profile_site_settings">Настройки главной</p>
+            <h1 class="font-display text-3xl font-semibold mb-2">Настройки главной</h1>
+            <p class="text-sm mb-6" style="color: var(--muted);">Загруженность автора и счётчики в hero-блоке.</p>
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                {% include "core/_form_field.html" with field=form.sculptor_busy help="0–100: цвет кнопки «Загруженность» подбирается автоматически." %}
+                {% include "core/_form_field.html" with field=form.stat_3d_value %}
+                {% include "core/_form_field.html" with field=form.stat_projects_value %}
+                {% include "core/_form_field.html" with field=form.stat_years_value %}
+                <div class="flex flex-wrap gap-3 pt-2">
+                    <button type="submit" class="btn-primary">Сохранить</button>
+                    <a href="{% url 'core:profile' %}" class="btn-outline">← Профиль</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

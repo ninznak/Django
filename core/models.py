@@ -235,6 +235,13 @@ class Product(models.Model):
             "путь в static/ (files/free/xxx.zip)."
         ),
     )
+    file_size = models.CharField(
+        "Размер файла",
+        max_length=40,
+        blank=True,
+        default="",
+        help_text='Подпись на карточке, например «12.4 MB» или «45 МБ».',
+    )
 
     is_published = models.BooleanField("Опубликовано", default=True, db_index=True)
     is_sold_out = models.BooleanField(
@@ -319,8 +326,56 @@ class Product(models.Model):
             "is_placeholder": self.is_placeholder,
             "is_free": self.kind == self.Kind.FREE,
             "download_url": self.download_url,
+            "file_size": self.file_size or "",
             "slug": self.slug,
         }
+
+
+class SiteSetting(models.Model):
+    """Singleton-настройки главной (загруженность, счётчики hero)."""
+
+    sculptor_busy = models.PositiveSmallIntegerField(
+        "Загруженность автора, %",
+        default=50,
+        help_text="0–24 свободен, 25–49 открыт, 50–74 частично занят, 75–100 занят.",
+    )
+    stat_3d_value = models.CharField("Счётчик: 3D модели", max_length=32, default="200+")
+    stat_projects_value = models.CharField(
+        "Счётчик: проекты", max_length=32, default="50+"
+    )
+    stat_years_value = models.CharField("Счётчик: лет опыта", max_length=32, default="12")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "настройки сайта"
+        verbose_name_plural = "настройки сайта"
+
+    def __str__(self) -> str:
+        return "Настройки сайта"
+
+    @classmethod
+    def load(cls) -> "SiteSetting":
+        obj, _created = cls.objects.get_or_create(
+            pk=1,
+            defaults={
+                "sculptor_busy": 50,
+                "stat_3d_value": "200+",
+                "stat_projects_value": "50+",
+                "stat_years_value": "12",
+            },
+        )
+        return obj
+
+    @property
+    def busy_tier(self) -> str:
+        b = int(self.sculptor_busy)
+        if b < 25:
+            return "free"
+        if b < 50:
+            return "open"
+        if b < 75:
+            return "partial"
+        return "busy"
 
 
 class ProductImage(models.Model):

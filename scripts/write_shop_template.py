@@ -1,24 +1,26 @@
-{% extends 'core/base.html' %}
+from pathlib import Path
+
+CONTENT = r"""{% extends 'core/base.html' %}
 {% load static %}
 
 {% block content %}
 {% include "core/includes/breadcrumbs.html" %}
 <div class="min-h-screen {% if breadcrumbs %}pt-4{% else %}pt-24 max-sm:pt-[8.5rem]{% endif %} pb-20">
     <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-8">
+        <motion.div class="text-center mb-8">
             <span class="section-label" data-i18="shop_label">Shop</span>
             <h1 class="font-display text-5xl md:text-6xl font-semibold mt-4" data-i18="shop_title">Purchase Work</h1>
             <p class="text-gray-500 mt-4 max-w-xl mx-auto" data-i18="shop_subtitle">Digital downloads, 3D model files and exclusive prints.</p>
             <div class="mt-6">
                 <a href="{% url 'core:free_models' %}" class="btn-outline btn-attention" data-i18="shop_free_button">Бесплатные модели</a>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
 
         <form method="get" class="flex flex-col sm:flex-row flex-wrap gap-4 items-stretch sm:items-end mb-8 p-4 rounded-2xl border border-primary/10 bg-white/60" action="{% url 'core:shop' %}">
             <div class="flex-1 min-w-[200px]">
                 <label for="shop-q" class="block text-xs font-semibold text-gray-600 mb-1" data-i18-label="shop_search_label">Поиск в магазине</label>
                 <input id="shop-q" type="search" name="q" value="{{ shop_query }}" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl" data-i18-placeholder="shop_search_placeholder" placeholder="Поиск по названию…">
-            </div>
+            </motion.div>
             <label class="inline-flex items-center gap-2 text-sm cursor-pointer px-2 py-2">
                 <input type="checkbox" name="hide_sold" value="1" {% if shop_hide_sold %}checked{% endif %} class="rounded border-gray-300 text-[#3d7a4f]">
                 <span data-i18="shop_hide_sold">Скрыть распроданное</span>
@@ -28,7 +30,7 @@
 
         {% if shop_page_obj and shop_page_obj.paginator.num_pages > 1 %}
         <nav class="mb-6 flex justify-center" aria-label="Shop pagination top">
-            <div class="shop-page-list" data-shop-pages data-current="{{ shop_page_obj.number }}" data-total="{{ shop_page_obj.paginator.num_pages }}"></div>
+            <div class="shop-page-list" data-shop-pages data-current="{{ shop_page_obj.number }}" data-total="{{ shop_page_obj.paginator.num_pages }}"></motion.div>
         </nav>
         {% endif %}
 
@@ -36,7 +38,7 @@
             {% for product in shop_products %}
                 {% if product.is_placeholder %}
                 <article class="free-placeholder-card">
-                    <div class="free-placeholder-box">+</div>
+                    <div class="free-placeholder-box">+</motion.div>
                     <p class="free-placeholder-title">{{ product.title|default:"Скоро новый товар" }}</p>
                     <p class="free-placeholder-sub">{{ product.description|default:"Место для будущего товара" }}</p>
                 </article>
@@ -47,10 +49,10 @@
                         {% if product.badge %}
                         <div class="absolute top-4 left-4">
                             <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-[#a8c957]">{{ product.badge }}</span>
-                        </div>
+                        </motion.div>
                         {% endif %}
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col">
+                    </motion.div>
+                    <motion.div class="p-5 flex-1 flex flex-col">
                         <p class="text-xs uppercase tracking-widest text-gray-400">{{ product.type_label }}</p>
                         <h4 class="font-semibold mt-2">{{ product.title }}</h4>
                         {% if product.description %}
@@ -63,20 +65,20 @@
                             <span class="text-xl font-bold text-[#3d7a4f]">{{ product.price }}</span>
                             <button type="button" class="btn-primary text-sm py-2 px-4" data-add-to-cart data-product-id="{{ product.id }}" data-i18="shop_add_cart">Add to Cart</button>
                             {% endif %}
-                        </div>
-                    </div>
-                </div>
+                        </motion.div>
+                    </motion.div>
+                </motion.div>
                 {% endif %}
             {% endfor %}
-        </div>
+        </motion.div>
 
         {% if shop_page_obj and shop_page_obj.paginator.num_pages > 1 %}
         <nav class="mt-10 flex justify-center" aria-label="Shop pagination">
-            <div class="shop-page-list" data-shop-pages data-current="{{ shop_page_obj.number }}" data-total="{{ shop_page_obj.paginator.num_pages }}"></div>
+            <div class="shop-page-list" data-shop-pages data-current="{{ shop_page_obj.number }}" data-total="{{ shop_page_obj.paginator.num_pages }}"></motion.div>
         </nav>
         {% endif %}
-    </div>
-</div>
+    </motion.div>
+</motion.div>
 
 <script>
 (function () {
@@ -101,3 +103,12 @@
 })();
 </script>
 {% endblock %}
+"""
+
+# Strip accidental "motion." prefix from tags (editor artifact).
+CONTENT = CONTENT.replace("motion.", "")
+
+Path(__file__).resolve().parents[1].joinpath("templates/core/shop.html").write_text(
+    CONTENT, encoding="utf-8"
+)
+print("wrote shop.html")

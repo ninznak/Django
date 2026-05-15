@@ -5,6 +5,7 @@ from .cart_utils import get_cart_summary
 from .pricing import format_minor_as_rub
 from .seo import get_seo
 from .shop_data import get_shop_preview_products, get_shop_products
+from .site_settings import get_site_settings
 
 
 def site_seo(request):
@@ -27,6 +28,10 @@ def analytics(request):
         "yandex_metrika_id": yandex_metrika_id,
         "mailru_top_id": mailru_top_id,
     }
+
+
+def site_settings(request):
+    return {"site_settings": SimpleLazyObject(get_site_settings)}
 
 
 def shop_cart(request):

@@ -29,11 +29,18 @@
 
                     <button type="submit" class="btn-primary w-full justify-center" data-i18="auth_signin">Sign In</button>
                 </form>
+                <p class="mt-4 text-center text-sm">
+                    <a href="{% url 'core:password_reset' %}" class="text-[#3d7a4f] font-semibold hover:underline" data-i18="auth_forgot_link">Забыли пароль?</a>
+                </p>
 
                 {% if show_registration %}
                 <div class="mt-6 text-center">
                     <p class="text-gray-500"><span data-i18="auth_no_account">Don't have an account?</span> <a href="#register" id="auth-show-register" class="text-[#3d7a4f] font-semibold" data-i18="auth_sign_up_link">Sign Up</a></p>
                 </div>
+                {% else %}
+                <p class="mt-6 text-center text-sm text-gray-500 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3" data-i18="auth_invite_only">
+                    Регистрация по приглашению. Обратитесь к администратору сайта.
+                </p>
                 {% endif %}
             </div>
 
