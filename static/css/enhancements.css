@@ -131,6 +131,73 @@ footer a:hover {
   }
 }
 
+/* ── Narrow mobile header actions: text buttons morph into icons ─────── */
+.nav-mobile-action {
+  position: relative;
+  justify-content: center;
+  gap: 0 !important;
+  overflow: hidden;
+  transition:
+    width 0.28s ease,
+    height 0.28s ease,
+    padding 0.28s ease,
+    border-radius 0.28s ease;
+}
+/* Иконка вне потока — не сдвигает подпись вправо */
+.nav-mobile-action__icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.72);
+  transition:
+    opacity 0.2s ease,
+    transform 0.24s ease;
+}
+.nav-mobile-action__text {
+  position: relative;
+  z-index: 1;
+  opacity: 1;
+  text-align: center;
+  transition: opacity 0.2s ease;
+}
+@media (max-width: 429px) {
+  .nav-mobile-bar {
+    gap: 0.5rem;
+  }
+
+  .nav-mobile-action--shop,
+  .nav-mobile-action--signin {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0 !important;
+    border-radius: 0.9rem;
+  }
+
+  .nav-mobile-action--shop .nav-mobile-action__icon,
+  .nav-mobile-action--signin .nav-mobile-action__icon {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .nav-mobile-action--shop .nav-mobile-action__text,
+  .nav-mobile-action--signin .nav-mobile-action__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
 /* ── Placeholder-карточка («Скоро новая модель») ──────────────────────
    Используется и на /free_models/, и на /shop/ для Product.is_placeholder=True.
    Общие правила живут здесь, чтобы оба шаблона рисовали карточку одинаково
