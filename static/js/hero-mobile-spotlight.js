@@ -17,7 +17,9 @@
 
     function goTo(next) {
         index = ((next % slideCount) + slideCount) % slideCount;
-        track.style.transform = "translateX(-" + index * 100 + "%)";
+        var offset = "-" + index * 100 + "%";
+        track.style.transform = "translate3d(" + offset + ", 0, 0)";
+        track.style.webkitTransform = "translate3d(" + offset + ", 0, 0)";
         root.querySelectorAll("[data-hero-spotlight-dot]").forEach(function (dot, i) {
             const active = i === index;
             dot.classList.toggle("is-active", active);
