@@ -105,7 +105,11 @@ class NewsArticle(models.Model):
     slug = models.SlugField("Slug", unique=True, max_length=220)
     excerpt = models.TextField("Краткое описание", max_length=600, blank=True, default="")
     content = models.TextField("Текст статьи")
+    title_en = models.CharField("Title (EN)", max_length=220, blank=True, default="")
+    excerpt_en = models.TextField("Excerpt (EN)", max_length=600, blank=True, default="")
+    content_en = models.TextField("Body (EN)", blank=True, default="")
     tag = models.CharField("Категория", max_length=80, blank=True, default="Статья")
+    tag_en = models.CharField("Category (EN)", max_length=80, blank=True, default="")
     reading_time_minutes = models.PositiveSmallIntegerField("Время чтения (мин)", default=8)
     cover_image = models.CharField(
         "Обложка (путь в static/)",

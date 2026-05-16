@@ -1267,6 +1267,9 @@
             
             try {
                 updatePageTranslations();
+                if (typeof window.applyArticleI18n === 'function') {
+                    window.applyArticleI18n(lang);
+                }
                 if (typeof window.applyCopyrightPageI18n === 'function') {
                     window.applyCopyrightPageI18n(lang);
                 }
@@ -1343,6 +1346,9 @@
                 addedToast: t.cart_added_toast,
             };
             if (typeof window.applyCartI18n === 'function') window.applyCartI18n();
+            if (typeof window.applyArticleI18n === 'function') {
+                window.applyArticleI18n(currentLang);
+            }
             applyGradientTextFallback();
         }
 
@@ -1494,6 +1500,7 @@
     
     {% include "core/includes/analytics.html" %}
     <script src="{% static 'js/enhancements.js' %}"></script>
+    <script src="{% static 'js/article-i18n.js' %}"></script>
     <script src="{% static 'js/cart.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>

@@ -6,27 +6,36 @@
     <div class="news-article-shell max-w-3xl mx-auto px-6">
         <a href="{% url 'core:news' %}" class="text-[#3d7a4f] hover:underline mb-8 inline-block" data-i18="news_back">← Назад к новостям</a>
 
-        <span class="tag-pill">{{ article.tag|default:"Статья" }}</span>
+        <span class="tag-pill" data-article-field="tag">{{ article.tag|default:"Статья" }}</span>
 
-        <h1 class="font-display text-4xl md:text-5xl font-semibold mt-4">{{ article.title }}</h1>
+        <h1 class="font-display text-4xl md:text-5xl font-semibold mt-4" data-article-field="title">{{ article.title }}</h1>
 
         <p class="text-gray-500 mt-4">
-            {% if article.published_at %}{{ article.published_at|date:"d.m.Y" }} · {% endif %}{{ article.reading_time_minutes }} минут чтения
+            {% if article.published_at %}{{ article.published_at|date:"d.m.Y" }} · {% endif %}
+            {{ article.reading_time_minutes }}
+            <span data-i18="news_min_read">минут чтения</span>
         </p>
 
         {% if article.cover_image %}
         <div class="mt-8 aspect-video rounded-3xl overflow-hidden">
-            <img src="{% static article.cover_image %}" alt="{{ article.title }}" class="w-full h-full object-cover">
+            <img src="{% static article.cover_image %}" alt="{{ article.title }}" data-article-field="cover" class="w-full h-full object-cover">
         </div>
         {% endif %}
 
         {% if article.excerpt %}
-        <p class="text-gray-500 mt-8">{{ article.excerpt }}</p>
+        <p class="text-gray-500 mt-8" data-article-field="excerpt">{{ article.excerpt }}</p>
         {% endif %}
 
-        <div class="mt-8">
+        <div class="mt-8" data-article-field="body">
             {{ article.content|render_article_body }}
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if article_has_english %}
+{{ article_i18|json_script:"article-i18-data" }}
+{{ article_seo_i18|json_script:"article-seo-i18-data" }}
+{% endif %}
 {% endblock %}

@@ -18,11 +18,14 @@
                 </div>
                 <div class="p-8">
                     <div class="flex items-center gap-3 mb-4">
-                        <span class="tag-pill">{{ featured_article.tag|default:"Статья" }}</span>
-                        <span class="text-sm text-gray-400">{{ featured_article.reading_time_minutes }} минут чтения</span>
+                        <span class="tag-pill"
+                              {% if featured_article.title_en %}data-article-i18-tag data-ru="{{ featured_article.tag|default:'Статья' }}" data-en="{{ featured_article.tag_en|default:'Article' }}"{% endif %}>{{ featured_article.tag|default:"Статья" }}</span>
+                        <span class="text-sm text-gray-400">{{ featured_article.reading_time_minutes }} <span data-i18="news_min_read">минут чтения</span></span>
                     </div>
-                    <h2 class="text-2xl font-semibold group-hover:text-[#3d7a4f] transition-colors">{{ featured_article.title }}</h2>
-                    <p class="text-gray-500 mt-3">{{ featured_article.excerpt }}</p>
+                    <h2 class="text-2xl font-semibold group-hover:text-[#3d7a4f] transition-colors"
+                        {% if featured_article.title_en %}data-article-i18-title data-ru="{{ featured_article.title }}" data-en="{{ featured_article.title_en }}"{% endif %}>{{ featured_article.title }}</h2>
+                    <p class="text-gray-500 mt-3"
+                       {% if featured_article.title_en %}data-article-i18-excerpt data-ru="{{ featured_article.excerpt }}" data-en="{{ featured_article.excerpt_en }}"{% endif %}>{{ featured_article.excerpt }}</p>
                     {% if featured_article.published_at %}
                     <p class="text-sm text-gray-400 mt-4">{{ featured_article.published_at|date:"d.m.Y" }}</p>
                     {% endif %}

@@ -93,6 +93,14 @@ class NewsArticleAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Основное", {"fields": ("title", "slug", "status", "tag", "author")}),
         ("Содержимое", {"fields": ("excerpt", "content", "cover_image", "reading_time_minutes")}),
+        (
+            "English (optional)",
+            {
+                "fields": ("title_en", "excerpt_en", "content_en", "tag_en"),
+                "classes": ("collapse",),
+                "description": "If filled, the site language switcher shows EN on the article page.",
+            },
+        ),
         ("Публикация", {"fields": ("published_at",)}),
         ("Тех. поля", {"fields": ("created_at", "updated_at")}),
     )

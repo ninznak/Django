@@ -633,6 +633,52 @@ class SeoTests(TestCase):
 
 
 # ---------------------------------------------------------------------------
+# News article EN locale (client-side switch)
+# ---------------------------------------------------------------------------
+
+
+class ArticleI18nTests(TestCase):
+    SLUG = "novinki-tekhnologii-chekanke-monet-2025-2026"
+
+    def test_coin_minting_article_has_english_payload(self):
+        article = NewsArticle.objects.get(slug=self.SLUG)
+        from core.article_i18n import article_has_english, build_article_i18_payload
+
+        self.assertTrue(article_has_english(article))
+        payload = build_article_i18_payload(article)
+        self.assertIn("en", payload)
+        self.assertIn("16052026news.png", payload["en"]["body_html"])
+        self.assertNotIn("16052026news0.png", payload["en"]["body_html"])
+
+    def test_news_article_page_includes_i18_script(self):
+        import json
+        import re
+
+        response = Client().get(reverse("core:news_article", args=[self.SLUG]))
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('id="article-i18-data"', html)
+        self.assertIn("article-i18n.js", html)
+        match = re.search(
+            r'<script id="article-i18-data" type="application/json">(.*?)</script>',
+            html,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(match, "article-i18-data script missing")
+        payload = json.loads(match.group(1))
+        self.assertIsInstance(payload, dict)
+        self.assertIn("en", payload)
+        self.assertIn("Coin Minting", payload["en"]["title"])
+
+    def test_news_article_seo_has_english_entry(self):
+        from core.seo import NEWS_ARTICLE_SEO
+
+        entry = NEWS_ARTICLE_SEO[self.SLUG]
+        self.assertIn("en", entry)
+        self.assertIn("Coin Minting", entry["en"]["title"])
+
+
+# ---------------------------------------------------------------------------
 # Simple page views
 # ---------------------------------------------------------------------------
 
@@ -1580,6 +1626,17 @@ class HeroMobileStackTests(TestCase):
         self.assertContains(response, "cs-deck--mobile-stack")
         self.assertContains(response, "data-hero-mobile-prev")
         self.assertContains(response, "Церковь Преображения Господня")
+
+    def test_homepage_mobile_spotlight_image(self):
+        with self.settings(HERO_MOBILE_STACK_ENABLED=True):
+            response = Client().get(reverse("core:homepage"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "data-hero-spotlight")
+        self.assertContains(response, "images/news/georg11.jpeg")
+        self.assertContains(response, "images/news/ushak777.jpg")
+        self.assertContains(response, "images/news/Georg1.jpg")
+        self.assertContains(response, "data-hero-spotlight-prev")
+        self.assertContains(response, "hero-mobile-spotlight.js")
 
     def test_homepage_omits_mobile_deck_when_disabled(self):
         with self.settings(HERO_MOBILE_STACK_ENABLED=False):

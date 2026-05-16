@@ -2,9 +2,7 @@
 {% load static %}
 
 {% block extra_css %}
-{% if hero_mobile_stack_enabled %}
 <link rel="stylesheet" href="{% static 'css/hero-mobile-deck.css' %}">
-{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -29,21 +27,85 @@
 <!-- Hero Section -->
 <section class="home-hero-section relative pt-24 max-sm:pt-[8.5rem] pb-20">
     <div class="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-12 gap-8 items-start">
+        <div class="md:hidden col-span-full hero-mobile-spotlight"
+             data-hero-spotlight
+             role="region"
+             aria-label="Превью портфолио">
+            <div class="hero-mobile-spotlight-viewport">
+                <div class="hero-mobile-spotlight-track" data-hero-spotlight-track>
+                    <div class="hero-mobile-spotlight-slide">
+                        <a href="{% url 'core:portfolio' %}#portfolio-products">
+                            <img src="{% static 'images/news/georg11.jpeg' %}"
+                                 alt="Георгий Победоносец"
+                                 width="1200"
+                                 height="900"
+                                 fetchpriority="high"
+                                 decoding="async">
+                        </a>
+                    </div>
+                    <div class="hero-mobile-spotlight-slide">
+                        <a href="{% url 'core:portfolio' %}#portfolio-products">
+                            <img src="{% static 'images/news/ushak777.jpg' %}"
+                                 alt="Медаль — работа студии"
+                                 width="1200"
+                                 height="900"
+                                 loading="lazy"
+                                 decoding="async">
+                        </a>
+                    </div>
+                    <div class="hero-mobile-spotlight-slide">
+                        <a href="{% url 'core:portfolio' %}#portfolio-products">
+                            <img src="{% static 'images/news/Georg1.jpg' %}"
+                                 alt="Георгий Победоносец — вид 3"
+                                 width="1200"
+                                 height="900"
+                                 loading="lazy"
+                                 decoding="async">
+                        </a>
+                    </div>
+                </div>
+                <button type="button"
+                        class="hero-mobile-spotlight-arrow hero-mobile-spotlight-arrow--prev"
+                        data-hero-spotlight-prev
+                        aria-label="Предыдущее фото"
+                        data-i18-aria-label="hero_mobile_prev">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <button type="button"
+                        class="hero-mobile-spotlight-arrow hero-mobile-spotlight-arrow--next"
+                        data-hero-spotlight-next
+                        aria-label="Следующее фото"
+                        data-i18-aria-label="hero_mobile_next">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <span class="hero-mobile-spotlight-badge tag-pill" data-i18="hero_spotlight_tag">Портфолио</span>
+            </div>
+            <div class="hero-mobile-spotlight-dots" role="tablist" aria-label="Слайды портфолио">
+                <button type="button" class="hero-mobile-spotlight-dot is-active" data-hero-spotlight-dot="0" aria-label="Фото 1" aria-selected="true"></button>
+                <button type="button" class="hero-mobile-spotlight-dot" data-hero-spotlight-dot="1" aria-label="Фото 2" aria-selected="false"></button>
+                <button type="button" class="hero-mobile-spotlight-dot" data-hero-spotlight-dot="2" aria-label="Фото 3" aria-selected="false"></button>
+            </div>
+        </div>
+
         <!-- LEFT: Typography -->
         <div class="lg:col-span-6 text-center lg:text-left">
             <span class="section-label" data-i18="hero_label">Творческое Портфолио</span>
-            <h1 class="hero-title-main font-display font-bold leading-[0.88] tracking-display text-4xl md:text-6xl lg:text-7xl mt-4 text-shadow">
+            <h1 class="hero-title-main font-display font-bold leading-[0.88] tracking-display text-3xl sm:text-4xl md:text-6xl lg:text-7xl mt-3 md:mt-4 text-shadow">
                 <span class="block underline decoration-[2px] underline-offset-4" data-i18="hero_medals_line">Медали, Монеты, 3D барельефы</span>
-                <span class="block mt-6 text-[0.75em] leading-[0.92]">
+                <span class="hidden md:block mt-6 text-[0.75em] leading-[0.92]">
                     <span data-i18="hero_title1">Когда Мастерство</span><br>
                     <span class="text-gradient-animated italic" data-i18="hero_title2">Встречает интеллект</span>
                 </span>
             </h1>
-            <p class="text-base md:text-lg mt-4 max-w-2xl mx-auto lg:mx-0" style="color: var(--muted);" data-i18="hero_medals_subline">
+            <p class="text-sm md:text-lg mt-3 md:mt-4 max-w-2xl mx-auto lg:mx-0" style="color: var(--muted);" data-i18="hero_medals_subline">
                 Изготовление и трёхмерное сканирование медалей, барельефов
             </p>
 
-            <div class="flex flex-wrap gap-4 justify-center lg:justify-start mt-8">
+            <div class="flex flex-wrap gap-3 md:gap-4 justify-center lg:justify-start mt-5 md:mt-8">
                 <a href="/portfolio/" class="btn-primary" data-i18="hero_cta1">
                     Смотреть Портфолио
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +124,7 @@
                     <span data-i18="hero_busy_label">Загруженность</span>:&nbsp;<span class="btn-busy-pct">{{ sculptor_busy }}%</span>
                 </button>
             </div>
-            <div class="flex gap-8 md:gap-10 pt-6 mt-6 border-t justify-center lg:justify-start" style="border-color: var(--line);">
+            <div class="hidden md:flex gap-8 md:gap-10 pt-6 mt-6 border-t justify-center lg:justify-start" style="border-color: var(--line);">
                 <div>
                     <p class="font-display text-2xl md:text-3xl font-semibold text-shadow">{{ site_settings.stat_3d_value }}</p>
                     <p class="text-xs mt-1 uppercase tracking-widest" style="color: var(--muted);" data-i18="stats_3d">3D Моделей</p>
@@ -80,7 +142,7 @@
         
         {# HERO_MOBILE_STACK_START — откат: HERO_MOBILE_STACK_ENABLED=0 в .env #}
         {% if hero_mobile_stack_enabled %}
-        <div class="md:hidden col-span-full hero-mobile-stack-wrap relative z-20">
+        <div class="hidden col-span-full hero-mobile-stack-wrap relative z-20">
             <div class="hero-mobile-carousel">
                 <button type="button" class="hero-mobile-arrow hero-mobile-arrow--prev" data-hero-mobile-prev aria-label="Предыдущая карточка" data-i18-aria-label="hero_mobile_prev">
                     <svg class="hero-mobile-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
@@ -547,6 +609,7 @@ html[data-theme="dark"] .featured-card-overlay {
         });
     })();
 </script>
+<script src="{% static 'js/hero-mobile-spotlight.js' %}"></script>
 {% if hero_mobile_stack_enabled %}
 <script src="{% static 'js/hero-mobile-deck.js' %}"></script>
 {% endif %}

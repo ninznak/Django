@@ -431,6 +431,61 @@ NEWS_ARTICLE_SEO: dict[str, dict[str, Any]] = {
             ],
         },
     },
+    "novinki-tekhnologii-chekanke-monet-2025-2026": {
+        "title": (
+            "Новинки технологий чеканки монет 2025–2026 — "
+            "KurilenkoArt | лазер, микрорельеф, ниобий"
+        ),
+        "description": (
+            "Обзор мировых новинок чеканки: лазерные штемпели US Mint, защита Britannia, "
+            "Smartminting® 4.0, серебро-ниобий Австрии и высокий рельеф. Для медальеров и 3D-художников."
+        ),
+        "keywords": (
+            "технологии чеканки монет, лазерная гравировка штемпель, микротекст монета, "
+            "Smartminting 4.0, ниобий монета, высокий рельеф медаль, "
+            + SEO_TOPIC_KEYWORDS
+        ),
+        "og_image": "images/news/16052026news0.png",
+        "article_ld": {
+            "description": (
+                "Сводка инноваций монетных дворов 2025–2026: лазер, безопасность, "
+                "ультравысокий рельеф и новые материалы."
+            ),
+            "articleSection": "Монеты",
+            "inLanguage": "ru-RU",
+            "about": [
+                "Coin minting technology",
+                "Laser engraving dies",
+                "Numismatic security features",
+                "High relief minting",
+                "Niobium coins",
+            ],
+        },
+        "en": {
+            "title": (
+                "Coin Minting Technology Trends 2025–2026 — "
+                "KurilenkoArt | laser, micro-relief, niobium"
+            ),
+            "description": (
+                "Global minting innovations: US Mint laser dies, Britannia security, "
+                "Smartminting® 4.0, Austrian silver-niobium, and high relief. "
+                "For medalists and 3D artists."
+            ),
+            "keywords": (
+                "coin minting technology, laser engraved die, microtext coin, "
+                "Smartminting 4.0, niobium coin, high relief medal, "
+                + SEO_TOPIC_KEYWORDS
+            ),
+            "article_ld": {
+                "description": (
+                    "Summary of mint innovations 2025–2026: laser engraving, security features, "
+                    "ultra-high relief, and new materials."
+                ),
+                "articleSection": "Coins",
+                "inLanguage": "en-US",
+            },
+        },
+    },
 }
 
 

@@ -124,17 +124,29 @@ def news(request):
 
 
 def news_article(request, slug):
+    from core.article_i18n import (
+        article_has_english,
+        build_article_i18_payload,
+        build_article_seo_i18_payload,
+    )
+
     queryset = (
         NewsArticle.objects.all()
         if request.user.is_staff
         else NewsArticle.objects.filter(status=NewsArticle.Status.PUBLISHED)
     )
     article = get_object_or_404(queryset, slug=slug)
+    has_en = article_has_english(article)
     return render(
         request,
         "core/news_article.html",
         {
             "article": article,
+            "article_has_english": has_en,
+            "article_i18": build_article_i18_payload(article) if has_en else None,
+            "article_seo_i18": (
+                build_article_seo_i18_payload(request, article.slug, article) if has_en else None
+            ),
             "seo": get_seo(
                 request, **news_article_seo_overrides(request, article.slug, article.title)
             ),
