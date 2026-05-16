@@ -281,6 +281,10 @@ LOGOUT_REDIRECT_URL = '/'
 # Registration UI on /sign-up-login/ (Sign up link + form). Set AUTH_SHOW_REGISTRATION=1 in .env to show again.
 AUTH_SHOW_REGISTRATION = os.getenv('AUTH_SHOW_REGISTRATION', '0').strip() == '1'
 
+# Hero on phones: stacked cards + tap/swipe (<768px). Set to 0 to restore legacy (no mobile deck).
+_HERO_MOBILE_STACK_RAW = os.getenv('HERO_MOBILE_STACK_ENABLED', '1').strip().lower()
+HERO_MOBILE_STACK_ENABLED = _HERO_MOBILE_STACK_RAW in ('1', 'true', 'yes', 'on')
+
 # Rate limiting and checkout idempotency use Django's cache. LocMem is process-local;
 # with multiple Gunicorn workers each worker has its own counters (stricter overall).
 # For shared limits across workers, configure Redis/Memcached here.

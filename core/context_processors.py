@@ -31,7 +31,12 @@ def analytics(request):
 
 
 def site_settings(request):
-    return {"site_settings": SimpleLazyObject(get_site_settings)}
+    return {
+        "site_settings": SimpleLazyObject(get_site_settings),
+        "hero_mobile_stack_enabled": getattr(
+            settings, "HERO_MOBILE_STACK_ENABLED", True
+        ),
+    }
 
 
 def shop_cart(request):

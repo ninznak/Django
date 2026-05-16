@@ -1,0 +1,71 @@
+{% load static %}
+{# Shared hero carousel cards. Default: <a> links. Pass mobile_stack=1 for tap-to-cycle <article> stack. #}
+{% if not mobile_stack %}
+<a href="{% url 'core:portfolio' %}#portfolio-3d" class="cs-card{% if card_class %} {{ card_class }}{% endif %}" data-idx="0" aria-label="3D Models">
+    <div class="cs-card-inner night-glow-surface">
+        <img src="{% static 'images/news/model8.jpg' %}" alt="3D Models" class="cs-img" loading="{% if eager_images %}eager{% else %}lazy{% endif %}">
+        <div class="cs-overlay"></div>
+        <div class="cs-badge"><span class="tag-pill text-[10px]" data-i18="carousel_3d_models">3D Models</span></div>
+        <div class="cs-caption">
+            <p class="font-display text-sm font-semibold text-white leading-tight" data-i18="carousel_bas_relief_collection">Коллекция Барельефов</p>
+            <p class="text-[10px] text-[#a8c957] mt-1" data-i18="carousel_models_available">200+ Моделей</p>
+        </div>
+    </div>
+</a>
+<a href="{% url 'core:portfolio' %}#portfolio-products" class="cs-card{% if card_class %} {{ card_class }}{% endif %}" data-idx="1" aria-label="Церковь Преображения Господня — золотая медаль">
+    <div class="cs-card-inner night-glow-surface">
+        <img src="{% static 'images/medals/medal5.JPEG' %}" alt="Церковь Преображения Господня, золотая медаль" class="cs-img" loading="{% if eager_images %}eager{% else %}lazy{% endif %}">
+        <div class="cs-overlay"></div>
+        <div class="cs-badge"><span class="tag-pill text-[10px]" data-i18="carousel_latest_commission">Последний Заказ</span></div>
+        <div class="cs-caption">
+            <p class="font-display text-sm font-semibold text-white leading-tight" data-i18="carousel_silver_relief_panel">Церковь Преображения Господня · Золотая медаль</p>
+            <p class="text-[10px] text-[#a8c957] mt-1" data-i18="carousel_custom_order_progress">Под Заказ · В Работе</p>
+        </div>
+    </div>
+</a>
+<a href="{% url 'core:portfolio' %}#portfolio-ai" class="cs-card{% if card_class %} {{ card_class }}{% endif %}" data-idx="2" aria-label="Георгий Победоносец">
+    <div class="cs-card-inner night-glow-surface">
+        <img src="{% static 'images/news/Georg1.jpg' %}" alt="Георгий Победоносец" class="cs-img" loading="{% if eager_images %}eager{% else %}lazy{% endif %}">
+        <div class="cs-overlay"></div>
+        <div class="cs-badge"><span class="tag-pill text-[10px]" data-i18="carousel_ai_content">3d скульптура</span></div>
+        <div class="cs-caption">
+            <p class="font-display text-sm font-semibold text-white leading-tight" data-i18="carousel_generative_art_series">Георгий Победоносец</p>
+            <p class="text-[10px] text-[#a8c957] mt-1" data-i18="carousel_neural_landscapes">Герб Москвы</p>
+        </div>
+    </div>
+</a>
+{% else %}
+<article class="hero-m-card{% if card_class %} {{ card_class }}{% endif %}" data-idx="0" data-href="{% url 'core:portfolio' %}#portfolio-3d">
+    <div class="cs-card-inner night-glow-surface">
+        <img src="{% static 'images/news/model8.jpg' %}" alt="3D Models" class="cs-img" loading="lazy" width="260" height="360">
+        <div class="cs-overlay"></div>
+        <div class="cs-badge"><span class="tag-pill text-[10px]" data-i18="carousel_3d_models">3D Models</span></div>
+        <div class="cs-caption">
+            <p class="font-display text-sm font-semibold text-white leading-tight" data-i18="carousel_bas_relief_collection">Коллекция Барельефов</p>
+            <p class="text-[10px] text-[#a8c957] mt-1" data-i18="carousel_models_available">200+ Моделей</p>
+        </div>
+    </div>
+</article>
+<article class="hero-m-card{% if card_class %} {{ card_class }}{% endif %}" data-idx="1" data-href="{% url 'core:portfolio' %}#portfolio-products">
+    <div class="cs-card-inner night-glow-surface">
+        <img src="{% static 'images/medals/medal5.JPEG' %}" alt="Церковь Преображения Господня, золотая медаль" class="cs-img" loading="lazy" width="260" height="360">
+        <div class="cs-overlay"></div>
+        <div class="cs-badge"><span class="tag-pill text-[10px]" data-i18="carousel_latest_commission">Последний Заказ</span></div>
+        <div class="cs-caption">
+            <p class="font-display text-sm font-semibold text-white leading-tight" data-i18="carousel_silver_relief_panel">Церковь Преображения Господня · Золотая медаль</p>
+            <p class="text-[10px] text-[#a8c957] mt-1" data-i18="carousel_custom_order_progress">Под Заказ · В Работе</p>
+        </div>
+    </div>
+</article>
+<article class="hero-m-card{% if card_class %} {{ card_class }}{% endif %}" data-idx="2" data-href="{% url 'core:portfolio' %}#portfolio-ai">
+    <div class="cs-card-inner night-glow-surface">
+        <img src="{% static 'images/news/Georg1.jpg' %}" alt="Георгий Победоносец" class="cs-img" loading="lazy" width="260" height="360">
+        <div class="cs-overlay"></div>
+        <div class="cs-badge"><span class="tag-pill text-[10px]" data-i18="carousel_ai_content">3d скульптура</span></div>
+        <div class="cs-caption">
+            <p class="font-display text-sm font-semibold text-white leading-tight" data-i18="carousel_generative_art_series">Георгий Победоносец</p>
+            <p class="text-[10px] text-[#a8c957] mt-1" data-i18="carousel_neural_landscapes">Герб Москвы</p>
+        </div>
+    </div>
+</article>
+{% endif %}

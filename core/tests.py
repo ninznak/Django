@@ -1569,3 +1569,20 @@ class ProfileAddArticleTests(TestCase):
         art = NewsArticle.objects.get(slug=self._ARTICLE_SLUG)
         self.assertEqual(art.status, NewsArticle.Status.PUBLISHED)
         self.assertIsNotNone(art.published_at)
+
+
+class HeroMobileStackTests(TestCase):
+    def test_homepage_includes_mobile_deck_when_enabled(self):
+        with self.settings(HERO_MOBILE_STACK_ENABLED=True):
+            response = Client().get(reverse("core:homepage"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="heroMobileDeck"')
+        self.assertContains(response, "cs-deck--mobile-stack")
+        self.assertContains(response, "data-hero-mobile-prev")
+        self.assertContains(response, "Церковь Преображения Господня")
+
+    def test_homepage_omits_mobile_deck_when_disabled(self):
+        with self.settings(HERO_MOBILE_STACK_ENABLED=False):
+            response = Client().get(reverse("core:homepage"))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'id="heroMobileDeck"')

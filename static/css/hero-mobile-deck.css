@@ -1,0 +1,219 @@
+/**
+ * Hero mobile stack (<768px). Rollback: remove this file + homepage link + set HERO_MOBILE_STACK_ENABLED=0.
+ */
+@media (max-width: 767px) {
+  .home-hero-section {
+    overflow-x: clip;
+  }
+
+  /* 30px от края экрана: выходим из px-6 контейнера, обрезаем вылезающие карточки */
+  .hero-mobile-stack-wrap {
+    box-sizing: border-box;
+    margin-inline: calc(50% - 50vw);
+    padding-inline: 30px;
+    max-width: 100vw;
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
+  .hero-mobile-carousel {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 36px;
+    column-gap: 6px;
+    align-items: center;
+    margin-top: 24px;
+    width: 100%;
+  }
+
+  .hero-mobile-carousel-stage {
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    justify-self: center;
+    max-width: 100%;
+  }
+
+  .hero-mobile-arrow {
+    position: relative;
+    z-index: 12;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.92);
+    color: #1a2e1a;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(30, 50, 20, 0.12);
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hero-mobile-arrow:hover {
+    background: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(30, 50, 20, 0.18);
+  }
+
+  .hero-mobile-arrow:active {
+    transform: translateY(0);
+  }
+
+  .hero-mobile-arrow:focus-visible {
+    outline: 2px solid rgba(168, 201, 87, 0.75);
+    outline-offset: 2px;
+  }
+
+  html[data-theme="dark"] .hero-mobile-arrow {
+    background: rgba(3, 25, 86, 0.85);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #eef4ff;
+  }
+
+  html[data-theme="dark"] .hero-mobile-arrow:hover {
+    background: rgba(17, 54, 156, 0.95);
+  }
+
+  .cs-deck--mobile-stack {
+    /* 60px = боковые отступы wrap; 84px = две стрелки + gap */
+    --hero-m-available: calc(100vw - 60px - 84px);
+    --hero-m-stack-offset: min(50px, max(14px, calc(var(--hero-m-available) * 0.14)));
+    --hero-m-card-w: min(240px, calc(var(--hero-m-available) - var(--hero-m-stack-offset) * 2));
+    position: relative;
+    width: calc(var(--hero-m-card-w) + var(--hero-m-stack-offset) * 2);
+    max-width: 100%;
+    height: calc(var(--hero-m-card-w) * 1.386);
+    max-height: 380px;
+    margin: 0;
+    overflow: hidden;
+    isolation: isolate;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-y;
+  }
+
+  .cs-deck--mobile-stack .hero-m-card {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: var(--hero-m-card-w);
+    height: calc(var(--hero-m-card-w) * 1.386);
+    max-height: 380px;
+    margin: 0;
+    border-radius: 18px;
+    box-shadow: 0 12px 32px rgba(30, 50, 20, 0.28);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform-origin: center top;
+    transition:
+      transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+      opacity 0.35s ease,
+      visibility 0.35s ease,
+      box-shadow 0.35s ease;
+    will-change: transform, opacity;
+  }
+
+  /* Верхняя карточка — строго по центру */
+  .cs-deck--mobile-stack .hero-m-card.is-active {
+    opacity: 1;
+    visibility: visible;
+    z-index: 3;
+    top: 0;
+    pointer-events: auto;
+    transform: translateX(-50%) scale(1) rotate(0deg);
+    box-shadow: 0 16px 40px rgba(30, 50, 20, 0.34);
+  }
+
+  /* Шахматный сдвиг: влево / вправо на 50px + лёгкий сдвиг по вертикали */
+  .cs-deck--mobile-stack .hero-m-card.is-behind-1 {
+    opacity: 1;
+    visibility: visible;
+    z-index: 2;
+    top: 10px;
+    transform: translateX(calc(-50% - var(--hero-m-stack-offset))) scale(0.94) rotate(-3deg);
+  }
+
+  .cs-deck--mobile-stack .hero-m-card.is-behind-2 {
+    opacity: 1;
+    visibility: visible;
+    z-index: 1;
+    top: 20px;
+    transform: translateX(calc(-50% + var(--hero-m-stack-offset))) scale(0.9) rotate(3deg);
+  }
+
+}
+
+.hero-mobile-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.hero-mobile-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(26, 46, 26, 0.25);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.hero-mobile-indicator.is-active {
+  background: #3d7a4f;
+  transform: scale(1.2);
+}
+
+html[data-theme="dark"] .hero-mobile-indicator {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+html[data-theme="dark"] .hero-mobile-indicator.is-active {
+  background: #6ea8ff;
+}
+
+html[data-theme="dark"] .cs-deck--mobile-stack .tag-pill {
+  background: #031956;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.92);
+}
+
+/* Tablet fan (768px–1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .cs-deck--tablet {
+    width: min(100%, 760px);
+    height: clamp(300px, 52vw, 396px);
+    margin: 22px auto 0;
+    overflow: hidden;
+    --stack-card-w: clamp(150px, 27vw, 220px);
+    --stack-card-h: calc(var(--stack-card-w) * 1.386);
+  }
+
+  .cs-deck--tablet .cs-card {
+    width: var(--stack-card-w);
+    height: var(--stack-card-h);
+    animation: none !important;
+  }
+
+  .cs-deck--tablet .cs-card[data-idx="0"] {
+    left: 0;
+    top: clamp(54px, 8.4vw, 82px);
+  }
+
+  .cs-deck--tablet .cs-card[data-idx="1"] {
+    left: calc((100% - var(--stack-card-w)) / 2);
+    top: clamp(24px, 4.8vw, 44px);
+  }
+
+  .cs-deck--tablet .cs-card[data-idx="2"] {
+    left: calc(100% - var(--stack-card-w));
+    top: 0;
+  }
+}

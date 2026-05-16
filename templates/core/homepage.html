@@ -1,6 +1,12 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
+{% block extra_css %}
+{% if hero_mobile_stack_enabled %}
+<link rel="stylesheet" href="{% static 'css/hero-mobile-deck.css' %}">
+{% endif %}
+{% endblock %}
+
 {% block content %}
 {% comment %}
 ═══════════════════════════════════════════════════════════════════════════
@@ -72,60 +78,52 @@
             </div>
         </div>
         
-        <!-- RIGHT: Carousel -->
-        <div class="lg:col-span-6 hidden md:flex items-center justify-center pt-0 lg:pt-10 relative z-20">
-            <div class="cs-deck" aria-label="Portfolio preview">
-
-                <!-- Card 0 — 3D Models (back-left) -->
-                <a href="{% url 'core:portfolio' %}#portfolio-3d" class="cs-card" data-idx="0" aria-label="3D Models">
-                    <div class="cs-card-inner night-glow-surface">
-                        <img src="{% static 'images/news/model8.jpg' %}"
-                             alt="3D Models" class="cs-img" loading="eager">
-                        <div class="cs-overlay"></div>
-                        <div class="cs-badge">
-                            <span class="tag-pill text-[10px]" data-i18="carousel_3d_models">3D Models</span>
-                        </div>
-                        <div class="cs-caption">
-                            <p class="font-display text-sm font-semibold text-white leading-tight" data-i18="carousel_bas_relief_collection">Коллекция Барельефов</p>
-                            <p class="text-[10px] text-[#a8c957] mt-1" data-i18="carousel_models_available">200+ Моделей</p>
-                        </div>
+        {# HERO_MOBILE_STACK_START — откат: HERO_MOBILE_STACK_ENABLED=0 в .env #}
+        {% if hero_mobile_stack_enabled %}
+        <div class="md:hidden col-span-full hero-mobile-stack-wrap relative z-20">
+            <div class="hero-mobile-carousel">
+                <button type="button" class="hero-mobile-arrow hero-mobile-arrow--prev" data-hero-mobile-prev aria-label="Предыдущая карточка" data-i18-aria-label="hero_mobile_prev">
+                    <svg class="hero-mobile-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <div class="hero-mobile-carousel-stage">
+                    <div id="heroMobileDeck" class="cs-deck cs-deck--mobile-stack" role="region" tabindex="0" aria-label="Превью портфолио">
+                        {% include "core/includes/hero_carousel_cards.html" with mobile_stack=1 %}
                     </div>
-                </a>
-
-                <!-- Card 1 — Finished Products (mid) -->
-                <a href="{% url 'core:portfolio' %}#portfolio-products" class="cs-card" data-idx="1" aria-label="Finished Products">
-                    <div class="cs-card-inner night-glow-surface">
-                        <img src="{% static 'images/medals/medal5.JPEG' %}"
-                             alt="Finished medal" class="cs-img" loading="eager">
-                        <div class="cs-overlay"></div>
-                        <div class="cs-badge">
-                            <span class="tag-pill text-[10px]" data-i18="carousel_latest_commission">Последний Заказ</span>
-                        </div>
-                        <div class="cs-caption">
-                            <p class="font-display text-sm font-semibold text-white leading-tight" data-i18="carousel_silver_relief_panel">Серебряная Рельефная Панель</p>
-                            <p class="text-[10px] text-[#a8c957] mt-1" data-i18="carousel_custom_order_progress">Под Заказ · В Работе</p>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Card 2 — Saint George (front-right) -->
-                <a href="{% url 'core:portfolio' %}#portfolio-3d" class="cs-card" data-idx="2" aria-label="Георгий Победоносец">
-                    <div class="cs-card-inner night-glow-surface">
-                        <img src="{% static 'images/news/Georg1.jpg' %}"
-                             alt="Георгий Победоносец" class="cs-img" loading="eager">
-                        <div class="cs-overlay"></div>
-                        <div class="cs-badge">
-                            <span class="tag-pill text-[10px]" data-i18="carousel_ai_content">3d скульптура</span>
-                        </div>
-                        <div class="cs-caption">
-                            <p class="font-display text-sm font-semibold text-white leading-tight" data-i18="carousel_generative_art_series">Георгий Победоносец</p>
-                            <p class="text-[10px] text-[#a8c957] mt-1" data-i18="carousel_neural_landscapes">Герб Москвы</p>
-                        </div>
-                    </div>
-                </a>
-
+                </div>
+                <button type="button" class="hero-mobile-arrow hero-mobile-arrow--next" data-hero-mobile-next aria-label="Следующая карточка" data-i18-aria-label="hero_mobile_next">
+                    <svg class="hero-mobile-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="hero-mobile-indicators" role="tablist" aria-label="Карусель портфолио">
+                <button type="button" class="hero-mobile-indicator is-active" data-hero-mobile-indicator="0" aria-label="Слайд 1" aria-selected="true"></button>
+                <button type="button" class="hero-mobile-indicator" data-hero-mobile-indicator="1" aria-label="Слайд 2" aria-selected="false"></button>
+                <button type="button" class="hero-mobile-indicator" data-hero-mobile-indicator="2" aria-label="Слайд 3" aria-selected="false"></button>
+            </div>
+            <p class="text-xs mt-3 text-center max-w-xs mx-auto" style="color: var(--muted);" data-i18="hero_mobile_tap_hint">Стрелки или нажатие на карточку — следующий слайд</p>
+            <div class="flex justify-center mt-3 pb-2">
+                <a id="heroMobileDeckLink" href="{% url 'core:portfolio' %}#portfolio-products" class="btn-outline text-sm" data-i18="hero_mobile_open">Открыть раздел</a>
             </div>
         </div>
+
+        <div class="hidden md:flex lg:hidden col-span-full justify-center relative z-20">
+            <div class="cs-deck cs-deck--tablet" aria-label="Portfolio preview">
+                {% include "core/includes/hero_carousel_cards.html" with eager_images=1 %}
+            </div>
+        </div>
+        {% endif %}
+        {# HERO_MOBILE_STACK_END #}
+
+        <!-- RIGHT: Carousel (desktop; md-only when mobile stack disabled) -->
+        <div class="lg:col-span-6 {% if hero_mobile_stack_enabled %}hidden lg:flex{% else %}hidden md:flex{% endif %} items-center justify-center pt-0 lg:pt-10 relative z-20">
+            <div class="cs-deck" aria-label="Portfolio preview">
+                {% include "core/includes/hero_carousel_cards.html" with eager_images=1 %}
+            </div>
+        </div>
+
     </div>
 
     {% comment %}
@@ -315,9 +313,9 @@ html[data-theme="dark"] .cs-deck .tag-pill {
     right: 16px;
 }
 
-/* Responsive stacked mode (carousel below headings on <lg). */
+/* Responsive stacked mode when HERO_MOBILE_STACK_ENABLED=0 (legacy). */
 @media (max-width: 1023px) and (min-width: 768px) {
-    .cs-deck {
+    .cs-deck:not(.cs-deck--tablet) {
         width: min(100%, 760px);
         height: clamp(300px, 52vw, 396px);
         margin-top: 22px;
@@ -549,6 +547,9 @@ html[data-theme="dark"] .featured-card-overlay {
         });
     })();
 </script>
+{% if hero_mobile_stack_enabled %}
+<script src="{% static 'js/hero-mobile-deck.js' %}"></script>
+{% endif %}
 
 <!-- Featured Works Section -->
 <section class="featured-works-section pt-8 pb-20 relative">
