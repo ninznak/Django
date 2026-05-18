@@ -129,21 +129,34 @@ def about(request):
             messages.success(request, "Thank you — your message was received.")
             return redirect("core:about")
         return render(request, "core/about.html", {"contact_form": form})
-    return render(request, "core/about.html", {"contact_form": ContactForm()})
+    return render(
+        request,
+        "core/about.html",
+        {
+            "contact_form": ContactForm(),
+            "seo": get_seo(request, webpage_type="ProfilePage"),
+        },
+    )
 
 
 def news(request):
     articles = list(_published_news_queryset())
+    breadcrumbs = [
+        {"label": "Главная", "url_name": "core:homepage"},
+        {"label": "Новости", "current": True},
+    ]
     return render(
         request,
         "core/news.html",
         {
             "featured_article": articles[0] if articles else None,
             "other_articles": articles[1:],
-            "breadcrumbs": [
-                {"label": "Главная", "url_name": "core:homepage"},
-                {"label": "Новости", "current": True},
-            ],
+            "breadcrumbs": breadcrumbs,
+            "seo": get_seo(
+                request,
+                breadcrumbs=breadcrumbs,
+                webpage_type="CollectionPage",
+            ),
         },
     )
 
@@ -173,7 +186,10 @@ def news_article(request, slug):
                 build_article_seo_i18_payload(request, article.slug, article) if has_en else None
             ),
             "seo": get_seo(
-                request, **news_article_seo_overrides(request, article.slug, article.title)
+                request,
+                **news_article_seo_overrides(
+                    request, article.slug, article.title, article=article
+                ),
             ),
             "breadcrumbs": [
                 {"label": "Главная", "url_name": "core:homepage"},
@@ -203,6 +219,11 @@ def portfolio_gallery(request, slug):
     meta = ctx["gallery"]
     seo = ctx["gallery_seo"]
     og_url = request.build_absolute_uri(static(meta["items"][0]["image"]))
+    breadcrumbs = [
+        {"label": "Главная", "url_name": "core:homepage"},
+        {"label": "Портфолио", "url_name": "core:portfolio"},
+        {"label": seo["title"], "current": True},
+    ]
     return render(
         request,
         "core/portfolio_gallery.html",
@@ -212,14 +233,13 @@ def portfolio_gallery(request, slug):
                 request,
                 title=seo["title"],
                 description=seo["description"],
+                keywords=seo.get("keywords", ""),
                 canonical_path=request.path,
                 og_image_url=og_url,
+                breadcrumbs=breadcrumbs,
+                webpage_type="CollectionPage",
             ),
-            "breadcrumbs": [
-                {"label": "Главная", "url_name": "core:homepage"},
-                {"label": "Портфолио", "url_name": "core:portfolio"},
-                {"label": seo["title"], "current": True},
-            ],
+            "breadcrumbs": breadcrumbs,
         },
     )
 

@@ -13,6 +13,9 @@
     <meta name="theme-color" id="theme-color-meta" content="#3d7a4f">
     <meta name="robots" content="{{ seo.robots }}">
     <link rel="canonical" href="{{ seo.canonical_url }}">
+    <link rel="alternate" hreflang="ru" href="{{ seo.canonical_url }}">
+    <link rel="alternate" hreflang="en" href="{{ seo.canonical_url }}">
+    <link rel="alternate" hreflang="x-default" href="{{ seo.canonical_url }}">
     <link rel="icon" type="image/x-icon" href="{% static 'images/ico/favicon (1).ico' %}">
 
     <meta property="og:type" content="{{ seo.og_type }}">
@@ -24,7 +27,7 @@
     <meta property="og:url" content="{{ seo.canonical_url }}">
     {% if seo.og_image %}
     <meta property="og:image" content="{{ seo.og_image }}">
-    <meta property="og:image:alt" content="{{ seo.site_name }} — 3D медали, барельефы, цифровая скульптура">
+    <meta property="og:image:alt" content="{{ seo.title }}">
     {% endif %}
 
     <meta name="twitter:card" content="summary_large_image">
@@ -823,8 +826,52 @@
             color: #f0b6e7 !important;
         }
 
-        html[data-theme="dark"] .home-shop-card {
-            background: rgba(3, 25, 86, 0.62) !important;
+        .home-shop-card,
+        .shop-card {
+            border-color: rgba(74, 94, 56, 0.2) !important;
+            box-shadow: 0 10px 28px -14px rgba(26, 46, 26, 0.35);
+        }
+
+        .home-shop-body,
+        .shop-card-body {
+            background: rgba(225, 236, 198, 0.82);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(74, 94, 56, 0.14);
+        }
+
+        .shop-card-body .text-gray-400,
+        .shop-card-body .text-gray-500 {
+            color: var(--muted);
+        }
+
+        .shop-card-body .border-gray-100 {
+            border-color: rgba(74, 94, 56, 0.16);
+        }
+
+        .home-contact-form,
+        .shop-filter-bar {
+            background: rgba(225, 236, 198, 0.82);
+            border-color: rgba(74, 94, 56, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 10px 28px -14px rgba(26, 46, 26, 0.35);
+        }
+
+        .home-contact-form .border-gray-200,
+        .shop-filter-bar .border-gray-200 {
+            border-color: rgba(74, 94, 56, 0.2);
+        }
+
+        .home-contact-form input,
+        .home-contact-form textarea,
+        .shop-filter-bar input {
+            background: rgba(255, 255, 255, 0.45);
+        }
+
+        html[data-theme="dark"] .home-shop-card,
+        html[data-theme="dark"] .shop-card {
+            background: transparent !important;
             border-color: rgba(102, 145, 255, 0.34) !important;
             color: var(--text) !important;
         }
@@ -917,9 +964,45 @@
             letter-spacing: 0.02em;
         }
 
-        html[data-theme="dark"] .home-shop-card .home-shop-body {
-            background: linear-gradient(180deg, rgba(5, 26, 88, 0.2) 0%, rgba(3, 18, 66, 0.78) 100%);
+        html[data-theme="dark"] .home-shop-card .home-shop-body,
+        html[data-theme="dark"] .shop-card-body {
+            background: linear-gradient(180deg, rgba(5, 26, 88, 0.2) 0%, rgba(3, 18, 66, 0.78) 100%) !important;
             border-top: 1px solid rgba(102, 145, 255, 0.24);
+        }
+
+        html[data-theme="dark"] .shop-card-body .text-gray-400,
+        html[data-theme="dark"] .shop-card-body .text-gray-500 {
+            color: #b6c6e2 !important;
+        }
+
+        html[data-theme="dark"] .shop-card-body .border-gray-100 {
+            border-color: rgba(102, 145, 255, 0.22) !important;
+        }
+
+        html[data-theme="dark"] .home-contact-form,
+        html[data-theme="dark"] .shop-filter-bar {
+            background: rgba(3, 25, 86, 0.66) !important;
+            border-color: rgba(102, 145, 255, 0.34) !important;
+            box-shadow: 0 12px 32px -16px rgba(0, 0, 0, 0.45);
+        }
+
+        html[data-theme="dark"] .home-contact-form .text-gray-500,
+        html[data-theme="dark"] .shop-filter-bar .text-gray-600 {
+            color: #b6c6e2 !important;
+        }
+
+        html[data-theme="dark"] .home-contact-form input,
+        html[data-theme="dark"] .home-contact-form textarea,
+        html[data-theme="dark"] .shop-filter-bar input {
+            background: rgba(3, 20, 65, 0.5) !important;
+            border-color: rgba(102, 145, 255, 0.28) !important;
+            color: var(--text) !important;
+        }
+
+        html[data-theme="dark"] .home-contact-form input::placeholder,
+        html[data-theme="dark"] .home-contact-form textarea::placeholder,
+        html[data-theme="dark"] .shop-filter-bar input::placeholder {
+            color: rgba(198, 214, 241, 0.55);
         }
 
         html[data-theme="dark"] .home-shop-card .home-shop-meta-chip {
@@ -975,12 +1058,21 @@
             color: #d1dcee !important;
         }
 
-        html[data-theme="dark"] #contact .text-gray-500 {
+        html[data-theme="dark"] #contact .text-gray-500,
+        html[data-theme="dark"] .home-contact-form .text-gray-500 {
             color: #bccbe5 !important;
         }
 
         html[data-theme="dark"] #contact .text-gray-600 {
             color: #c9d6eb !important;
+        }
+
+        #contact {
+            background: linear-gradient(165deg, rgba(220, 232, 207, 0.35) 0%, rgba(182, 201, 161, 0.12) 55%, transparent 100%);
+        }
+
+        html[data-theme="dark"] #contact {
+            background: linear-gradient(155deg, rgba(3, 20, 65, 0.45) 0%, rgba(3, 25, 86, 0.32) 52%, transparent 100%);
         }
 
         /* Copyright page: dark-blue typography on the highlighted light cards */

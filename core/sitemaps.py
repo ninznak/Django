@@ -16,6 +16,11 @@ class CoreViewSitemap(_BaseSitemap):
     changefreq = "weekly"
     priority = 0.7
 
+    _HIGH_PRIORITY = frozenset(
+        {"core:homepage", "core:about", "core:portfolio", "core:shop"}
+    )
+    _MEDIUM_PRIORITY = frozenset({"core:free_models", "core:news", "core:copyright"})
+
     def items(self):
         # Named URL patterns to expose to crawlers (no admin, no API).
         # Single home URL (/); /homepage/ is an alias and omitted to avoid duplicates.
@@ -40,10 +45,30 @@ class CoreViewSitemap(_BaseSitemap):
             return reverse(name, kwargs=kwargs)
         return reverse(item)
 
+    def priority(self, item):
+        name = item if isinstance(item, str) else item[0]
+        if name == "core:homepage":
+            return 1.0
+        if name in self._HIGH_PRIORITY:
+            return 0.9
+        if name in self._MEDIUM_PRIORITY:
+            return 0.8
+        if isinstance(item, tuple) and name == "core:portfolio_gallery":
+            return 0.85
+        return 0.7
+
+    def changefreq(self, item):
+        name = item if isinstance(item, str) else item[0]
+        if name in {"core:news", "core:shop", "core:free_models"}:
+            return "weekly"
+        if isinstance(item, tuple) and name == "core:portfolio_gallery":
+            return "monthly"
+        return "weekly"
+
 
 class NewsArticleSitemap(_BaseSitemap):
     changefreq = "monthly"
-    priority = 0.6
+    priority = 0.65
 
     def items(self):
         return NewsArticle.objects.filter(status=NewsArticle.Status.PUBLISHED)

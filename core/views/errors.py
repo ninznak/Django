@@ -37,6 +37,10 @@ def robots_txt(request):
     ]
     base = getattr(settings, "PUBLIC_SITE_URL", "") or ""
     if base:
+        host = base.replace("https://", "").replace("http://", "").rstrip("/")
+        if host.startswith("www."):
+            host = host[4:]
+        lines.append(f"Host: {host}")
         lines.append(f"Sitemap: {base}/sitemap.xml")
     return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")
 

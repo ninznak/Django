@@ -14,7 +14,7 @@
             </div>
         </div>
 
-        <form method="get" class="flex flex-col sm:flex-row flex-wrap gap-4 items-stretch sm:items-end mb-8 p-4 rounded-2xl border border-primary/10 bg-white/60" action="{% url 'core:shop' %}">
+        <form method="get" class="shop-filter-bar flex flex-col sm:flex-row flex-wrap gap-4 items-stretch sm:items-end mb-8 p-4 rounded-2xl border border-primary/10" action="{% url 'core:shop' %}">
             <div class="flex-1 min-w-[200px]">
                 <label for="shop-q" class="block text-xs font-semibold text-gray-600 mb-1" data-i18-label="shop_search_label">Поиск в магазине</label>
                 <input id="shop-q" type="search" name="q" value="{{ shop_query }}" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl" data-i18-placeholder="shop_search_placeholder" placeholder="Поиск по названию…">
@@ -41,7 +41,7 @@
                     <p class="free-placeholder-sub">{{ product.description|default:"Место для будущего товара" }}</p>
                 </article>
                 {% else %}
-                <div class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col">
+                <article class="shop-card rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col">
                     <div class="relative aspect-[4/3]">
                         <img src="{% static product.img %}" alt="{{ product.alt }}" class="w-full h-full object-cover" loading="lazy" width="400" height="300">
                         {% if product.badge %}
@@ -50,7 +50,7 @@
                         </div>
                         {% endif %}
                     </div>
-                    <div class="p-5 flex-1 flex flex-col">
+                    <div class="shop-card-body p-5 flex-1 flex flex-col">
                         <p class="text-xs uppercase tracking-widest text-gray-400">{{ product.type_label }}</p>
                         <h4 class="font-semibold mt-2">{{ product.title }}</h4>
                         {% if product.description %}
@@ -65,7 +65,7 @@
                             {% endif %}
                         </div>
                     </div>
-                </div>
+                </article>
                 {% endif %}
             {% endfor %}
         </div>

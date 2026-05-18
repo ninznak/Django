@@ -103,6 +103,7 @@ else:
     PUBLIC_SITE_URL = ''
 
 SEO_SITE_NAME = os.getenv('SEO_SITE_NAME', 'KurilenkoArt').strip() or 'KurilenkoArt'
+SEO_AUTHOR_NAME = os.getenv('SEO_AUTHOR_NAME', 'Куриленко Александр Алексеевич').strip() or 'Куриленко Александр Алексеевич'
 SEO_DEFAULT_OG_IMAGE = os.getenv('SEO_DEFAULT_OG_IMAGE', 'images/news/model5.jpg').strip()
 SEO_CONTACT_EMAIL = os.getenv('SEO_CONTACT_EMAIL', 'me@nobito.ru').strip() or 'me@nobito.ru'
 

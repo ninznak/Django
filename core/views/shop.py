@@ -8,6 +8,7 @@ from django.views.decorators.http import require_http_methods
 
 from .. import cart_utils
 from ..models import Product
+from ..seo import get_seo
 from ..shop_data import get_product, get_shop_products
 from ..view_utils import (
     CART_API_POST_LIMIT,
@@ -35,6 +36,10 @@ def shop(request):
         ]
     paginator = Paginator(products, SHOP_PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get("page"))
+    breadcrumbs = [
+        {"label": "Главная", "url_name": "core:homepage"},
+        {"label": "Магазин", "current": True},
+    ]
     return render(
         request,
         "core/shop.html",
@@ -43,10 +48,12 @@ def shop(request):
             "shop_page_obj": page_obj,
             "shop_hide_sold": hide_sold,
             "shop_query": q,
-            "breadcrumbs": [
-                {"label": "Главная", "url_name": "core:homepage"},
-                {"label": "Магазин", "current": True},
-            ],
+            "breadcrumbs": breadcrumbs,
+            "seo": get_seo(
+                request,
+                breadcrumbs=breadcrumbs,
+                webpage_type="CollectionPage",
+            ),
         },
     )
 
@@ -66,15 +73,21 @@ def free_models(request):
         bucket = by_key.get(product.free_category)
         if bucket is not None:
             bucket["products"].append(product)
+    breadcrumbs = [
+        {"label": "Главная", "url_name": "core:homepage"},
+        {"label": "Бесплатные модели", "current": True},
+    ]
     return render(
         request,
         "core/free_models.html",
         {
             "free_tabs": tabs,
-            "breadcrumbs": [
-                {"label": "Главная", "url_name": "core:homepage"},
-                {"label": "Бесплатные модели", "current": True},
-            ],
+            "breadcrumbs": breadcrumbs,
+            "seo": get_seo(
+                request,
+                breadcrumbs=breadcrumbs,
+                webpage_type="CollectionPage",
+            ),
         },
     )
 

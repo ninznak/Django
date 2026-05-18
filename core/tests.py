@@ -565,13 +565,27 @@ class SeoTests(TestCase):
         self.assertEqual(data["description"], "Y")
         self.assertTrue(data["canonical_url"].endswith("/z/"))
 
-    def test_json_ld_contains_organization_and_website(self):
+    def test_json_ld_contains_organization_website_and_person(self):
         request = RequestFactory().get("/")
         data = get_seo(request)
         payload = json.loads(str(data["json_ld"]))
         self.assertEqual(payload["@context"], "https://schema.org")
-        types = {node["@type"] for node in payload["@graph"]}
-        self.assertEqual(types, {"Organization", "WebSite"})
+        types = {node["@type"] if isinstance(node["@type"], str) else node["@type"][0] for node in payload["@graph"]}
+        self.assertIn("Organization", types)
+        self.assertIn("WebSite", types)
+        self.assertIn("Person", types)
+
+    def test_breadcrumbs_emit_breadcrumb_list(self):
+        request = RequestFactory().get("/news/")
+        crumbs = [
+            {"label": "Главная", "url_name": "core:homepage"},
+            {"label": "Новости", "current": True},
+        ]
+        data = get_seo(request, breadcrumbs=crumbs, webpage_type="CollectionPage")
+        payload = json.loads(str(data["json_ld"]))
+        types = [node["@type"] for node in payload["@graph"]]
+        self.assertIn("BreadcrumbList", types)
+        self.assertIn("CollectionPage", types)
 
     def test_article_ld_is_appended_with_defaults(self):
         request = RequestFactory().get("/news/foo/")
@@ -787,8 +801,9 @@ class StaticPagesViewTests(TestCase):
 
     @override_settings(PUBLIC_SITE_URL="https://example.com")
     def test_robots_txt_includes_sitemap_when_public_url_set(self):
-        response = Client().get(reverse("core:robots_txt"))
-        self.assertIn("Sitemap: https://example.com/sitemap.xml", response.content.decode())
+        body = Client().get(reverse("core:robots_txt")).content.decode()
+        self.assertIn("Sitemap: https://example.com/sitemap.xml", body)
+        self.assertIn("Host: example.com", body)
 
     def test_sitemap_xml_responds(self):
         response = Client().get("/sitemap.xml")

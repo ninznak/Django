@@ -797,7 +797,7 @@ html[data-theme="dark"] .featured-card-overlay {
         
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {% for product in shop_preview_products %}
-            <div class="home-shop-card group bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col night-glow-surface">
+            <div class="home-shop-card group rounded-3xl overflow-hidden border border-primary/10 shadow-lg flex flex-col night-glow-surface">
                 <div class="relative aspect-[16/10] overflow-hidden">
                     <img src="{% static product.img %}"
                          alt="{{ product.alt }}"
@@ -909,7 +909,7 @@ Also uncomment forum in core/urls.py, core/sitemaps.py, and nav/footer links in 
         
         <!-- Contact Form -->
         <div class="max-w-xl mx-auto mt-12">
-            <form class="bg-white rounded-3xl p-8 border border-primary/10 shadow-lg night-glow-surface" method="post" action="{% url 'core:homepage' %}#contact">
+            <form class="home-contact-form rounded-3xl p-8 border border-primary/10 shadow-lg night-glow-surface" method="post" action="{% url 'core:homepage' %}#contact">
                 {% csrf_token %}
                 <input type="hidden" name="contact_form" value="1">
                 <div class="space-y-5">

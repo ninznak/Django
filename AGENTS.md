@@ -273,10 +273,11 @@ Public API:
 
 ```python
 SEO_TOPIC_KEYWORDS: str
+SEO_COMMERCIAL_KEYWORDS: str                # заказ / commission intent tail
 PAGE_SEO: dict[url_name, dict]              # Per-page defaults (title/description/keywords/robots/no_json_ld)
 NEWS_ARTICLE_SEO: dict[slug, dict]          # Per-news-article rich overrides (title/description/keywords/og_image/article_ld)
 def get_seo(request, **overrides) -> dict
-def news_article_seo_overrides(request, slug, label) -> dict   # → splat into get_seo
+def news_article_seo_overrides(request, slug, label, *, article=None) -> dict   # → splat into get_seo
 ```
 
 `get_seo` merges in this order (later wins):
@@ -284,8 +285,15 @@ def news_article_seo_overrides(request, slug, label) -> dict   # → splat into 
 Then stamps in `canonical_url`, `og_image`, `site_name`, and `json_ld`.
 
 Recognized special overrides: `canonical_path`, `og_image_url`, `article_ld`
-(dict spread into a schema.org `Article` node), `no_json_ld` (truthy → empty
+(dict spread into a schema.org `Article` node), `breadcrumbs` (list of
+`{label, url_name|url, current?}` → `BreadcrumbList` JSON-LD), `webpage_type`
+(e.g. `CollectionPage`, `ProfilePage`), `no_json_ld` (truthy → empty
 `json_ld`).
+
+Global JSON-LD graph includes cached `Organization` + `ProfessionalService`,
+`WebSite`, and `Person` (`SEO_AUTHOR_NAME` in settings). Articles add
+`datePublished` / `dateModified` when `article=` is passed to
+`news_article_seo_overrides`.
 
 **News articles.** `views.news_article` delegates all SEO construction to
 `news_article_seo_overrides(request, slug, label)`:
@@ -579,7 +587,7 @@ Env vars (see `.env.example`):
 | `DJANGO_CANONICAL_DOMAIN` | Override for `PRIMARY_DOMAIN`. Defaults to first of `SITE_DOMAINS`. |
 | `PUBLIC_SITE_URL` | e.g. `https://kurilenkoart.ru`. Used for absolute canonical / OG / sitemap URLs. Prod default: `https://<PRIMARY_DOMAIN>`. |
 | `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` | Fully override the derived values. |
-| `EMAIL_*`, `DEFAULT_FROM_EMAIL`, `SEO_CONTACT_EMAIL`, `CONTACT_FORM_RECIPIENT`, `CONTACT_FORM_TRY_EMAIL` | Email wiring. Dev default: console backend. |
+| `EMAIL_*`, `DEFAULT_FROM_EMAIL`, `SEO_CONTACT_EMAIL`, `SEO_AUTHOR_NAME`, `CONTACT_FORM_RECIPIENT`, `CONTACT_FORM_TRY_EMAIL` | Email wiring + JSON-LD Person name. Dev default: console backend. |
 | `AUTH_SHOW_REGISTRATION` | `"1"` to expose the sign-up form on `/sign-up-login/`. Default off. |
 | `*_POST_LIMIT`, `*_WINDOW_SECONDS`, `CHECKOUT_IDEMPOTENCY_TTL_SECONDS`, `CHECKOUT_IDEMPOTENCY_SESSION_KEY` | Abuse-protection tuning (contact/auth/cart/checkout throttles + idempotency retention/session key name). See `.env.example` keys. Backed by `CACHES['default']` (LocMem in repo; per-worker — replace with Redis/Memcached for shared limits). |
 | `SECURE_*`, `SECURE_HSTS_*` | HTTPS hardening switches (only active when `DEBUG=0`). Production also sets `SECURE_CROSS_ORIGIN_OPENER_POLICY = same-origin`. |

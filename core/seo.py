@@ -28,9 +28,20 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.templatetags.static import static
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 # Topics used for meta keywords and schema.org knowsAbout (3D, medals, sculpting, related craft).
+SEO_COMMERCIAL_KEYWORDS = (
+    "3D художник на заказ, медаль на заказ, барельеф на заказ, памятная медаль, "
+    "значок на заказ, сувенирная монета, 3D модель для ЧПУ, рельеф для фрезеровки, "
+    "медальерная мастерская, цифровая скульптура на заказ, частный заказ барельеф, "
+    "сканирование медали 3D, моделирование герба, корпоративная медаль, "
+    "custom medal design, bas-relief commission, coin design service, "
+    "CNC relief modeling, medallic artist for hire, commemorative medal design, "
+    "3D scan to STL, ArtCAM relief workflow, ZBrush medallic sculpting"
+)
+
 SEO_FREE_MODEL_KEYWORDS = (
     "бесплатные 3D модели, бесплатные модели для 3D печати, скачать бесплатно 3D модель, "
     "3d печать, stl, stl модели, авторские модели, эксклюзивные модели, "
@@ -53,14 +64,16 @@ SEO_TOPIC_KEYWORDS = (
     "плакетка Кремль, герб Москвы барельеф, барельеф медальный, Святые барельеф, "
     "медаль Толстова, Ю. Орлов портрет скан, герб Адыгеи барельеф, Урал геологоразведки модель, "
     "Игры новых развивающихся сил медаль, святой барельеф, Евфросиния Полоцкая, Георгий Победоносец, Феодор Ушаков, "
-    "KurilenkoArt, "
+    "KurilenkoArt, kurilenkoart.ru, "
+    + SEO_COMMERCIAL_KEYWORDS
+    + ", "
     + SEO_FREE_MODEL_KEYWORDS
 )
 
 _DEFAULT_DESCRIPTION = (
-    "Портфолио художника по 3D-моделированию медалей, монет и барельефов: цифровая скульптура, "
-    "медальерное дело, низкий рельеф, ZBrush и AI-визуализация; сканы и модели в духе Возрождения "
-    "(Давид Микеланджело, Донателло), магазин STL и принтов, статьи и заказ работ."
+    "Портфолио и студия 3D-художника KurilenkoArt: моделирование медалей, монет и барельефов "
+    "на заказ, цифровая скульптура, низкий рельеф, ZBrush, ArtCAM, ЧПУ и AI-визуализация. "
+    "Галерея работ, магазин STL/OBJ, бесплатные модели для 3D-печати, статьи и частные заказы."
 )
 
 _DEFAULT_PAGE: dict[str, Any] = {
@@ -74,8 +87,12 @@ _DEFAULT_PAGE: dict[str, Any] = {
 
 # Home SEO is reused by both the ``/`` and ``/homepage/`` URL aliases.
 _HOMEPAGE_SEO: dict[str, Any] = {
-    "title": "KurilenkoArt — 3D медали, барельефы, скульптура | портфолио и магазин",
-    "description": _DEFAULT_DESCRIPTION,
+    "title": "KurilenkoArt — 3D медали, барельефы, скульптура | портфолио, заказ и магазин",
+    "description": (
+        "Студия 3D-художника: медали и барельефы на заказ, портфолио цифровой скульптуры, "
+        "магазин моделей для ЧПУ и 3D-печати, бесплатные STL/OBJ и практические статьи. "
+        "ZBrush, ArtCAM, литьё, сканирование — от эскиза до готовой модели."
+    ),
     "keywords": SEO_TOPIC_KEYWORDS,
 }
 
@@ -84,15 +101,16 @@ PAGE_SEO: dict[str, dict[str, Any]] = {
     "homepage": _HOMEPAGE_SEO,
     "homepage_path": _HOMEPAGE_SEO,
     "about": {
-        "title": "Обо мне — KurilenkoArt | 3D-художник, медали и барельефы",
+        "title": "Обо мне — KurilenkoArt | 3D-художник, медали и барельефы на заказ",
         "description": (
-            "Более 12 лет художественного 3D-моделирования медалей, монет и барельефов; "
-            "медальерное и скульптурное направление, ZBrush, низкий рельеф и AI в рабочем процессе. "
-            "Заказы и сотрудничество."
+            "Более 12 лет художественного 3D-моделирования медалей, монет и барельефов. "
+            "Медальерное и скульптурное направление, ZBrush, ArtCAM, низкий рельеф и AI в процессе. "
+            "Частные и корпоративные заказы, работа по договору ИП — связь через форму на сайте."
         ),
         "keywords": (
-            "об авторе, 3D художник, медальер, скульптор 3D, барельеф, медали на заказ, "
-            "низкий рельеф, ZBrush, студия KurilenkoArt, " + SEO_TOPIC_KEYWORDS
+            "об авторе, 3D художник, медальер, скульптор 3D, барельеф на заказ, медали на заказ, "
+            "низкий рельеф, ZBrush, ArtCAM, студия KurilenkoArt, " + SEO_COMMERCIAL_KEYWORDS + ", "
+            + SEO_TOPIC_KEYWORDS
         ),
     },
     "portfolio": {
@@ -128,39 +146,42 @@ PAGE_SEO: dict[str, dict[str, Any]] = {
         ),
     },
     "shop": {
-        "title": "Магазин — KurilenkoArt | 3D-модели медалей и STL, принты",
+        "title": "Магазин — KurilenkoArt | 3D-модели медалей, барельефов, STL и принты",
         "description": (
-            "Цифровые 3D-модели для ЧПУ, литья и 3D-печати: медали, барельефы, сканы "
-            "(Давид Микеланджело, Донателло), чумной доктор, герб Адыгеи, STL и принты. "
-            "Скачивание и заказ от KurilenkoArt."
+            "Цифровые 3D-модели для ЧПУ, литья и 3D-печати: медали, барельефы, гербы, сканы "
+            "классической скульптуры, STL/OBJ для FDM и SLA. Скачивание и покупка моделей KurilenkoArt."
         ),
         "keywords": (
             "купить 3D модель, STL медаль барельеф, 3D модель для печати, цифровая скульптура магазин, "
+            "модель для ЧПУ фрезеровки, STL для литья, "
             "Давид Микеланджело 3D, Давид Донателло модель, чумной доктор 3D, отсканированный бюст, "
             "медаль Толстова, скан медали Орлов, герб Адыгеи 3D, Урал автомобиль модель, "
             "3D print art, STL для ЧПУ, бесплатные 3D модели, free STL download, free OBJ download, "
-            + SEO_TOPIC_KEYWORDS
+            + SEO_COMMERCIAL_KEYWORDS + ", " + SEO_TOPIC_KEYWORDS
         ),
     },
     "free_models": {
         "title": "Бесплатные 3D-модели — KurilenkoArt | OBJ и STL для 3D-печати",
         "description": (
-            "Раздел бесплатных 3D-моделей KurilenkoArt: бесплатные OBJ/STL-файлы для тестовой 3D-печати, "
-            "проверки принтера и знакомства со стилем моделей."
+            "Бесплатные OBJ/STL-модели KurilenkoArt для тестовой 3D-печати, калибровки принтера "
+            "и знакомства со стилем: художественные, хоббийные и технические категории."
         ),
         "keywords": (
             "бесплатные 3D модели, бесплатные STL, бесплатные OBJ, скачать STL бесплатно, скачать OBJ бесплатно, "
             "модели для 3D печати бесплатно, test print model, printable 3D model, "
-            + SEO_TOPIC_KEYWORDS
+            + SEO_FREE_MODEL_KEYWORDS + ", " + SEO_TOPIC_KEYWORDS
         ),
     },
     "news": {
-        "title": "Новости и статьи — KurilenkoArt | 3D, скульптура и AI",
+        "title": "Новости и статьи — KurilenkoArt | 3D, медали, ZBrush, ArtCAM, AI",
         "description": (
-            "Статьи о 3D-моделировании медалей и барельефов, цифровой скульптуре, ZBrush, "
-            "литье и AI в творческом процессе."
+            "Практические статьи о 3D-моделировании медалей и барельефов, ZBrush-скульптинге, "
+            "ArtCAM и ЧПУ, технологиях чеканки, generative design и AI в творческом процессе."
         ),
-        "keywords": "новости 3D, туториал ZBrush, медальерное дело блог, AI генерация арт, " + SEO_TOPIC_KEYWORDS,
+        "keywords": (
+            "новости 3D, туториал ZBrush, медальерное дело блог, ArtCAM статья, AI генерация арт, "
+            "технологии чеканки, generative design, " + SEO_TOPIC_KEYWORDS
+        ),
     },
     "news_article": {
         "title": "Статья — KurilenkoArt",
@@ -499,19 +520,37 @@ _KNOWS_ABOUT: tuple[str, ...] = (
     "Low relief",
     "Commemorative medals",
     "Coin design",
+    "Coin minting technology",
     "ZBrush",
     "Blender 3D",
-    "CNC machining relief",
-    "AI-assisted art",
     "ArtCAM",
+    "CNC machining relief",
+    "CNC relief modeling",
+    "AI-assisted art",
+    "Generative design",
+    "3D scanning",
+    "Photogrammetry",
     "Renaissance sculpture",
     "Classical sculpture 3D scanning",
     "3D printing for art",
+    "FDM 3D printing",
+    "SLA 3D printing",
     "Free 3D models",
     "STL files for 3D printing",
     "OBJ files for 3D printing",
     "Printable 3D models",
     "Religious bas-relief",
+    "Custom medal design",
+    "Jewellery CNC",
+)
+
+_SERVICE_TYPES: tuple[str, ...] = (
+    "3D modeling for medals and coins",
+    "Bas-relief and low-relief sculpture",
+    "Digital sculpting (ZBrush)",
+    "CNC relief preparation (ArtCAM)",
+    "3D scanning and STL/OBJ delivery",
+    "Commemorative medal design",
 )
 
 
@@ -541,6 +580,65 @@ def _site_origin(request) -> str:
     return u if u.endswith("/") else u + "/"
 
 
+def _author_name() -> str:
+    return getattr(settings, "SEO_AUTHOR_NAME", "KurilenkoArt")
+
+
+def _crumb_href(request, crumb: dict[str, Any]) -> str | None:
+    if crumb.get("url_name"):
+        return _absolute_url(request, reverse(crumb["url_name"]))
+    url = crumb.get("url")
+    if url:
+        return _absolute_url(request, url)
+    return None
+
+
+def _build_breadcrumb_ld(
+    request,
+    crumbs: list[dict[str, Any]],
+    canonical_url: str,
+) -> dict[str, Any]:
+    elements: list[dict[str, Any]] = []
+    for position, crumb in enumerate(crumbs, start=1):
+        item: dict[str, Any] = {
+            "@type": "ListItem",
+            "position": position,
+            "name": crumb["label"],
+        }
+        if not crumb.get("current"):
+            href = _crumb_href(request, crumb)
+            if href:
+                item["item"] = href
+        elements.append(item)
+    base = canonical_url.rstrip("/")
+    return {
+        "@type": "BreadcrumbList",
+        "@id": f"{base}/#breadcrumb",
+        "itemListElement": elements,
+    }
+
+
+def _build_webpage_ld(
+    data: dict[str, Any],
+    website_id: str,
+    webpage_type: str = "WebPage",
+    breadcrumb_id: str | None = None,
+) -> dict[str, Any]:
+    canonical = data["canonical_url"]
+    node: dict[str, Any] = {
+        "@type": webpage_type,
+        "@id": f"{canonical.rstrip('/')}/#webpage",
+        "url": canonical,
+        "name": data["title"],
+        "description": data["description"],
+        "inLanguage": ["ru-RU", "en-US"],
+        "isPartOf": {"@id": website_id},
+    }
+    if breadcrumb_id:
+        node["breadcrumb"] = {"@id": breadcrumb_id}
+    return node
+
+
 # ---------------------------------------------------------------------------
 # JSON-LD graph
 # ---------------------------------------------------------------------------
@@ -552,8 +650,9 @@ def _static_graph_nodes(
     site_name: str,
     email: str,
     logo_url: str,
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Return cached ``(Organization, WebSite)`` nodes for the site.
+    author_name: str,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """Return cached ``(Organization, WebSite, Person)`` nodes for the site.
 
     The returned dicts are *shared* across requests — callers must never
     mutate them. Arguments are strings so the result is safely hashable.
@@ -561,9 +660,20 @@ def _static_graph_nodes(
     base = site_origin.rstrip("/")
     org_id = f"{base}/#organization"
     web_id = f"{base}/#website"
+    person_id = f"{base}/#person"
 
+    person = {
+        "@type": "Person",
+        "@id": person_id,
+        "name": author_name,
+        "email": email,
+        "url": f"{base}/about/",
+        "jobTitle": "3D artist, medallic sculptor",
+        "knowsAbout": list(_KNOWS_ABOUT),
+        "worksFor": {"@id": org_id},
+    }
     org = {
-        "@type": "Organization",
+        "@type": ["Organization", "ProfessionalService"],
         "@id": org_id,
         "name": site_name,
         "url": site_origin,
@@ -571,6 +681,9 @@ def _static_graph_nodes(
         "logo": {"@type": "ImageObject", "url": logo_url},
         "description": _DEFAULT_DESCRIPTION,
         "knowsAbout": list(_KNOWS_ABOUT),
+        "founder": {"@id": person_id},
+        "areaServed": {"@type": "Country", "name": "Russia"},
+        "serviceType": list(_SERVICE_TYPES),
     }
     website = {
         "@type": "WebSite",
@@ -579,15 +692,19 @@ def _static_graph_nodes(
         "url": site_origin,
         "inLanguage": ["ru-RU", "en-US"],
         "publisher": {"@id": org_id},
+        "author": {"@id": person_id},
         "description": _DEFAULT_DESCRIPTION,
+        "about": list(_KNOWS_ABOUT[:8]),
     }
-    return org, website
+    return org, website, person
 
 
 def _build_json_ld_graph(
     request,
     data: dict[str, Any],
     article_ld: dict[str, Any] | None,
+    breadcrumbs: list[dict[str, Any]] | None = None,
+    webpage_type: str | None = None,
 ) -> str:
     """Render the JSON-LD ``@graph`` as a ``mark_safe`` JSON string.
 
@@ -598,9 +715,23 @@ def _build_json_ld_graph(
     site_name = data["site_name"]
     email = getattr(settings, "SEO_CONTACT_EMAIL", "me@nobito.ru")
     logo_url = data["og_image"]
+    author_name = _author_name()
 
-    org, website = _static_graph_nodes(site_origin, site_name, email, logo_url)
-    graph: list[dict[str, Any]] = [org, website]
+    org, website, person = _static_graph_nodes(
+        site_origin, site_name, email, logo_url, author_name
+    )
+    graph: list[dict[str, Any]] = [org, website, person]
+
+    breadcrumb_id: str | None = None
+    if breadcrumbs:
+        breadcrumb_node = _build_breadcrumb_ld(request, breadcrumbs, data["canonical_url"])
+        breadcrumb_id = breadcrumb_node["@id"]
+        graph.append(breadcrumb_node)
+
+    if webpage_type:
+        graph.append(
+            _build_webpage_ld(data, website["@id"], webpage_type, breadcrumb_id)
+        )
 
     if article_ld:
         art = dict(article_ld)
@@ -610,6 +741,7 @@ def _build_json_ld_graph(
         art.setdefault("mainEntityOfPage", data["canonical_url"])
         art["isPartOf"] = {"@id": website["@id"]}
         art.setdefault("publisher", {"@id": org["@id"]})
+        art.setdefault("author", {"@id": person["@id"]})
         graph.append(art)
 
     payload = {"@context": "https://schema.org", "@graph": graph}
@@ -634,10 +766,16 @@ def get_seo(request, **overrides: Any) -> dict[str, Any]:
       ``SEO_DEFAULT_OG_IMAGE``.
     * ``article_ld`` — dict merged into a schema.org ``Article`` node
       appended to the JSON-LD ``@graph`` (news article pages).
+    * ``breadcrumbs`` — list of ``{label, url_name|url, current?}`` crumbs;
+      emits a ``BreadcrumbList`` node when provided.
+    * ``webpage_type`` — schema.org page type (e.g. ``CollectionPage``,
+      ``AboutPage``, ``ProfilePage``) for the current URL.
     * ``no_json_ld`` — when truthy, ``json_ld`` is emitted as an empty
       string.
     """
     article_ld = overrides.pop("article_ld", None)
+    breadcrumbs = overrides.pop("breadcrumbs", None)
+    webpage_type = overrides.pop("webpage_type", None)
     canonical_path = overrides.pop("canonical_path", None) or request.path
     og_image_url = overrides.pop("og_image_url", None) or _default_og_image_url(request)
 
@@ -655,7 +793,13 @@ def get_seo(request, **overrides: Any) -> dict[str, Any]:
     data["og_image"] = og_image_url
     data.setdefault("site_name", getattr(settings, "SEO_SITE_NAME", "KurilenkoArt"))
 
-    data["json_ld"] = "" if data.get("no_json_ld") else _build_json_ld_graph(request, data, article_ld)
+    data["json_ld"] = (
+        ""
+        if data.get("no_json_ld")
+        else _build_json_ld_graph(
+            request, data, article_ld, breadcrumbs=breadcrumbs, webpage_type=webpage_type
+        )
+    )
 
     return data
 
@@ -665,7 +809,25 @@ def get_seo(request, **overrides: Any) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def news_article_seo_overrides(request, slug: str, label: str) -> dict[str, Any]:
+def _article_ld_extras(article) -> dict[str, Any]:
+    """Dates, cover image and author for schema.org Article."""
+    extras: dict[str, Any] = {}
+    pub = getattr(article, "published_at", None) or getattr(article, "created_at", None)
+    if pub:
+        extras["datePublished"] = pub.isoformat()
+    updated = getattr(article, "updated_at", None)
+    if updated:
+        extras["dateModified"] = updated.isoformat()
+    return extras
+
+
+def news_article_seo_overrides(
+    request,
+    slug: str,
+    label: str,
+    *,
+    article=None,
+) -> dict[str, Any]:
     """Return ``get_seo`` overrides for a news article slug.
 
     When ``slug`` is listed in :data:`NEWS_ARTICLE_SEO`, its richer metadata
@@ -678,42 +840,59 @@ def news_article_seo_overrides(request, slug: str, label: str) -> dict[str, Any]
 
     .. code-block:: python
 
-        get_seo(request, **news_article_seo_overrides(request, slug, label))
+        get_seo(request, **news_article_seo_overrides(request, slug, label, article=article))
     """
+    article_extras = _article_ld_extras(article) if article is not None else {}
+    breadcrumbs = [
+        {"label": "Главная", "url_name": "core:homepage"},
+        {"label": "Новости", "url_name": "core:news"},
+        {"label": label, "current": True},
+    ]
+
     entry = NEWS_ARTICLE_SEO.get(slug)
     if entry is None:
-        return {
+        article_ld = {
+            "headline": label,
+            "description": f"Материал о 3D, медалях и творческих техниках: {label}",
+            "inLanguage": "ru-RU",
+            "keywords": "3D modeling, medals, bas-relief, digital sculpting, KurilenkoArt",
+            **article_extras,
+        }
+        overrides: dict[str, Any] = {
             "title": f"{label} — KurilenkoArt | Новости: 3D, медали, барельефы",
             "description": (
                 f"Статья «{label}» — 3D-моделирование, медальерное дело, барельефы, "
-                "цифровая скульптура и AI. KurilenkoArt."
+                "цифровая скульптура, ZBrush, ArtCAM и AI. KurilenkoArt."
             ),
             "keywords": (
                 f"{label}, новости 3D, медали моделирование, барельеф, скульптура, ZBrush, "
-                "медальерное искусство, KurilenkoArt"
+                "ArtCAM, медальерное искусство, KurilenkoArt, " + SEO_COMMERCIAL_KEYWORDS
             ),
             "canonical_path": request.path,
             "og_type": "article",
-            "article_ld": {
-                "headline": label,
-                "description": f"Материал о 3D, медалях и творческих техниках: {label}",
-                "inLanguage": "ru-RU",
-                "keywords": "3D modeling, medals, bas-relief, digital sculpting, KurilenkoArt",
-            },
+            "article_ld": article_ld,
+            "breadcrumbs": breadcrumbs,
         }
+        if article is not None and article.cover_image:
+            overrides["og_image_url"] = _absolute_url(request, static(article.cover_image))
+        return overrides
 
     article_ld = dict(entry.get("article_ld", {}))
     article_ld.setdefault("headline", label)
+    article_ld.update(article_extras)
 
-    overrides: dict[str, Any] = {
+    overrides = {
         "title": entry["title"],
         "description": entry["description"],
         "keywords": entry["keywords"],
         "canonical_path": request.path,
         "og_type": "article",
         "article_ld": article_ld,
+        "breadcrumbs": breadcrumbs,
     }
     og_image_rel = entry.get("og_image")
     if og_image_rel:
         overrides["og_image_url"] = _absolute_url(request, static(og_image_rel))
+    elif article is not None and article.cover_image:
+        overrides["og_image_url"] = _absolute_url(request, static(article.cover_image))
     return overrides
