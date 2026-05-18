@@ -285,6 +285,10 @@ AUTH_SHOW_REGISTRATION = os.getenv('AUTH_SHOW_REGISTRATION', '0').strip() == '1'
 _HERO_MOBILE_STACK_RAW = os.getenv('HERO_MOBILE_STACK_ENABLED', '1').strip().lower()
 HERO_MOBILE_STACK_ENABLED = _HERO_MOBILE_STACK_RAW in ('1', 'true', 'yes', 'on')
 
+# Hero H1 glitch on «Встречает интеллект» (md+). Set HERO_TITLE_GLITCH_ENABLED=0 to restore shimmer-only gradient.
+_HERO_TITLE_GLITCH_RAW = os.getenv('HERO_TITLE_GLITCH_ENABLED', '1').strip().lower()
+HERO_TITLE_GLITCH_ENABLED = _HERO_TITLE_GLITCH_RAW in ('1', 'true', 'yes', 'on')
+
 # Rate limiting and checkout idempotency use Django's cache. LocMem is process-local;
 # with multiple Gunicorn workers each worker has its own counters (stricter overall).
 # For shared limits across workers, configure Redis/Memcached here.

@@ -36,6 +36,9 @@ def site_settings(request):
         "hero_mobile_stack_enabled": getattr(
             settings, "HERO_MOBILE_STACK_ENABLED", True
         ),
+        "hero_title_glitch_enabled": getattr(
+            settings, "HERO_TITLE_GLITCH_ENABLED", True
+        ),
     }
 
 

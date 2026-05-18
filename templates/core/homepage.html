@@ -3,6 +3,9 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/hero-mobile-deck.css' %}">
+{% if hero_title_glitch_enabled %}
+<link rel="stylesheet" href="{% static 'css/hero-title-glitch.css' %}">
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -95,10 +98,15 @@
         <div class="lg:col-span-6 text-center lg:text-left">
             <span class="section-label" data-i18="hero_label">Творческое Портфолио</span>
             <h1 class="hero-title-main font-display font-bold leading-[0.88] tracking-display text-3xl sm:text-4xl md:text-6xl lg:text-7xl mt-3 md:mt-4 text-shadow">
-                <span class="block underline decoration-[2px] underline-offset-4" data-i18="hero_medals_line">Медали, Монеты, 3D барельефы</span>
+                <span class="block underline decoration-[2px] underline-offset-4" data-i18="hero_medals_line">Создаю модели для чеканки Медалей и Монет</span>
                 <span class="hidden md:block mt-6 text-[0.75em] leading-[0.92]">
                     <span data-i18="hero_title1">Когда Мастерство</span><br>
+                    {# HERO_TITLE_GLITCH: откат — HERO_TITLE_GLITCH_ENABLED=0, см. scripts/HERO_TITLE_GLITCH_ROLLBACK.md #}
+                    {% if hero_title_glitch_enabled %}
+                    <span class="hero-glitch italic" data-hero-glitch data-text="Встречает интеллект" data-i18="hero_title2">Встречает интеллект</span>
+                    {% else %}
                     <span class="text-gradient-animated italic" data-i18="hero_title2">Встречает интеллект</span>
+                    {% endif %}
                 </span>
             </h1>
             <p class="text-sm md:text-lg mt-3 md:mt-4 max-w-2xl mx-auto lg:mx-0" style="color: var(--muted);" data-i18="hero_medals_subline">
@@ -227,7 +235,8 @@
 html[data-lang="ru"] .hero-title-main {
     line-height: 0.96 !important;
 }
-html[data-lang="ru"] .hero-title-main .text-gradient-animated {
+html[data-lang="ru"] .hero-title-main .text-gradient-animated,
+html[data-lang="ru"] .hero-title-main .hero-glitch {
     padding-bottom: 0.08em;
 }
 
@@ -610,6 +619,9 @@ html[data-theme="dark"] .featured-card-overlay {
     })();
 </script>
 <script src="{% static 'js/hero-mobile-spotlight.js' %}"></script>
+{% if hero_title_glitch_enabled %}
+<script src="{% static 'js/hero-title-glitch.js' %}"></script>
+{% endif %}
 {% if hero_mobile_stack_enabled %}
 <script src="{% static 'js/hero-mobile-deck.js' %}"></script>
 {% endif %}
@@ -622,7 +634,9 @@ html[data-theme="dark"] .featured-card-overlay {
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
                 <span class="section-label featured-works-label" data-i18="featured_label">Избранные Работы</span>
-                <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-white mt-3" data-i18="featured_title">Двойная Творческая Практика</h2>
+                <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-white mt-3">
+                    <a href="{% url 'core:portfolio' %}" class="inline-block transition-colors hover:text-[#dce8cf] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white" data-i18="featured_title">Цифровая эволюция искусства</a>
+                </h2>
             </div>
             <p class="featured-works-sub text-sm max-w-xs" data-i18="featured_sub">Рукотворные 3D-модели и AI-контент, каждое направление обогащает другое.</p>
         </div>
@@ -693,106 +707,14 @@ html[data-theme="dark"] .featured-card-overlay {
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
                 <span class="section-label" data-i18="news_label">Обновления</span>
-                <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-semibold mt-3" data-i18="news_title">Новости и Статьи</h2>
+                <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-semibold mt-3">
+                    <a href="{% url 'core:news' %}" class="inline-block transition-colors hover:text-[#3d7a4f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3d7a4f]" data-i18="news_title">Новости и Статьи</a>
+                </h2>
             </div>
             <p class="home-muted-note text-gray-500 text-sm max-w-xs" data-i18="news_sub">Материалы о 3D-моделировании, AI-генерации контента и их взаимодействии.</p>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {% comment %}
-              Карточки отражают реальные статьи из раздела /news/.
-              Featured — обзорная статья по 3D-моделированию; боковые — три
-              свежие: ArtCAM, Генеративный дизайн, Тренды 3D-графики.
-              Пятая статья (ZBrush-скульптинг) доступна по ссылке «Все Статьи».
-            {% endcomment %}
-
-            <!-- Featured Article -->
-            <a href="/news/bas-relief-depth-achieving-sub-millimeter-precision-in-zbrush/" class="lg:col-span-7 group block">
-                <div class="home-news-card relative overflow-hidden rounded-3xl bg-white border border-primary/10 shadow-lg h-full night-glow-surface">
-                    <div class="aspect-[16/10] overflow-hidden">
-                        <img src="{% static 'images/news/model11.JPEG' %}"
-                             alt="3D-моделирование"
-                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                        <div class="home-news-featured-overlay absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/80 via-[#1a2e1a]/10 to-transparent"></div>
-                    </div>
-                    <div class="absolute bottom-0 left-0 right-0 p-8">
-                        <div class="flex items-center gap-3 mb-4">
-                            <span class="tag-pill" data-i18="news_technique">Практика</span>
-                            <span class="text-[10px] text-white/60">10 минут чтения</span>
-                        </div>
-                        <h3 class="font-display text-2xl md:text-3xl font-semibold text-white mb-3">
-                            3D-моделирование: путь от базовых форм к коммерческому уровню
-                        </h3>
-                        <p class="text-sm text-white/70 mb-5 max-w-lg">О последовательной работе с формой, деталями и технической подготовкой модели под реальный продакшн.</p>
-                        <span class="text-[11px] text-white/40 uppercase tracking-widest">14 апреля 2026</span>
-                    </div>
-                </div>
-            </a>
-
-            <!-- Secondary Articles -->
-            <div class="lg:col-span-5 flex flex-col gap-5">
-                <!-- Article 1 — ArtCAM -->
-                <a href="/news/artcam-vozmozhnosti-zadachi-i-praktika/" class="home-news-card group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all night-glow-surface">
-                    <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
-                        <img src="{% static 'images/news/artcam1.png' %}"
-                             alt="ArtCAM"
-                             class="w-full h-full object-cover">
-                    </div>
-                    <div class="flex flex-col justify-center gap-1.5 min-w-0">
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]" data-i18="news_industry">CAD/CAM</span>
-                            <span class="text-[10px] text-gray-400">·</span>
-                            <span class="text-[10px] text-gray-400">12 минут чтения</span>
-                        </div>
-                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-[#3d7a4f] transition-colors">ArtCAM: возможности программы, ключевые задачи и практический workflow</h4>
-                        <span class="text-[11px] text-gray-400">15 апреля 2026</span>
-                    </div>
-                </a>
-
-                <!-- Article 2 — Generative design -->
-                <a href="/news/generative-design-technologies/" class="home-news-card group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all night-glow-surface">
-                    <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
-                        <img src="{% static 'images/news/gener1.jpg' %}"
-                             alt="Генеративный дизайн"
-                             class="w-full h-full object-cover">
-                    </div>
-                    <div class="flex flex-col justify-center gap-1.5 min-w-0">
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]" data-i18="news_industry">Технологии</span>
-                            <span class="text-[10px] text-gray-400">·</span>
-                            <span class="text-[10px] text-gray-400">14 минут чтения</span>
-                        </div>
-                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-[#3d7a4f] transition-colors">Технологии генеративного дизайна изделий</h4>
-                        <span class="text-[11px] text-gray-400">5 апреля 2026</span>
-                    </div>
-                </a>
-
-                <!-- Article 3 — 3D trends 2026 -->
-                <a href="/news/midjourney-v7-for-numismatic-concept-art/" class="home-news-card group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all night-glow-surface">
-                    <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
-                        <img src="{% static 'images/news/midjourney-1920x1200.png' %}"
-                             alt="Тренды 3D-графики"
-                             class="w-full h-full object-cover">
-                    </div>
-                    <div class="flex flex-col justify-center gap-1.5 min-w-0">
-                        <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]" data-i18="news_ai">Тренды</span>
-                            <span class="text-[10px] text-gray-400">·</span>
-                            <span class="text-[10px] text-gray-400">9 минут чтения</span>
-                        </div>
-                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-[#3d7a4f] transition-colors">Ключевые тренды 3D-графики в 2026 году</h4>
-                        <span class="text-[11px] text-gray-400">10 апреля 2026</span>
-                    </div>
-                </a>
-
-                <a href="/news/" class="btn-outline w-full justify-center mt-2" data-i18="news_view_all">
-                    Все Статьи
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                </a>
-            </div>
-        </div>
+        {% include "core/includes/home_news_section.html" %}
     </div>
 </section>
 
@@ -802,7 +724,9 @@ html[data-theme="dark"] .featured-card-overlay {
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
                 <span class="section-label" data-i18="shop_label">Магазин</span>
-                <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-semibold mt-3" data-i18="shop_title">Приобрести Работу</h2>
+                <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-semibold mt-3">
+                    <a href="{% url 'core:shop' %}" class="inline-block transition-colors hover:text-[#3d7a4f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3d7a4f]" data-i18="shop_title">Магазин</a>
+                </h2>
                 <p class="home-muted-note text-gray-500 mt-3 max-w-md" data-i18="shop_sub">Цифровые загрузки, файлы 3D-моделей и эксклюзивные принты.</p>
             </div>
         </div>

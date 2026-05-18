@@ -1,6 +1,8 @@
 import logging
 
 from django.conf import settings
+from django.db.models import DateTimeField
+from django.db.models.functions import Coalesce
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -21,6 +23,31 @@ from ..view_utils import (
 
 logger = logging.getLogger(__name__)
 
+HOMEPAGE_NEWS_LIMIT = 4
+
+
+def _published_news_queryset():
+    return (
+        NewsArticle.objects.filter(status=NewsArticle.Status.PUBLISHED)
+        .defer("content", "content_en")
+        .order_by(
+            Coalesce("published_at", "created_at", output_field=DateTimeField()).desc(),
+            "-pk",
+        )
+    )
+
+
+def _homepage_news_context() -> dict:
+    articles = list(_published_news_queryset()[:HOMEPAGE_NEWS_LIMIT])
+    return {
+        "home_news_featured": articles[0] if articles else None,
+        "home_news_side": articles[1:HOMEPAGE_NEWS_LIMIT],
+    }
+
+
+def _homepage_context(contact_form) -> dict:
+    return {"contact_form": contact_form, **_homepage_news_context()}
+
 
 @require_http_methods(["GET", "POST"])
 def homepage(request):
@@ -35,7 +62,7 @@ def homepage(request):
             return render(
                 request,
                 "core/homepage.html",
-                {"contact_form": ContactForm(request.POST)},
+                _homepage_context(ContactForm(request.POST)),
                 status=429,
             )
         form = ContactForm(request.POST)
@@ -61,8 +88,8 @@ def homepage(request):
                     )
             messages.success(request, "Thank you — your message was received.")
             return redirect("core:homepage")
-        return render(request, "core/homepage.html", {"contact_form": form})
-    return render(request, "core/homepage.html", {"contact_form": ContactForm()})
+        return render(request, "core/homepage.html", _homepage_context(form))
+    return render(request, "core/homepage.html", _homepage_context(ContactForm()))
 
 
 @require_http_methods(["GET", "POST"])
@@ -106,9 +133,7 @@ def about(request):
 
 
 def news(request):
-    articles = list(
-        NewsArticle.objects.filter(status=NewsArticle.Status.PUBLISHED).defer("content")
-    )
+    articles = list(_published_news_queryset())
     return render(
         request,
         "core/news.html",

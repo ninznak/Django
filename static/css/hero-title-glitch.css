@@ -1,0 +1,161 @@
+/**
+ * Hero title digital glitch — «Встречает интеллект»
+ * Rollback: HERO_TITLE_GLITCH_ENABLED=0 in .env (see scripts/HERO_TITLE_GLITCH_ROLLBACK.md)
+ */
+
+.hero-glitch {
+  position: relative;
+  display: inline-block;
+  color: #3a4d2c;
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+html.can-clip-text .hero-glitch {
+  background: linear-gradient(120deg, #3a4d2c 5%, #7f9f61 30%, #d8ec9d 52%, #7f9f61 74%, #3a4d2c 98%);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  /* Бегущий градиент как у .text-gradient-animated + глитч на ::before/::after */
+  animation: shimmerFlow 8.4s ease-in-out infinite;
+}
+
+.hero-glitch::before,
+.hero-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  white-space: nowrap;
+}
+
+.hero-glitch::before {
+  color: var(--hero-glitch-a, #3d7a4f);
+  z-index: 1;
+  animation: heroGlitchLayerA 8.5s infinite steps(1, end);
+}
+
+.hero-glitch::after {
+  color: var(--hero-glitch-b, #a8c957);
+  z-index: 2;
+  animation: heroGlitchLayerB 8.5s infinite steps(1, end);
+}
+
+/* Короткие «вспышки» глитча (~6% цикла), остальное время — спокойный градиент */
+@keyframes heroGlitchLayerA {
+  0%,
+  88%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+  89% {
+    opacity: 0.9;
+    transform: translate(-3px, 1px);
+    clip-path: inset(8% 0 62% 0);
+  }
+  90% {
+    opacity: 0.75;
+    transform: translate(2px, -2px);
+    clip-path: inset(52% 0 22% 0);
+  }
+  91% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+  94% {
+    opacity: 0.85;
+    transform: translate(-2px, 0);
+    clip-path: inset(28% 0 38% 0);
+  }
+  95% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes heroGlitchLayerB {
+  0%,
+  87%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+  88% {
+    opacity: 0.85;
+    transform: translate(3px, -1px);
+    clip-path: inset(18% 0 48% 0);
+  }
+  89% {
+    opacity: 0.7;
+    transform: translate(-2px, 2px);
+    clip-path: inset(58% 0 12% 0);
+  }
+  90% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+  93% {
+    opacity: 0.8;
+    transform: translate(2px, 1px);
+    clip-path: inset(40% 0 30% 0);
+  }
+  94% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+html[data-theme="dark"] .hero-glitch {
+  color: var(--text, #e8ecf8);
+}
+
+html[data-theme="dark"].can-clip-text .hero-glitch {
+  background: linear-gradient(120deg, #336df3 0%, #f622bd 50%, #336df3 100%);
+  background-size: 220% 220%;
+  animation: shimmerFlow 6s linear infinite;
+}
+
+/* no-clip fallback: те же переменные, что у .text-gradient-animated */
+html.no-clip-text .hero-glitch {
+  --fallback-gradient-start: #3a4d2c;
+  --fallback-gradient-mid: #d8ec9d;
+  --fallback-gradient-end: #7f9f61;
+  white-space: nowrap;
+}
+
+html[data-theme="dark"].no-clip-text .hero-glitch {
+  --fallback-gradient-start: #336df3;
+  --fallback-gradient-mid: #f622bd;
+  --fallback-gradient-end: #336df3;
+}
+
+html[data-theme="dark"] .hero-glitch::before {
+  color: #759df8;
+}
+
+html[data-theme="dark"] .hero-glitch::after {
+  color: #f622bd;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-glitch::before,
+  .hero-glitch::after {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}

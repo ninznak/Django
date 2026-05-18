@@ -1643,3 +1643,57 @@ class HeroMobileStackTests(TestCase):
             response = Client().get(reverse("core:homepage"))
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'id="heroMobileDeck"')
+
+
+class HomepageNewsTests(TestCase):
+    def test_homepage_shows_four_latest_published_articles(self):
+        from django.utils import timezone
+
+        now = timezone.now()
+        articles = []
+        for i in range(5):
+            articles.append(
+                NewsArticle.objects.create(
+                    title=f"Home news test {i}",
+                    slug=f"home-news-test-{i}-{now.timestamp():.0f}",
+                    excerpt=f"Excerpt {i}",
+                    content=f"Body {i}",
+                    status=NewsArticle.Status.PUBLISHED,
+                    published_at=now + timezone.timedelta(minutes=10 - i),
+                )
+            )
+        response = Client().get(reverse("core:homepage"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, articles[0].title)
+        self.assertContains(response, articles[1].title)
+        self.assertContains(response, articles[2].title)
+        self.assertContains(response, articles[3].title)
+        self.assertNotContains(response, articles[4].title)
+        self.assertContains(response, reverse("core:news_article", kwargs={"slug": articles[0].slug}))
+        self.assertContains(response, 'href="' + reverse("core:news") + '"')
+
+    def test_homepage_news_title_links_to_news_index(self):
+        response = Client().get(reverse("core:homepage"))
+        self.assertContains(
+            response,
+            '<a href="' + reverse("core:news") + '"',
+        )
+
+
+class HeroTitleGlitchTests(TestCase):
+    def test_homepage_includes_glitch_when_enabled(self):
+        with self.settings(HERO_TITLE_GLITCH_ENABLED=True):
+            response = Client().get(reverse("core:homepage"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "hero-glitch")
+        self.assertContains(response, "data-hero-glitch")
+        self.assertContains(response, "hero-title-glitch.css")
+        self.assertContains(response, "hero-title-glitch.js")
+
+    def test_homepage_uses_gradient_when_glitch_disabled(self):
+        with self.settings(HERO_TITLE_GLITCH_ENABLED=False):
+            response = Client().get(reverse("core:homepage"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "text-gradient-animated")
+        self.assertNotContains(response, 'class="hero-glitch italic" data-hero-glitch')
+        self.assertNotContains(response, "hero-title-glitch.css")

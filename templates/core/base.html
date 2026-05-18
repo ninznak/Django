@@ -217,7 +217,8 @@
             white-space: nowrap;
         }
 
-        html.no-clip-text .text-gradient-animated .gradient-char {
+        html.no-clip-text .text-gradient-animated .gradient-char,
+        html.no-clip-text .hero-glitch .gradient-char {
             display: inline-block;
             color: var(--fallback-gradient-start);
             animation: gradientCharFlow 2.8s linear infinite;
@@ -225,7 +226,8 @@
             will-change: color;
         }
 
-        html.no-clip-text .text-gradient-animated .gradient-char--space {
+        html.no-clip-text .text-gradient-animated .gradient-char--space,
+        html.no-clip-text .hero-glitch .gradient-char--space {
             width: 0.33em;
         }
         
@@ -1243,7 +1245,7 @@
 
         function applyGradientTextFallback() {
             if (!document.documentElement.classList.contains('no-clip-text')) return;
-            const targets = document.querySelectorAll('.text-gradient-animated');
+            const targets = document.querySelectorAll('.text-gradient-animated, [data-hero-glitch]');
             targets.forEach(function (el) {
                 const text = (el.textContent || '').trim();
                 if (!text) return;
@@ -1364,6 +1366,9 @@
                 window.applyArticleI18n(currentLang);
             }
             applyGradientTextFallback();
+            if (typeof window.syncHeroTitleGlitch === 'function') {
+                window.syncHeroTitleGlitch();
+            }
         }
 
         function setupMobileNav() {

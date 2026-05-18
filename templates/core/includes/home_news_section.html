@@ -1,0 +1,71 @@
+{% load static %}
+        {% if home_news_featured %}
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <a href="{% url 'core:news_article' home_news_featured.slug %}" class="lg:col-span-7 group block">
+                <div class="home-news-card relative overflow-hidden rounded-3xl bg-white border border-primary/10 shadow-lg h-full night-glow-surface">
+                    <div class="aspect-[16/10] overflow-hidden relative">
+                        <img src="{% if home_news_featured.cover_image %}{% static home_news_featured.cover_image %}{% else %}{% static 'images/news/model11.JPEG' %}{% endif %}"
+                             alt="{{ home_news_featured.title }}"
+                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                             loading="lazy"
+                             decoding="async">
+                        <div class="home-news-featured-overlay absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/80 via-[#1a2e1a]/10 to-transparent pointer-events-none"></div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-8">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="tag-pill"
+                                  {% if home_news_featured.title_en %}data-article-i18-tag data-ru="{{ home_news_featured.tag|default:'Статья' }}" data-en="{{ home_news_featured.tag_en|default:'Article' }}"{% endif %}>{{ home_news_featured.tag|default:"Статья" }}</span>
+                            <span class="text-[10px] text-white/60">{{ home_news_featured.reading_time_minutes }} <span data-i18="news_min_read">минут чтения</span></span>
+                        </div>
+                        <h3 class="font-display text-2xl md:text-3xl font-semibold text-white mb-3"
+                            {% if home_news_featured.title_en %}data-article-i18-title data-ru="{{ home_news_featured.title }}" data-en="{{ home_news_featured.title_en }}"{% endif %}>{{ home_news_featured.title }}</h3>
+                        {% if home_news_featured.excerpt %}
+                        <p class="text-sm text-white/70 mb-5 max-w-lg line-clamp-3"
+                           {% if home_news_featured.title_en %}data-article-i18-excerpt data-ru="{{ home_news_featured.excerpt }}" data-en="{{ home_news_featured.excerpt_en }}"{% endif %}>{{ home_news_featured.excerpt }}</p>
+                        {% endif %}
+                        {% if home_news_featured.published_at %}
+                        <span class="text-[11px] text-white/40 uppercase tracking-widest">{{ home_news_featured.published_at|date:"d.m.Y" }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+
+            <div class="lg:col-span-5 flex flex-col gap-5">
+                {% for article in home_news_side %}
+                <a href="{% url 'core:news_article' article.slug %}" class="home-news-card group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all night-glow-surface">
+                    <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+                        <img src="{% if article.cover_image %}{% static article.cover_image %}{% else %}{% static 'images/news/model11.JPEG' %}{% endif %}"
+                             alt="{{ article.title }}"
+                             class="w-full h-full object-cover"
+                             loading="lazy"
+                             decoding="async">
+                    </div>
+                    <div class="flex flex-col justify-center gap-1.5 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]"
+                                  {% if article.title_en %}data-article-i18-tag data-ru="{{ article.tag|default:'Статья' }}" data-en="{{ article.tag_en|default:'Article' }}"{% endif %}>{{ article.tag|default:"Статья" }}</span>
+                            <span class="text-[10px] text-gray-400">·</span>
+                            <span class="text-[10px] text-gray-400">{{ article.reading_time_minutes }} <span data-i18="news_min_read">минут чтения</span></span>
+                        </div>
+                        <h4 class="font-display text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-[#3d7a4f] transition-colors"
+                            {% if article.title_en %}data-article-i18-title data-ru="{{ article.title }}" data-en="{{ article.title_en }}"{% endif %}>{{ article.title }}</h4>
+                        {% if article.published_at %}
+                        <span class="text-[11px] text-gray-400">{{ article.published_at|date:"d.m.Y" }}</span>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+
+                <a href="{% url 'core:news' %}" class="btn-outline w-full justify-center mt-2" data-i18="news_view_all">
+                    Все Статьи
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center">
+            <a href="{% url 'core:news' %}" class="btn-outline inline-flex" data-i18="news_view_all">Все Статьи</a>
+        </div>
+        {% endif %}
