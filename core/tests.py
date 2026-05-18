@@ -717,6 +717,14 @@ class StaticPagesViewTests(TestCase):
                 response = c.get(reverse(name))
                 self.assertEqual(response.status_code, 200, name)
 
+    def test_orb_ambient_markup_and_stylesheet(self):
+        c = Client()
+        response = c.get(reverse("core:homepage"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="orb-surface"')
+        self.assertContains(response, "orb-ambient.css")
+        self.assertContains(response, 'class="orb orb-d"')
+
     def test_news_article_renders(self):
         c = Client()
         response = c.get(reverse("core:news_article", args=[self.article.slug]))
@@ -1697,3 +1705,11 @@ class HeroTitleGlitchTests(TestCase):
         self.assertContains(response, "text-gradient-animated")
         self.assertNotContains(response, 'class="hero-glitch italic" data-hero-glitch')
         self.assertNotContains(response, "hero-title-glitch.css")
+
+    def test_homepage_hero_title_orb_sync(self):
+        response = Client().get(reverse("core:homepage"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "hero-medals-accent")
+        self.assertContains(response, "hero-title-orb-sync")
+        self.assertContains(response, 'data-i18="hero_medals_line_accent"')
+        self.assertContains(response, "heroTitleOrbSync")

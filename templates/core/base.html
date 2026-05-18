@@ -99,6 +99,7 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <!-- UX polish: remove next line + enhancements.js at page bottom to roll back -->
     <link rel="stylesheet" href="{% static 'css/enhancements.css' %}">
+    <link rel="stylesheet" href="{% static 'css/orb-ambient.css' %}">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -263,11 +264,14 @@
             left: 8vw;
             width: 390px;
             height: 390px;
+            animation: orbFloatA 17s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
+        }
+
+        .orb-a .orb-surface {
             background: radial-gradient(circle at 35% 40%, rgba(234,255,194,0.98) 0 58%, rgba(140,185,94,0.88) 62%, rgba(140,185,94,0) 70%);
             filter: blur(22px);
             opacity: 0.74;
             box-shadow: inset 0 0 0 2px rgba(223, 245, 184, 0.32), 0 0 34px rgba(137, 177, 91, 0.34);
-            animation: orbFloatA 17s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
         }
         
         .orb-b {
@@ -275,11 +279,14 @@
             bottom: 10vh;
             width: 350px;
             height: 350px;
+            animation: orbFloatB 20s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
+        }
+
+        .orb-b .orb-surface {
             background: radial-gradient(circle at 42% 45%, rgba(154,204,106,0.96) 0 57%, rgba(78,117,51,0.84) 62%, rgba(78,117,51,0) 72%);
             filter: blur(22px);
             opacity: 0.74;
             box-shadow: inset 0 0 0 2px rgba(223, 245, 184, 0.32), 0 0 34px rgba(137, 177, 91, 0.34);
-            animation: orbFloatB 20s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
         }
         
         .orb-c {
@@ -287,11 +294,29 @@
             left: 38vw;
             width: 320px;
             height: 320px;
+            animation: orbFloatC 15s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
+        }
+
+        .orb-c .orb-surface {
             background: radial-gradient(circle at 45% 50%, rgba(186,226,132,0.9) 0 56%, rgba(95,136,64,0.78) 62%, rgba(95,136,64,0) 72%);
             filter: blur(22px);
             opacity: 0.74;
             box-shadow: inset 0 0 0 2px rgba(223, 245, 184, 0.32), 0 0 34px rgba(137, 177, 91, 0.34);
-            animation: orbFloatC 15s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
+        }
+
+        .orb-d {
+            top: 18vh;
+            right: 18vw;
+            width: 160px;
+            height: 160px;
+            animation: orbFloatD 16s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
+        }
+
+        .orb-d .orb-surface {
+            background: radial-gradient(circle at 44% 48%, rgba(210,238,158,0.92) 0 56%, rgba(108,154,72,0.82) 62%, rgba(108,154,72,0) 72%);
+            filter: blur(11px);
+            opacity: 0.68;
+            box-shadow: inset 0 0 0 1px rgba(223, 245, 184, 0.28), 0 0 20px rgba(137, 177, 91, 0.3);
         }
         
         @keyframes orbFloatA {
@@ -320,6 +345,15 @@
             44% { transform: translate3d(-146px, -94px, 0) scaleX(0.92) scaleY(1.08); }
             63% { transform: translate3d(124px, -46px, 0) scaleX(1.08) scaleY(0.93); }
             82% { transform: translate3d(78px, 62px, 0) scaleX(0.93) scaleY(1.07); }
+            100% { transform: translate3d(0, 0, 0) scaleX(1) scaleY(1); }
+        }
+
+        @keyframes orbFloatD {
+            0% { transform: translate3d(0, 0, 0) scaleX(1) scaleY(1); }
+            20% { transform: translate3d(-54px, 48px, 0) scaleX(1.06) scaleY(0.94); }
+            42% { transform: translate3d(64px, -36px, 0) scaleX(0.94) scaleY(1.06); }
+            68% { transform: translate3d(42px, 52px, 0) scaleX(1.05) scaleY(0.95); }
+            86% { transform: translate3d(-38px, -28px, 0) scaleX(0.95) scaleY(1.05); }
             100% { transform: translate3d(0, 0, 0) scaleX(1) scaleY(1); }
         }
         
@@ -529,22 +563,28 @@
             background: rgba(246, 34, 189, 0.2);
         }
 
-        html[data-theme="dark"] .orb-a {
+        html[data-theme="dark"] .orb-a .orb-surface {
             background: radial-gradient(circle at 38% 34%, rgba(117, 157, 248, 0.9) 0 28%, rgba(51, 109, 243, 0.95) 54%, rgba(17, 54, 156, 0.86) 68%, rgba(17, 54, 156, 0) 80%);
             box-shadow: inset 0 0 0 2px rgba(117, 157, 248, 0.34), -10px -10px 38px rgba(51, 109, 243, 0.42), -26px -26px 66px rgba(246, 34, 189, 0.52), -40px -40px 94px rgba(246, 34, 189, 0.3);
             opacity: 0.72;
         }
 
-        html[data-theme="dark"] .orb-b {
+        html[data-theme="dark"] .orb-b .orb-surface {
             background: radial-gradient(circle at 40% 35%, rgba(117, 157, 248, 0.86) 0 28%, rgba(51, 109, 243, 0.93) 54%, rgba(17, 54, 156, 0.82) 68%, rgba(17, 54, 156, 0) 80%);
             box-shadow: inset 0 0 0 2px rgba(117, 157, 248, 0.32), -10px -12px 38px rgba(51, 109, 243, 0.42), -24px -28px 66px rgba(246, 34, 189, 0.52), -38px -42px 94px rgba(246, 34, 189, 0.3);
             opacity: 0.72;
         }
 
-        html[data-theme="dark"] .orb-c {
+        html[data-theme="dark"] .orb-c .orb-surface {
             background: radial-gradient(circle at 41% 36%, rgba(117, 157, 248, 0.82) 0 27%, rgba(51, 109, 243, 0.9) 54%, rgba(17, 54, 156, 0.8) 68%, rgba(17, 54, 156, 0) 80%);
             box-shadow: inset 0 0 0 2px rgba(117, 157, 248, 0.3), -10px -10px 36px rgba(51, 109, 243, 0.4), -24px -24px 62px rgba(246, 34, 189, 0.5), -38px -38px 90px rgba(246, 34, 189, 0.28);
             opacity: 0.7;
+        }
+
+        html[data-theme="dark"] .orb-d .orb-surface {
+            background: radial-gradient(circle at 43% 37%, rgba(117, 157, 248, 0.78) 0 28%, rgba(51, 109, 243, 0.88) 54%, rgba(17, 54, 156, 0.76) 68%, rgba(17, 54, 156, 0) 80%);
+            box-shadow: inset 0 0 0 1px rgba(117, 157, 248, 0.28), -6px -8px 22px rgba(51, 109, 243, 0.36), -14px -16px 38px rgba(246, 34, 189, 0.42), -22px -24px 52px rgba(246, 34, 189, 0.22);
+            opacity: 0.66;
         }
 
         .theme-fab {
@@ -704,14 +744,62 @@
             color: #ffd0f2 !important;
         }
 
+        .home-news-section {
+            background: linear-gradient(165deg, rgba(220, 232, 207, 0.42) 0%, rgba(182, 201, 161, 0.18) 55%, transparent 100%);
+        }
+
+        .home-news-card,
+        .news-page-card-body {
+            background: rgba(225, 236, 198, 0.82);
+            border-color: rgba(74, 94, 56, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .home-news-card {
+            border-color: rgba(74, 94, 56, 0.2) !important;
+            box-shadow: 0 10px 28px -14px rgba(26, 46, 26, 0.35);
+        }
+
+        .news-page-card {
+            border-color: rgba(74, 94, 56, 0.2) !important;
+            box-shadow: 0 10px 28px -14px rgba(26, 46, 26, 0.35);
+        }
+
+        a.home-news-card:hover,
+        .home-news-card.group:hover,
+        a.news-page-card:hover .news-page-card-body {
+            background: rgba(232, 242, 218, 0.94);
+        }
+
+        .home-news-card .text-gray-800,
+        .news-page-card-body .text-gray-800 {
+            color: var(--text);
+        }
+
+        .home-news-card .text-gray-400,
+        .news-page-card-body .text-gray-400,
+        .news-page-card-body .text-gray-500 {
+            color: var(--muted);
+        }
+
         html[data-theme="dark"] .home-news-section {
             background: linear-gradient(155deg, rgba(3, 20, 65, 0.55) 0%, rgba(3, 25, 86, 0.48) 52%, rgba(17, 54, 156, 0.34) 100%);
         }
 
-        html[data-theme="dark"] .home-news-card {
+        html[data-theme="dark"] .home-news-card,
+        html[data-theme="dark"] .news-page-card-body {
             background: rgba(3, 25, 86, 0.66) !important;
             border-color: rgba(102, 145, 255, 0.34) !important;
             color: var(--text) !important;
+        }
+
+        html[data-theme="dark"] .news-page-card {
+            border-color: rgba(102, 145, 255, 0.34) !important;
+        }
+
+        html[data-theme="dark"] a.news-page-card:hover .news-page-card-body {
+            background: rgba(3, 32, 102, 0.82) !important;
         }
 
         html[data-theme="dark"] .home-news-featured-overlay {
@@ -983,9 +1071,10 @@
     {% csrf_token %}
     <a href="#main-content" class="skip-to-content" data-i18="nav_skip">Skip to content</a>
     <!-- Background Orbs - Floating Spheres -->
-    <div class="orb orb-a"></div>
-    <div class="orb orb-b"></div>
-    <div class="orb orb-c"></div>
+    <div class="orb orb-a" aria-hidden="true"><span class="orb-surface"></span></div>
+    <div class="orb orb-b" aria-hidden="true"><span class="orb-surface"></span></div>
+    <div class="orb orb-c" aria-hidden="true"><span class="orb-surface"></span></div>
+    <div class="orb orb-d" aria-hidden="true"><span class="orb-surface"></span></div>
     
     <!-- Header -->
     <header class="site-header fixed top-0 left-0 right-0 z-50" style="background: var(--header-bg); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line);">

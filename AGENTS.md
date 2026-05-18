@@ -430,9 +430,32 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
   - Current baseline keeps dark-token colors aligned with light theme values;
     visual dark styling is expected to be tuned by editing only
     `html[data-theme="dark"]` in `base.html`.
-  - Animated background spheres are also theme-scoped in the same file:
-    tune their dark look only via `html[data-theme="dark"] .orb-a/.orb-b/.orb-c`
-    (gradients + glow), and keep movement shape in shared `@keyframes orbFloat*`.
+  - Animated background spheres (`templates/core/base.html` + `static/css/orb-ambient.css`):
+    outer `.orb` keeps `@keyframes orbFloat*`; inner `.orb-surface` holds gradient/blur/glow.
+    **Ambient combo (enabled):** continuous `orbBreathe` (`scale(1→1.04)`, 8/10/12s per sphere)
+    plus sequential glow pulse (`orbGlowA/B/C/D`, **12s** loop — A/B/C/D every **3s**) via
+    `opacity` + `filter: brightness()`. Dark tokens on `.orb-* .orb-surface`. Disable: remove
+    `orb-ambient.css` link in `base.html`. `prefers-reduced-motion` stops inner-layer motion only.
+  - **Optional orb specular highlight (not enabled):** inner `.orb-surface` + `::after`
+    with sweeping `linear-gradient` (`background-position` animation). Stagger three
+    `@keyframes` in an **18s** loop (A 0s, B +6s, C +12s, ~1.1s sweep each). Recover
+    from git history (`orb-highlight.css`, `orbHighlightA/B/C`).
+  - **Optional orb side-shake (not enabled):** to add a 2s horizontal jitter burst
+    every 12s on each sphere in turn (A at 0s → B at +4s → C at +8s) without
+    touching `orbFloat*`, use a **nested wrapper** — outer `.orb` keeps float
+    (`transform` from `orbFloatA/B/C`), inner `.orb-surface` holds gradient/blur
+    and `translateX` shake. HTML example: outer `div.orb.orb-a` + inner `span.orb-surface`.
+    per sphere in `base.html` (before `<header>`). CSS: move `background`/`filter`/
+    `opacity`/`box-shadow` from `.orb-a` to `.orb-a .orb-surface`; assign three
+    staggered `@keyframes` (`orbShakeA` 0–16.67%, `orbShakeB` 33.33–50%,
+    `orbShakeC` 66.67–83.33% of a **12s** `linear infinite` animation) with dense
+    alternating `translateX` steps and an amplitude envelope (ramp up ~25px, then
+    decay). **Do not** rely on `animation-delay` alone for stagger — it only
+    offsets the first iteration. Dark theme: target `.orb-a .orb-surface`, not
+    `.orb-a`. Disable shake under `@media (prefers-reduced-motion: reduce)` on
+    `.orb-surface` only (float can stay or also be disabled per product choice).
+    Recover the full keyframe blocks from git history if re-applying (search commit
+    that added `orbShakeA`).
   - A tiny preload script in `<head>` applies saved theme before first paint
     (prevents light flash before JS init).
   - Scrolled header color contract: `static/css/enhancements.css` sets
@@ -462,13 +485,14 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
 - **Hero responsive (mobile stack):** when `HERO_MOBILE_STACK_ENABLED=1` (default, env in `creativesphere/settings.py`): `<768px` → `#heroMobileDeck` / `.cs-deck--mobile-stack` (tap/swipe/indicators, CSS/JS in `static/css/hero-mobile-deck.css`, `static/js/hero-mobile-deck.js`; card markup in `templates/core/includes/hero_carousel_cards.html` with `mobile_stack=1`); `768–1023px` → `.cs-deck--tablet`; `≥1024px` → desktop `.cs-deck` in right column. **Rollback:** `HERO_MOBILE_STACK_ENABLED=0` in `.env` — see `scripts/HERO_MOBILE_STACK_ROLLBACK.md`. Tests: `HeroMobileStackTests`.
 - **Homepage news block** (`templates/core/includes/home_news_section.html`): последние **4** опубликованные `NewsArticle` из БД (`core/views/pages.py::_homepage_news_context`, сортировка `Coalesce(published_at, created_at)` desc). Первая — крупная карточка, следующие 3 — справа. Заголовок секции «Новости и Статьи» — ссылка на `core:news`. Новая статья в админке (`status=published`) появляется на главной после обновления страницы. Тесты: `HomepageNewsTests`.
 - Hero copy contract in `templates/core/homepage.html`:
-  - Primary line under H1 uses `data-i18="hero_medals_line"` with underlined text (`text-xl md:text-3xl`, normal weight).
-  - Secondary line uses `data-i18="hero_medals_subline"` (muted helper sentence).
+  - Primary line under H1: `hero_medals_line_lead` + `hero_medals_line_accent` (underlined block).
+    Orb-sync glow (`.hero-medals-accent.hero-title-orb-sync`): `text-shadow` pulse on accent words only
+    (`heroTitleOrbSync`, **12s**, peaks at 12.5/37.5/62.5/87.5% — in sync with `orbGlowA/B/C/D`); off under `prefers-reduced-motion`.
   - Desktop alignment keeps the carousel slightly lower than the headline block via `lg:pt-10` on the right hero column wrapper; keep this offset unless the headline layout is redesigned.
   - **Hero title glitch** (`HERO_TITLE_GLITCH_ENABLED`, default on): on `md+`, `hero_title2` («Встречает интеллект») uses `.hero-glitch` + `static/css/hero-title-glitch.css` + `static/js/hero-title-glitch.js` — **бегущий градиент** (`shimmerFlow`, как `.text-gradient-animated`) на основном тексте **плюс** RGB-split глитч на `::before`/`::after` (короткие вспышки ~8.5s); `prefers-reduced-motion` отключает только слои глитча. no-clip: `applyGradientTextFallback()` обрабатывает `[data-hero-glitch]` так же, как `.text-gradient-animated`. i18n: `data-text` через `window.syncHeroTitleGlitch()`. **Rollback:** `HERO_TITLE_GLITCH_ENABLED=0` — `scripts/HERO_TITLE_GLITCH_ROLLBACK.md`. Tests: `HeroTitleGlitchTests`.
 - Homepage dark-mode card contract:
-  - News section wrapper uses `.home-news-section`; article cards use
-    `.home-news-card`.
+  - News section wrapper uses `.home-news-section` (light: soft green gradient); article cards use
+    `.home-news-card` (light: translucent `rgba(225,236,198,0.82)`, not white).
   - Featured news image overlay is normalized via
     `.home-news-featured-overlay` (prevents legacy green tint in dark mode).
   - Shop preview cards use `.home-shop-card`; product price uses
@@ -628,7 +652,7 @@ Coverage map (read a test before making a semantically-loaded change):
 | `PricingExtrasTemplateTagTests` | `\|rub_minor`. |
 | `ArticleExtrasTemplateTagTests` | `\|render_article_body` — headings, ordered & unordered lists, inline images, bold / italic, safe links (and rejection of `javascript:`), HTML escaping. |
 | `SeoTests` | Defaults, overrides, JSON-LD structure, HTML-closer escaping, `lru_cache` behavior, `PUBLIC_SITE_URL`, lazy context processor. |
-| `StaticPagesViewTests` | Every public page renders 200; portfolio redirects; robots.txt and sitemap; 404 catch-all. |
+| `StaticPagesViewTests` | Every public page renders 200; portfolio redirects; robots.txt and sitemap; 404 catch-all; orb ambient markup + `orb-ambient.css` on homepage. |
 | `CartApiTests` | Full GET/POST add/set/remove/clear + all 400 error paths + `429 rate_limited` branch. |
 | `ContactFormSubmissionTests` | Happy path + invalid form + SMTP failure path. |
 | `CheckoutFlowTests` | Empty cart redirect, full POST creates `Order` + items + email + clears cart, pd_consent blocks, idempotency-key repeat does not create duplicate order, **session-owned order_confirmation visible only to its session and to staff** (IDOR regression). |

@@ -2,7 +2,7 @@
         {% if home_news_featured %}
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <a href="{% url 'core:news_article' home_news_featured.slug %}" class="lg:col-span-7 group block">
-                <div class="home-news-card relative overflow-hidden rounded-3xl bg-white border border-primary/10 shadow-lg h-full night-glow-surface">
+                <div class="home-news-card relative overflow-hidden rounded-3xl border border-primary/10 shadow-lg h-full night-glow-surface">
                     <div class="aspect-[16/10] overflow-hidden relative">
                         <img src="{% if home_news_featured.cover_image %}{% static home_news_featured.cover_image %}{% else %}{% static 'images/news/model11.JPEG' %}{% endif %}"
                              alt="{{ home_news_featured.title }}"
@@ -32,7 +32,7 @@
 
             <div class="lg:col-span-5 flex flex-col gap-5">
                 {% for article in home_news_side %}
-                <a href="{% url 'core:news_article' article.slug %}" class="home-news-card group flex gap-5 p-5 rounded-2xl bg-white border border-primary/10 hover:shadow-lg transition-all night-glow-surface">
+                <a href="{% url 'core:news_article' article.slug %}" class="home-news-card group flex gap-5 p-5 rounded-2xl border border-primary/10 hover:shadow-lg transition-all night-glow-surface">
                     <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                         <img src="{% if article.cover_image %}{% static article.cover_image %}{% else %}{% static 'images/news/model11.JPEG' %}{% endif %}"
                              alt="{{ article.title }}"

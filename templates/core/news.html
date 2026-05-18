@@ -11,12 +11,12 @@
         </div>
         <div class="grid md:grid-cols-2 gap-8">
             {% if featured_article %}
-            <a href="{% url 'core:news_article' featured_article.slug %}" class="md:col-span-2 bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group block">
+            <a href="{% url 'core:news_article' featured_article.slug %}" class="news-page-card md:col-span-2 rounded-3xl overflow-hidden border border-primary/10 shadow-lg group block">
                 <div class="aspect-[2/1] overflow-hidden">
                     <img src="{% if featured_article.cover_image %}{% static featured_article.cover_image %}{% else %}{% static 'images/news/model11.JPEG' %}{% endif %}"
                          alt="{{ featured_article.title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                 </div>
-                <div class="p-8">
+                <div class="news-page-card-body p-8">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="tag-pill"
                               {% if featured_article.title_en %}data-article-i18-tag data-ru="{{ featured_article.tag|default:'Статья' }}" data-en="{{ featured_article.tag_en|default:'Article' }}"{% endif %}>{{ featured_article.tag|default:"Статья" }}</span>
@@ -34,15 +34,15 @@
             {% endif %}
 
             {% for article in other_articles %}
-            <a href="{% url 'core:news_article' article.slug %}" class="bg-white rounded-3xl overflow-hidden border border-primary/10 shadow-lg group block">
+            <a href="{% url 'core:news_article' article.slug %}" class="news-page-card rounded-3xl overflow-hidden border border-primary/10 shadow-lg group block">
                 <div class="aspect-video overflow-hidden">
                     <img src="{% if article.cover_image %}{% static article.cover_image %}{% else %}{% static 'images/news/model11.JPEG' %}{% endif %}"
                          alt="{{ article.title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                 </div>
-                <div class="p-6">
+                <div class="news-page-card-body p-6">
                     <div class="flex items-center gap-3 mb-3">
                         <span class="tag-pill">{{ article.tag|default:"Статья" }}</span>
-                        <span class="text-sm text-gray-400">{{ article.reading_time_minutes }} минут чтения</span>
+                        <span class="text-sm text-gray-400">{{ article.reading_time_minutes }} <span data-i18="news_min_read">минут чтения</span></span>
                     </div>
                     <h3 class="text-xl font-semibold group-hover:text-[#3d7a4f] transition-colors">{{ article.title }}</h3>
                     {% if article.published_at %}
@@ -52,7 +52,7 @@
             </a>
             {% empty %}
                 {% if not featured_article %}
-                <div class="md:col-span-2 bg-white rounded-3xl border border-primary/10 p-8 text-center text-gray-500">
+                <div class="news-page-card-body md:col-span-2 rounded-3xl border border-primary/10 p-8 text-center text-gray-500">
                     Пока нет опубликованных статей.
                 </div>
                 {% endif %}

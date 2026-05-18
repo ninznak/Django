@@ -6,6 +6,8 @@
 .hero-glitch {
   position: relative;
   display: inline-block;
+  overflow: visible;
+  padding-bottom: 0.14em;
   color: #3a4d2c;
   background: none;
   -webkit-text-fill-color: currentColor;
@@ -28,8 +30,11 @@ html.can-clip-text .hero-glitch {
   position: absolute;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: -0.14em;
   width: 100%;
-  height: 100%;
+  height: auto;
+  min-height: 100%;
   pointer-events: none;
   opacity: 0;
   background: none;
@@ -120,13 +125,17 @@ html.can-clip-text .hero-glitch {
   }
 }
 
-html[data-theme="dark"] .hero-glitch {
+html[data-theme="dark"].no-clip-text .hero-glitch {
   color: var(--text, #e8ecf8);
 }
 
 html[data-theme="dark"].can-clip-text .hero-glitch {
   background: linear-gradient(120deg, #336df3 0%, #f622bd 50%, #336df3 100%);
   background-size: 220% 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
   animation: shimmerFlow 6s linear infinite;
 }
 
