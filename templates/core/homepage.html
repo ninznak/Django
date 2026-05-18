@@ -98,7 +98,7 @@
         <div class="lg:col-span-6 text-center lg:text-left">
             <span class="section-label hero-section-label" data-i18="hero_label">Творческое Портфолио</span>
             <h1 class="hero-title-main font-display font-bold leading-[0.88] tracking-display text-3xl sm:text-4xl md:text-6xl lg:text-7xl mt-3 md:mt-4 text-shadow">
-                <span class="block underline decoration-[2px] underline-offset-4"><span data-i18="hero_medals_line_lead">Создаю модели для чеканки </span><span class="hero-medals-accent hero-title-orb-sync" data-i18="hero_medals_line_accent">Медалей и Монет</span></span>
+                <span class="block underline decoration-[2px] underline-offset-4"><span data-i18="hero_medals_line_lead">Создаю модели для чеканки </span><span class="hero-medals-accent" data-i18="hero_medals_line_accent">Медалей и Монет</span></span>
                 <span class="hero-title-subline hidden md:block mt-6 text-[0.75em]">
                     <span data-i18="hero_title1">Когда Мастерство</span><br>
                     {# HERO_TITLE_GLITCH: откат — HERO_TITLE_GLITCH_ENABLED=0, см. scripts/HERO_TITLE_GLITCH_ROLLBACK.md #}
@@ -233,57 +233,8 @@
     font-size: 15px;
 }
 
-/* «Медалей и Монет» / «Medals and Coins»: glow pulse synced to orbs (12s) */
-.hero-medals-accent.hero-title-orb-sync {
+.hero-medals-accent {
     display: inline;
-    --hero-title-shadow-base: 0 2px 4px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(61, 122, 79, 0.12);
-    --hero-title-shadow-mid: 0 0 16px rgba(137, 177, 91, 0.38), 0 0 32px rgba(168, 201, 87, 0.28), 0 4px 14px rgba(61, 122, 79, 0.22);
-    --hero-title-shadow-peak: 0 0 18px rgba(168, 201, 87, 0.78), 0 0 42px rgba(137, 177, 91, 0.64), 0 0 68px rgba(61, 122, 79, 0.42), 0 4px 18px rgba(61, 122, 79, 0.3);
-    animation: heroTitleOrbSync 12s ease-in-out infinite;
-}
-html[data-theme="dark"] .hero-medals-accent.hero-title-orb-sync {
-    --hero-title-shadow-base: 0 2px 5px rgba(1, 11, 43, 0.35), 0 5px 14px rgba(17, 54, 156, 0.22);
-    --hero-title-shadow-mid: 0 0 18px rgba(51, 109, 243, 0.48), 0 0 36px rgba(117, 157, 248, 0.34), 0 4px 16px rgba(17, 54, 156, 0.38);
-    --hero-title-shadow-peak: 0 0 22px rgba(117, 157, 248, 0.82), 0 0 48px rgba(51, 109, 243, 0.68), 0 0 76px rgba(246, 34, 189, 0.38), 0 4px 20px rgba(17, 54, 156, 0.48);
-}
-@keyframes heroTitleOrbSync {
-    0%,
-    8%,
-    17%,
-    33%,
-    42%,
-    58%,
-    67%,
-    83%,
-    92%,
-    100% {
-        text-shadow: var(--hero-title-shadow-base);
-        filter: brightness(1);
-    }
-    10%,
-    15%,
-    35%,
-    40%,
-    60%,
-    65%,
-    85%,
-    90% {
-        text-shadow: var(--hero-title-shadow-mid);
-        filter: brightness(1.06);
-    }
-    12.5%,
-    37.5%,
-    62.5%,
-    87.5% {
-        text-shadow: var(--hero-title-shadow-peak);
-        filter: brightness(1.14);
-    }
-}
-@media (prefers-reduced-motion: reduce) {
-    .hero-medals-accent.hero-title-orb-sync {
-        animation: none !important;
-        filter: none !important;
-    }
 }
 
 /* Hero accent line (title1 + title2): room for italic descenders (e.g. EN "g") */

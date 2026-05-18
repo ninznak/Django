@@ -103,6 +103,7 @@
     <!-- UX polish: remove next line + enhancements.js at page bottom to roll back -->
     <link rel="stylesheet" href="{% static 'css/enhancements.css' %}">
     <link rel="stylesheet" href="{% static 'css/orb-ambient.css' %}">
+    <link rel="stylesheet" href="{% static 'css/orb-proximity.css' %}">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -265,46 +266,46 @@
         .orb-a {
             top: 10vh;
             left: 8vw;
-            width: 390px;
-            height: 390px;
+            width: 332px;
+            height: 332px;
             animation: orbFloatA 17s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
         }
 
-        .orb-a .orb-surface {
-            background: radial-gradient(circle at 35% 40%, rgba(234,255,194,0.98) 0 58%, rgba(140,185,94,0.88) 62%, rgba(140,185,94,0) 70%);
+        .orb-a .orb-surface,
+        .orb-c .orb-surface,
+        .orb-e .orb-surface {
+            background: radial-gradient(circle at 40% 44%, rgba(198, 232, 142, 0.9) 0 57%, rgba(108, 154, 72, 0.8) 62%, rgba(108, 154, 72, 0) 72%);
             filter: blur(22px);
-            opacity: 0.74;
-            box-shadow: inset 0 0 0 2px rgba(223, 245, 184, 0.32), 0 0 34px rgba(137, 177, 91, 0.34);
+            opacity: 0.72;
+            box-shadow: inset 0 0 0 2px rgba(223, 245, 184, 0.3), 0 0 30px rgba(137, 177, 91, 0.32);
+        }
+
+        .orb-e .orb-surface {
+            filter: blur(18px);
+        }
+
+        .orb-b .orb-surface,
+        .orb-d .orb-surface {
+            background: radial-gradient(circle at 44% 48%, rgba(210, 238, 158, 0.92) 0 56%, rgba(108, 154, 72, 0.82) 62%, rgba(108, 154, 72, 0) 72%);
+            filter: blur(11px);
+            opacity: 0.68;
+            box-shadow: inset 0 0 0 1px rgba(223, 245, 184, 0.28), 0 0 20px rgba(137, 177, 91, 0.3);
         }
         
         .orb-b {
-            right: 8vw;
-            bottom: 10vh;
-            width: 350px;
-            height: 350px;
-            animation: orbFloatB 20s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
+            right: 10vw;
+            bottom: 12vh;
+            width: 160px;
+            height: 160px;
+            animation: orbFloatB 18s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
         }
 
-        .orb-b .orb-surface {
-            background: radial-gradient(circle at 42% 45%, rgba(154,204,106,0.96) 0 57%, rgba(78,117,51,0.84) 62%, rgba(78,117,51,0) 72%);
-            filter: blur(22px);
-            opacity: 0.74;
-            box-shadow: inset 0 0 0 2px rgba(223, 245, 184, 0.32), 0 0 34px rgba(137, 177, 91, 0.34);
-        }
-        
         .orb-c {
             top: 45vh;
             left: 38vw;
             width: 320px;
             height: 320px;
             animation: orbFloatC 15s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
-        }
-
-        .orb-c .orb-surface {
-            background: radial-gradient(circle at 45% 50%, rgba(186,226,132,0.9) 0 56%, rgba(95,136,64,0.78) 62%, rgba(95,136,64,0) 72%);
-            filter: blur(22px);
-            opacity: 0.74;
-            box-shadow: inset 0 0 0 2px rgba(223, 245, 184, 0.32), 0 0 34px rgba(137, 177, 91, 0.34);
         }
 
         .orb-d {
@@ -315,13 +316,15 @@
             animation: orbFloatD 16s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
         }
 
-        .orb-d .orb-surface {
-            background: radial-gradient(circle at 44% 48%, rgba(210,238,158,0.92) 0 56%, rgba(108,154,72,0.82) 62%, rgba(108,154,72,0) 72%);
-            filter: blur(11px);
-            opacity: 0.68;
-            box-shadow: inset 0 0 0 1px rgba(223, 245, 184, 0.28), 0 0 20px rgba(137, 177, 91, 0.3);
+        /* orb-e: 80% of main orb-c (320px → 256px) */
+        .orb-e {
+            bottom: 28vh;
+            left: 14vw;
+            width: 256px;
+            height: 256px;
+            animation: orbFloatE 18s cubic-bezier(0.42, 0.02, 0.52, 0.98) infinite;
         }
-        
+
         @keyframes orbFloatA {
             0% { transform: translate3d(0, 0, 0) scaleX(1) scaleY(1); }
             20% { transform: translate3d(156px, -102px, 0) scaleX(1.08) scaleY(0.93); }
@@ -334,11 +337,10 @@
         
         @keyframes orbFloatB {
             0% { transform: translate3d(0, 0, 0) scaleX(1) scaleY(1); }
-            16% { transform: translate3d(-132px, 102px, 0) scaleX(0.93) scaleY(1.08); }
-            33% { transform: translate3d(-236px, 18px, 0) scaleX(1.08) scaleY(0.92); }
-            52% { transform: translate3d(-218px, -96px, 0) scaleX(0.94) scaleY(1.07); }
-            71% { transform: translate3d(108px, -142px, 0) scaleX(1.08) scaleY(0.92); }
-            88% { transform: translate3d(54px, -46px, 0) scaleX(0.93) scaleY(1.06); }
+            20% { transform: translate3d(-58px, 44px, 0) scaleX(1.06) scaleY(0.94); }
+            42% { transform: translate3d(52px, -32px, 0) scaleX(0.94) scaleY(1.06); }
+            66% { transform: translate3d(36px, 48px, 0) scaleX(1.05) scaleY(0.95); }
+            86% { transform: translate3d(-42px, -24px, 0) scaleX(0.95) scaleY(1.05); }
             100% { transform: translate3d(0, 0, 0) scaleX(1) scaleY(1); }
         }
         
@@ -357,6 +359,15 @@
             42% { transform: translate3d(64px, -36px, 0) scaleX(0.94) scaleY(1.06); }
             68% { transform: translate3d(42px, 52px, 0) scaleX(1.05) scaleY(0.95); }
             86% { transform: translate3d(-38px, -28px, 0) scaleX(0.95) scaleY(1.05); }
+            100% { transform: translate3d(0, 0, 0) scaleX(1) scaleY(1); }
+        }
+
+        @keyframes orbFloatE {
+            0% { transform: translate3d(0, 0, 0) scaleX(1) scaleY(1); }
+            18% { transform: translate3d(72px, -58px, 0) scaleX(1.07) scaleY(0.93); }
+            40% { transform: translate3d(118px, 24px, 0) scaleX(0.93) scaleY(1.07); }
+            62% { transform: translate3d(-48px, 68px, 0) scaleX(1.06) scaleY(0.94); }
+            84% { transform: translate3d(-96px, -32px, 0) scaleX(0.94) scaleY(1.06); }
             100% { transform: translate3d(0, 0, 0) scaleX(1) scaleY(1); }
         }
         
@@ -566,24 +577,15 @@
             background: rgba(246, 34, 189, 0.2);
         }
 
-        html[data-theme="dark"] .orb-a .orb-surface {
-            background: radial-gradient(circle at 38% 34%, rgba(117, 157, 248, 0.9) 0 28%, rgba(51, 109, 243, 0.95) 54%, rgba(17, 54, 156, 0.86) 68%, rgba(17, 54, 156, 0) 80%);
-            box-shadow: inset 0 0 0 2px rgba(117, 157, 248, 0.34), -10px -10px 38px rgba(51, 109, 243, 0.42), -26px -26px 66px rgba(246, 34, 189, 0.52), -40px -40px 94px rgba(246, 34, 189, 0.3);
-            opacity: 0.72;
-        }
-
-        html[data-theme="dark"] .orb-b .orb-surface {
-            background: radial-gradient(circle at 40% 35%, rgba(117, 157, 248, 0.86) 0 28%, rgba(51, 109, 243, 0.93) 54%, rgba(17, 54, 156, 0.82) 68%, rgba(17, 54, 156, 0) 80%);
-            box-shadow: inset 0 0 0 2px rgba(117, 157, 248, 0.32), -10px -12px 38px rgba(51, 109, 243, 0.42), -24px -28px 66px rgba(246, 34, 189, 0.52), -38px -42px 94px rgba(246, 34, 189, 0.3);
-            opacity: 0.72;
-        }
-
-        html[data-theme="dark"] .orb-c .orb-surface {
-            background: radial-gradient(circle at 41% 36%, rgba(117, 157, 248, 0.82) 0 27%, rgba(51, 109, 243, 0.9) 54%, rgba(17, 54, 156, 0.8) 68%, rgba(17, 54, 156, 0) 80%);
-            box-shadow: inset 0 0 0 2px rgba(117, 157, 248, 0.3), -10px -10px 36px rgba(51, 109, 243, 0.4), -24px -24px 62px rgba(246, 34, 189, 0.5), -38px -38px 90px rgba(246, 34, 189, 0.28);
+        html[data-theme="dark"] .orb-a .orb-surface,
+        html[data-theme="dark"] .orb-c .orb-surface,
+        html[data-theme="dark"] .orb-e .orb-surface {
+            background: radial-gradient(circle at 40% 36%, rgba(117, 157, 248, 0.84) 0 28%, rgba(51, 109, 243, 0.9) 54%, rgba(17, 54, 156, 0.8) 68%, rgba(17, 54, 156, 0) 80%);
+            box-shadow: inset 0 0 0 2px rgba(117, 157, 248, 0.3), -10px -10px 36px rgba(51, 109, 243, 0.4), -24px -24px 62px rgba(246, 34, 189, 0.48), -38px -38px 90px rgba(246, 34, 189, 0.28);
             opacity: 0.7;
         }
 
+        html[data-theme="dark"] .orb-b .orb-surface,
         html[data-theme="dark"] .orb-d .orb-surface {
             background: radial-gradient(circle at 43% 37%, rgba(117, 157, 248, 0.78) 0 28%, rgba(51, 109, 243, 0.88) 54%, rgba(17, 54, 156, 0.76) 68%, rgba(17, 54, 156, 0) 80%);
             box-shadow: inset 0 0 0 1px rgba(117, 157, 248, 0.28), -6px -8px 22px rgba(51, 109, 243, 0.36), -14px -16px 38px rgba(246, 34, 189, 0.42), -22px -24px 52px rgba(246, 34, 189, 0.22);
@@ -1163,10 +1165,18 @@
     {% csrf_token %}
     <a href="#main-content" class="skip-to-content" data-i18="nav_skip">Skip to content</a>
     <!-- Background Orbs - Floating Spheres -->
+    <svg id="orb-links-layer" class="orb-links-layer" aria-hidden="true">
+        <defs>
+            <filter id="orb-link-blur" x="-80%" y="-80%" width="260%" height="260%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="14" />
+            </filter>
+        </defs>
+    </svg>
     <div class="orb orb-a" aria-hidden="true"><span class="orb-surface"></span></div>
     <div class="orb orb-b" aria-hidden="true"><span class="orb-surface"></span></div>
     <div class="orb orb-c" aria-hidden="true"><span class="orb-surface"></span></div>
     <div class="orb orb-d" aria-hidden="true"><span class="orb-surface"></span></div>
+    <div class="orb orb-e" aria-hidden="true"><span class="orb-surface"></span></div>
     
     <!-- Header -->
     <header class="site-header fixed top-0 left-0 right-0 z-50" style="background: var(--header-bg); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line);">
@@ -1700,6 +1710,7 @@
     
     {% include "core/includes/analytics.html" %}
     <script src="{% static 'js/enhancements.js' %}"></script>
+    <script src="{% static 'js/orb-proximity.js' %}"></script>
     <script src="{% static 'js/article-i18n.js' %}"></script>
     <script src="{% static 'js/cart.js' %}"></script>
     {% block extra_js %}{% endblock %}

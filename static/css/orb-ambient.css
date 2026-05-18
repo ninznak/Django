@@ -1,6 +1,7 @@
 /**
- * Ambient orb effects: gentle breathe (scale 1.04) + sequential glow pulse (12s, step 3s × 4).
- * Outer .orb = orbFloat*; inner .orb-surface = visuals + these animations.
+ * Ambient orb effects: gentle breathe (scale 1.04) + sequential glow pulse.
+ * Cycle 16.6s: flash ~1s per sphere, 1.4s gap A→B→C→D→E, 6s pause E→A.
+ * Each flash: fast rise (~1/3 of pulse), slow decay (~2/3, 2× rise duration).
  */
 
 .orb-surface {
@@ -10,37 +11,56 @@
   border-radius: 50%;
   transform-origin: center center;
   will-change: transform, opacity, filter;
+  --orb-glow-cycle: 16.6s;
   --orb-blur: 22px;
-  --orb-glow-opacity: 0.74;
-  --orb-glow-opacity-peak: 0.9;
-  --orb-glow-brightness-peak: 1.14;
+  --orb-glow-opacity: 0.72;
+  --orb-glow-opacity-peak: 0.85;
+  --orb-glow-opacity-rise: 0.73;
+  --orb-glow-opacity-fade: 0.68;
+  --orb-glow-brightness-peak: 1.17;
+  --orb-glow-brightness-rise: 1.07;
+  --orb-glow-brightness-fade: 0.94;
 }
 
 .orb-a .orb-surface {
   animation:
     orbBreathe 8s ease-in-out infinite,
-    orbGlowA 12s ease-in-out infinite;
+    orbGlowA var(--orb-glow-cycle) linear infinite;
 }
 
 .orb-b .orb-surface {
+  --orb-blur: 11px;
+  --orb-glow-opacity: 0.68;
+  --orb-glow-opacity-peak: 0.85;
+  --orb-glow-opacity-rise: 0.7;
+  --orb-glow-opacity-fade: 0.65;
   animation:
     orbBreathe 10s ease-in-out infinite,
-    orbGlowB 12s ease-in-out infinite;
+    orbGlowB var(--orb-glow-cycle) linear infinite;
 }
 
 .orb-c .orb-surface {
   animation:
     orbBreathe 12s ease-in-out infinite,
-    orbGlowC 12s ease-in-out infinite;
+    orbGlowC var(--orb-glow-cycle) linear infinite;
 }
 
 .orb-d .orb-surface {
   --orb-blur: 11px;
   --orb-glow-opacity: 0.68;
-  --orb-glow-opacity-peak: 0.84;
+  --orb-glow-opacity-peak: 0.85;
+  --orb-glow-opacity-rise: 0.7;
+  --orb-glow-opacity-fade: 0.65;
   animation:
     orbBreathe 9s ease-in-out infinite,
-    orbGlowD 12s ease-in-out infinite;
+    orbGlowD var(--orb-glow-cycle) linear infinite;
+}
+
+.orb-e .orb-surface {
+  --orb-blur: 18px;
+  animation:
+    orbBreathe 11s ease-in-out infinite,
+    orbGlowE var(--orb-glow-cycle) linear infinite;
 }
 
 @keyframes orbBreathe {
@@ -53,81 +73,141 @@
   }
 }
 
-/* Glow pulse: 12s loop, 3s per sphere (A→B→C→D) */
+/* Shared rest / peak / fade filter blocks */
 @keyframes orbGlowA {
   0%,
-  23%,
+  6.02%,
   100% {
     opacity: var(--orb-glow-opacity);
     filter: blur(var(--orb-blur)) brightness(1);
   }
-  12.5% {
+  1% {
+    opacity: var(--orb-glow-opacity-rise);
+    filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-rise));
+  }
+  2.01% {
     opacity: var(--orb-glow-opacity-peak);
     filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-peak));
+  }
+  4.02% {
+    opacity: var(--orb-glow-opacity-fade);
+    filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-fade));
   }
 }
 
 @keyframes orbGlowB {
   0%,
-  24%,
-  26%,
-  51%,
+  6.02%,
+  14.46%,
+  20.48%,
   100% {
     opacity: var(--orb-glow-opacity);
     filter: blur(var(--orb-blur)) brightness(1);
   }
-  37.5% {
+  15.47% {
+    opacity: var(--orb-glow-opacity-rise);
+    filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-rise));
+  }
+  16.48% {
     opacity: var(--orb-glow-opacity-peak);
     filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-peak));
+  }
+  18.49% {
+    opacity: var(--orb-glow-opacity-fade);
+    filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-fade));
   }
 }
 
 @keyframes orbGlowC {
   0%,
-  49%,
-  51%,
-  76%,
+  20.48%,
+  28.92%,
+  34.94%,
   100% {
     opacity: var(--orb-glow-opacity);
     filter: blur(var(--orb-blur)) brightness(1);
   }
-  62.5% {
+  29.93% {
+    opacity: var(--orb-glow-opacity-rise);
+    filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-rise));
+  }
+  30.94% {
     opacity: var(--orb-glow-opacity-peak);
     filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-peak));
+  }
+  32.95% {
+    opacity: var(--orb-glow-opacity-fade);
+    filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-fade));
   }
 }
 
 @keyframes orbGlowD {
   0%,
-  74%,
-  76%,
+  34.94%,
+  43.37%,
+  49.4%,
   100% {
     opacity: var(--orb-glow-opacity);
     filter: blur(var(--orb-blur)) brightness(1);
   }
-  87.5% {
+  44.38% {
+    opacity: var(--orb-glow-opacity-rise);
+    filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-rise));
+  }
+  45.39% {
     opacity: var(--orb-glow-opacity-peak);
     filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-peak));
+  }
+  47.4% {
+    opacity: var(--orb-glow-opacity-fade);
+    filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-fade));
+  }
+}
+
+@keyframes orbGlowE {
+  0%,
+  49.4%,
+  57.83%,
+  63.86%,
+  100% {
+    opacity: var(--orb-glow-opacity);
+    filter: blur(var(--orb-blur)) brightness(1);
+  }
+  58.84% {
+    opacity: var(--orb-glow-opacity-rise);
+    filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-rise));
+  }
+  59.85% {
+    opacity: var(--orb-glow-opacity-peak);
+    filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-peak));
+  }
+  61.86% {
+    opacity: var(--orb-glow-opacity-fade);
+    filter: blur(var(--orb-blur)) brightness(var(--orb-glow-brightness-fade));
   }
 }
 
 html[data-theme="dark"] .orb-a .orb-surface,
-html[data-theme="dark"] .orb-b .orb-surface {
-  --orb-glow-opacity: 0.72;
-  --orb-glow-opacity-peak: 0.86;
-  --orb-glow-brightness-peak: 1.18;
-}
-
-html[data-theme="dark"] .orb-c .orb-surface {
+html[data-theme="dark"] .orb-c .orb-surface,
+html[data-theme="dark"] .orb-e .orb-surface {
   --orb-glow-opacity: 0.7;
-  --orb-glow-opacity-peak: 0.84;
-  --orb-glow-brightness-peak: 1.18;
+  --orb-glow-opacity-peak: 0.85;
+  --orb-glow-opacity-rise: 0.71;
+  --orb-glow-opacity-fade: 0.66;
+  --orb-glow-brightness-peak: 1.19;
+  --orb-glow-brightness-rise: 1.09;
+  --orb-glow-brightness-fade: 0.95;
 }
 
+html[data-theme="dark"] .orb-b .orb-surface,
 html[data-theme="dark"] .orb-d .orb-surface {
   --orb-glow-opacity: 0.66;
-  --orb-glow-opacity-peak: 0.8;
-  --orb-glow-brightness-peak: 1.16;
+  --orb-glow-opacity-peak: 0.85;
+  --orb-glow-opacity-rise: 0.68;
+  --orb-glow-opacity-fade: 0.63;
+  --orb-glow-brightness-peak: 1.17;
+  --orb-glow-brightness-rise: 1.05;
+  --orb-glow-brightness-fade: 0.92;
 }
 
 @media (prefers-reduced-motion: reduce) {
