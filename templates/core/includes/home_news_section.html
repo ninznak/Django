@@ -1,38 +1,40 @@
 {% load static %}
         {% if home_news_featured %}
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <a href="{% url 'core:news_article' home_news_featured.slug %}" class="lg:col-span-7 group block">
-                <div class="home-news-card relative overflow-hidden rounded-3xl border border-primary/10 shadow-lg h-full night-glow-surface">
-                    <div class="aspect-[16/10] overflow-hidden relative">
+            <a href="{% url 'core:news_article' home_news_featured.slug %}" class="lg:col-span-7 group block h-full">
+                <div class="home-news-card home-news-card--featured flex flex-col h-full overflow-hidden rounded-3xl border border-primary/10 shadow-lg night-glow-surface">
+                    <div class="home-news-featured-media relative aspect-[16/10] flex-shrink-0 overflow-hidden">
                         <img src="{% if home_news_featured.cover_image %}{% static home_news_featured.cover_image %}{% else %}{% static 'images/news/model11.JPEG' %}{% endif %}"
                              alt="{{ home_news_featured.title }}"
                              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                              loading="lazy"
                              decoding="async">
                         <div class="home-news-featured-overlay absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/80 via-[#1a2e1a]/10 to-transparent pointer-events-none"></div>
-                    </div>
-                    <div class="absolute bottom-0 left-0 right-0 p-8">
-                        <div class="flex items-center gap-3 mb-4">
-                            <span class="tag-pill"
-                                  {% if home_news_featured.title_en %}data-article-i18-tag data-ru="{{ home_news_featured.tag|default:'Статья' }}" data-en="{{ home_news_featured.tag_en|default:'Article' }}"{% endif %}>{{ home_news_featured.tag|default:"Статья" }}</span>
-                            <span class="text-[10px] text-white/60">{{ home_news_featured.reading_time_minutes }} <span data-i18="news_min_read">минут чтения</span></span>
+                        <div class="home-news-featured-head absolute inset-x-0 bottom-0 p-6 md:p-8 pointer-events-none">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="tag-pill"
+                                      {% if home_news_featured.title_en %}data-article-i18-tag data-ru="{{ home_news_featured.tag|default:'Статья' }}" data-en="{{ home_news_featured.tag_en|default:'Article' }}"{% endif %}>{{ home_news_featured.tag|default:"Статья" }}</span>
+                                <span class="text-[10px] text-white/60">{{ home_news_featured.reading_time_minutes }} <span data-i18="news_min_read">минут чтения</span></span>
+                            </div>
+                            <h3 class="font-display text-2xl md:text-3xl font-semibold text-white leading-tight"
+                                {% if home_news_featured.title_en %}data-article-i18-title data-ru="{{ home_news_featured.title }}" data-en="{{ home_news_featured.title_en }}"{% endif %}>{{ home_news_featured.title }}</h3>
                         </div>
-                        <h3 class="font-display text-2xl md:text-3xl font-semibold text-white mb-3"
-                            {% if home_news_featured.title_en %}data-article-i18-title data-ru="{{ home_news_featured.title }}" data-en="{{ home_news_featured.title_en }}"{% endif %}>{{ home_news_featured.title }}</h3>
+                    </div>
+                    <div class="home-news-featured-body flex flex-col flex-1 min-h-0 px-6 py-5 md:px-8 md:py-6 gap-3">
                         {% if home_news_featured.excerpt %}
-                        <p class="text-sm text-white/70 mb-5 max-w-lg line-clamp-3"
+                        <p class="home-news-featured-excerpt text-sm leading-relaxed line-clamp-4 flex-1 min-h-0"
                            {% if home_news_featured.title_en %}data-article-i18-excerpt data-ru="{{ home_news_featured.excerpt }}" data-en="{{ home_news_featured.excerpt_en }}"{% endif %}>{{ home_news_featured.excerpt }}</p>
                         {% endif %}
                         {% if home_news_featured.published_at %}
-                        <span class="text-[11px] text-white/40 uppercase tracking-widest">{{ home_news_featured.published_at|date:"d.m.Y" }}</span>
+                        <span class="text-[11px] text-gray-500 uppercase tracking-widest shrink-0">{{ home_news_featured.published_at|date:"d.m.Y" }}</span>
                         {% endif %}
                     </div>
                 </div>
             </a>
 
-            <div class="lg:col-span-5 flex flex-col gap-5">
+            <div class="lg:col-span-5 flex flex-col gap-5 min-h-0">
                 {% for article in home_news_side %}
-                <a href="{% url 'core:news_article' article.slug %}" class="home-news-card group flex gap-5 p-5 rounded-2xl border border-primary/10 hover:shadow-lg transition-all night-glow-surface">
+                <a href="{% url 'core:news_article' article.slug %}" class="home-news-card home-news-card--side group flex gap-5 p-5 rounded-2xl border border-primary/10 hover:shadow-lg transition-all night-glow-surface items-start">
                     <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                         <img src="{% if article.cover_image %}{% static article.cover_image %}{% else %}{% static 'images/news/model11.JPEG' %}{% endif %}"
                              alt="{{ article.title }}"
@@ -40,7 +42,7 @@
                              loading="lazy"
                              decoding="async">
                     </div>
-                    <div class="flex flex-col justify-center gap-1.5 min-w-0">
+                    <div class="flex flex-col justify-start gap-1.5 min-w-0 flex-1">
                         <div class="flex items-center gap-2 flex-wrap">
                             <span class="text-[10px] font-semibold uppercase tracking-widest text-[#3d7a4f]"
                                   {% if article.title_en %}data-article-i18-tag data-ru="{{ article.tag|default:'Статья' }}" data-en="{{ article.tag_en|default:'Article' }}"{% endif %}>{{ article.tag|default:"Статья" }}</span>
