@@ -106,7 +106,7 @@ def send_contact_email(cleaned: dict) -> None:
         subject=f"[{site} contact] {subj}",
         body=body,
         from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[settings.CONTACT_FORM_RECIPIENT],
+        to=list(settings.CONTACT_FORM_RECIPIENTS),
         reply_to=[cleaned["email"]],
     )
     msg.send(fail_silently=False)

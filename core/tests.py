@@ -974,6 +974,22 @@ class ContactFormSubmissionTests(TestCase):
         submission.refresh_from_db()
         self.assertTrue(submission.email_sent)
 
+    def test_contact_email_goes_to_all_recipients_including_duplicate(self):
+        from django.conf import settings as dj_settings
+
+        c = Client()
+        c.post(reverse("core:homepage"), {
+            "contact_form": "1",
+            "name": "Jane",
+            "email": "jane@example.com",
+            "subject": "Dup check",
+            "message": "Hello",
+        })
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, list(dj_settings.CONTACT_FORM_RECIPIENTS))
+        if dj_settings.CONTACT_FORM_DUPLICATE_TO:
+            self.assertIn(dj_settings.CONTACT_FORM_DUPLICATE_TO, mail.outbox[0].to)
+
     def test_invalid_submission_rerenders_form_without_record(self):
         c = Client()
         r = c.post(reverse("core:homepage"), {

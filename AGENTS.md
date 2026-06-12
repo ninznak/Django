@@ -77,6 +77,7 @@ Django/
 │   ├── deploy-vps.sh                   # One-shot VPS installer: Nginx + Gunicorn + certbot SSL (.env пишет только если его нет)
 │   ├── update.sh                       # git pull → pip → migrate → collectstatic → restart
 │   ├── update-safe.sh                  # update.sh + бэкап БД (pg_dump / копия SQLite по .env) + снапшот статей
+│   ├── ssl-renew.sh                    # certbot renew + reload nginx (страховка к certbot.timer; --dry-run)
 │   ├── AUTO_UPDATE.md                  # How to wire update(-safe).sh into cron
 │   └── crontab-daily.example
 │
@@ -398,7 +399,7 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
 
 - `_safe_next_url(request, default)` — uses `url_has_allowed_host_and_scheme`; use it every time you honor a `?next=` parameter.
 - `_username_for_login(raw)` — resolves username **or** email (case-insensitive) to the actual username before `authenticate`.
-- `_send_contact_email(cleaned)` / `_send_order_email(order, data)` — plain `EmailMessage` → `settings.CONTACT_FORM_RECIPIENT` via whatever email backend is configured. Both call sites wrap the send in `try/except` and log via `logger.exception`; never let email failures break a response.
+- `_send_contact_email(cleaned)` / `_send_order_email(order, data)` — plain `EmailMessage` → `settings.CONTACT_FORM_RECIPIENTS` (list: primary inbox + дубль из `CONTACT_FORM_DUPLICATE_TO`, по умолчанию `kuri1encko@yandex.ru`) via whatever email backend is configured. Both call sites wrap the send in `try/except` and log via `logger.exception`; never let email failures break a response.
 - `sensitive_post_parameters` decorates `sign_up_login` — keep password fields listed there if you add any.
 - `_is_rate_limited(request, scope, limit, window_seconds)` — cache-backed IP throttling helper for POST-heavy endpoints (`homepage` contact submit, `sign_up_login`, `cart_api`, `checkout`). Keep error contract stable: JSON endpoints return `429` with machine-readable error; HTML endpoints render with messages and `429` status.
 - `view_utils.client_ip(request)` trust order: **`X-Real-IP` → last entry of `X-Forwarded-For` → `REMOTE_ADDR`**. Nginx (`deploy-vps.sh`) sets `X-Real-IP $remote_addr` (overwrites client value) and builds XFF with `$proxy_add_x_forwarded_for` (APPENDS real IP) — so the **first** XFF entry is client-spoofable and must never be used (rate-limit bypass + `Order.ip_address` poisoning). Pinned by `ClientIpTests`.
@@ -621,7 +622,11 @@ certbot --nginx -d <apex> -d www.<apex> … --non-interactive --agree-tos -m ${L
 ```
 
 Auto-renew is handled by `certbot.timer` (installed by the deb package). Verify
-with `sudo certbot renew --dry-run`.
+with `sudo certbot renew --dry-run`. `scripts/ssl-renew.sh` is a belt-and-braces
+wrapper: logs cert expiry dates to `deploy/ssl-renew.log`, runs `certbot renew`
+(reloads Nginx only when something actually renewed via `--deploy-hook`), warns
+if `certbot.timer` is disabled; supports `--dry-run`. Weekly cron line for it is
+in `crontab-daily.example` (commented out — the timer normally suffices).
 
 `scripts/update.sh` is the in-place update path: `git pull` → `pip install` →
 `migrate` → `collectstatic` → `systemctl restart creativesphere-gunicorn`. It
@@ -809,7 +814,7 @@ Coverage map (read a test before making a semantically-loaded change):
 | Add images to a portfolio sub-gallery | Drop files in the right folder — `static/images/medals/` feeds `products`; `static/images/news/` with `model*` feeds `3d` and with `AI*` feeds `ai`. No code changes needed; for per-medal captions, extend `MEDAL_CAPTIONS` in `core/portfolio_gallery_data.py`. |
 | Change sitemap | `core/sitemaps.py`. |
 | Change checkout email body | `core/views.py::_send_order_email`. |
-| Change contact email recipient | env var `CONTACT_FORM_RECIPIENT` (falls back to `SEO_CONTACT_EMAIL`). |
+| Change contact email recipient | env var `CONTACT_FORM_RECIPIENT` (falls back to `SEO_CONTACT_EMAIL`; comma-separated list ок). Дубль на внешний ящик — `CONTACT_FORM_DUPLICATE_TO` (default `kuri1encko@yandex.ru`, пустое значение отключает). |
 | Tweak deploy | `scripts/deploy-vps.sh` + docs in `DEPLOY_VPS.md`. |
 | Add daily job | hook into `scripts/update.sh` or add a new script + entry in `scripts/crontab-daily.example`. |
 | Run tests | `python manage.py test core`. |

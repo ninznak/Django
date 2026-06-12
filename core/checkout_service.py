@@ -83,7 +83,7 @@ def send_order_notification(order: Order, data: dict[str, Any]) -> None:
         subject=f"[{site} заказ] Новый заказ №{order.id} от {order.name}",
         body=body,
         from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[settings.CONTACT_FORM_RECIPIENT],
+        to=list(settings.CONTACT_FORM_RECIPIENTS),
         reply_to=[order.email],
     )
     msg.send(fail_silently=False)

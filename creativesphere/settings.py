@@ -125,8 +125,16 @@ EMAIL_USE_TLS = (os.getenv('EMAIL_USE_TLS', '1').strip() != '0') and not EMAIL_U
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '').strip()
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
 DEFAULT_FROM_EMAIL = (os.getenv('DEFAULT_FROM_EMAIL', '') or SEO_CONTACT_EMAIL).strip()
-# Where contact form submissions are delivered (inbox you monitor).
-CONTACT_FORM_RECIPIENT = (os.getenv('CONTACT_FORM_RECIPIENT', '') or SEO_CONTACT_EMAIL).strip()
+# Where contact form submissions / order notifications are delivered.
+# Comma-separated list supported; the first address is the primary inbox.
+_contact_recipients_raw = (os.getenv('CONTACT_FORM_RECIPIENT', '') or SEO_CONTACT_EMAIL).strip()
+CONTACT_FORM_RECIPIENTS = [a.strip() for a in _contact_recipients_raw.split(',') if a.strip()]
+# Дубль каждого письма на внешний ящик. Отключить: CONTACT_FORM_DUPLICATE_TO= (пусто) в .env.
+CONTACT_FORM_DUPLICATE_TO = os.getenv('CONTACT_FORM_DUPLICATE_TO', 'kuri1encko@yandex.ru').strip()
+if CONTACT_FORM_DUPLICATE_TO and CONTACT_FORM_DUPLICATE_TO not in CONTACT_FORM_RECIPIENTS:
+    CONTACT_FORM_RECIPIENTS.append(CONTACT_FORM_DUPLICATE_TO)
+# Backwards-compat single address (primary inbox).
+CONTACT_FORM_RECIPIENT = CONTACT_FORM_RECIPIENTS[0]
 # If true, also attempt SMTP/console notification after saving to the database (failures are logged only).
 CONTACT_FORM_TRY_EMAIL = os.getenv('CONTACT_FORM_TRY_EMAIL', '1').strip() == '1'
 

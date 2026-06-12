@@ -22,3 +22,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Альтернатива с явной веткой и именем службы Gunicorn:
 # 15 3 * * * root env GIT_BRANCH=main GUNICORN_SERVICE=creativesphere-gunicorn /bin/bash /var/www/Django/scripts/update-safe.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1
+
+# SSL: основное авто-продление делает системный certbot.timer. Строка ниже —
+# страховка на случай его отключения (раз в неделю, пн 04:20; безопасно:
+# certbot renew трогает только сертификаты с < 30 днями до истечения):
+# 20 4 * * 1 root /bin/bash /var/www/Django/scripts/ssl-renew.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1

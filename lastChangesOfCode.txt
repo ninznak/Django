@@ -89,3 +89,81 @@
 
 Синтаксис всех .sh проверен (bash -n через Git Bash) — OK.
 AGENTS.md обновлён (§2 layout, §9 deploy).
+
+
+Как накатить ЭТО обновление на VPS
+==================================
+
+Использовать, как и раньше, update-safe.sh. Два момента именно для
+этого деплоя:
+
+1. Сначала закоммитить и запушить изменения с рабочей машины —
+   staged-удаления staticfiles + правки скриптов пока только локально.
+
+2. Pull может ОДИН раз упасть на конфликте staticfiles/ (на сервере ещё
+   старый update.sh без переходного guard'а, а collectstatic мог изменить
+   отслеживаемые файлы). Если в логе "local changes would be overwritten":
+
+     cd /var/www/Django
+     git checkout -- staticfiles/
+     sudo bash scripts/update-safe.sh
+
+   Повторный запуск пройдёт чисто; все следующие обновления — обычный
+   update-safe.sh без ручных шагов.
+
+3. Проверить, что в .env на VPS есть строка DJANGO_DATABASE=postgresql —
+   новый update-safe.sh определяет тип БД по ней. Если строки нет, скрипт
+   решит, что БД SQLite, не найдёт файл и остановится (безопасно, но
+   деплой прервётся).
+
+
+Новый скрипт: scripts/ssl-renew.sh — 12.06.2026
+===============================================
+
+Продление Let's Encrypt сертификата + reload Nginx.
+
+Основное авто-продление и так делает системный certbot.timer (ставится
+пакетом certbot при деплое). ssl-renew.sh — страховка и ручной инструмент:
+
+  * пишет даты истечения сертификатов в deploy/ssl-renew.log;
+  * запускает certbot renew (трогает только сертификаты, у которых
+    осталось < 30 дней — безопасно запускать хоть каждый день);
+  * перезагружает Nginx ТОЛЬКО если сертификат реально продлился
+    (--deploy-hook);
+  * предупреждает, если certbot.timer выключен (и как его включить);
+  * поддерживает --dry-run (репетиция без реального продления).
+
+Запуск на VPS:
+  sudo bash scripts/ssl-renew.sh                # обычный
+  sudo bash scripts/ssl-renew.sh --dry-run      # проверка без продления
+
+Cron-страховка (раз в неделю) — закомментированная строка добавлена в
+scripts/crontab-daily.example.
+
+
+Дублирование писем на kuri1encko@yandex.ru — 12.06.2026
+=======================================================
+
+Все письма с сайта (контактная форма + уведомления о заказах) теперь
+уходят НА НЕСКОЛЬКО адресов: основной ящик + дубль.
+
+Изменения:
+  * creativesphere/settings.py:
+      - CONTACT_FORM_RECIPIENT теперь поддерживает список через запятую;
+      - новый параметр CONTACT_FORM_DUPLICATE_TO
+        (по умолчанию kuri1encko@yandex.ru) — добавляется ко всем письмам;
+      - CONTACT_FORM_RECIPIENTS — итоговый список получателей.
+  * core/view_utils.py (контактная форма) и core/checkout_service.py
+    (заказы): to=CONTACT_FORM_RECIPIENTS вместо одного адреса.
+  * .env.example: документация новых переменных.
+  * Тест: test_contact_email_goes_to_all_recipients_including_duplicate.
+
+Отключить дубль: CONTACT_FORM_DUPLICATE_TO= (пустое) в .env на сервере.
+Сменить адрес дубля: CONTACT_FORM_DUPLICATE_TO=другой@адрес в .env.
+
+Тесты: 145/145 OK. Деплой: update-safe.sh, collectstatic не нужен.
+ВАЖНО: письма реально уйдут только если на проде настроен SMTP
+(EMAIL_HOST/EMAIL_HOST_USER/EMAIL_HOST_PASSWORD в .env).
+
+
+
