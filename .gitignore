@@ -3,6 +3,9 @@
 db.sqlite3
 *.sqlite3
 venv/
+.venv/
+# collectstatic target — generated on the server, never commit (git pull conflicts)
+staticfiles/
 __pycache__/
 *.pyc
 media/

@@ -107,15 +107,23 @@ if [[ -z "${SECRET_KEY}" ]]; then
   SECRET_KEY="$(openssl rand -base64 48 | tr -d '\n' | tr '/+' '_-')"
 fi
 
-echo "==> Writing ${APP_DIR}/.env"
-cat > "${APP_DIR}/.env" <<EOF
+# Never clobber an existing .env: re-running this script on a live server would
+# wipe SMTP/Postgres settings and rotate SECRET_KEY (logs everyone out,
+# invalidates password-reset links).
+if [[ -f "${APP_DIR}/.env" ]]; then
+  echo "==> ${APP_DIR}/.env already exists — keeping it untouched."
+  echo "    Delete it manually and re-run if you really want a fresh one."
+else
+  echo "==> Writing ${APP_DIR}/.env"
+  cat > "${APP_DIR}/.env" <<EOF
 DJANGO_SECRET_KEY=${SECRET_KEY}
 DEBUG=0
 DJANGO_SITE_DOMAINS=${SITE_DOMAINS_CSV}
 DJANGO_CANONICAL_DOMAIN=${PRIMARY}
 PUBLIC_SITE_URL=https://${PRIMARY}
 EOF
-chmod 600 "${APP_DIR}/.env"
+  chmod 600 "${APP_DIR}/.env"
+fi
 
 echo "==> File ownership for www-data (Gunicorn user)"
 chown -R www-data:www-data "${APP_DIR}"

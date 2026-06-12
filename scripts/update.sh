@@ -33,6 +33,17 @@ if [ -f "$PROJECT_DIR/db.sqlite3" ] && git ls-files --error-unmatch db.sqlite3 >
   log "Предупреждение: db.sqlite3 всё ещё отслеживается git — pull может сорваться. Выполните: git rm --cached db.sqlite3"
 fi
 
+# Переходный случай: staticfiles/ раньше отслеживался git, а collectstatic на
+# сервере перезаписывает эти файлы — pull коммита, убирающего их из git,
+# упрётся в "local changes would be overwritten". Сбрасываем локальные правки
+# отслеживаемых staticfiles перед pull: каталог всё равно пересобирается
+# на шаге collectstatic ниже. После перехода (staticfiles/ в .gitignore)
+# этот блок — no-op.
+if [ -n "$(git ls-files staticfiles | head -n 1)" ]; then
+    log "staticfiles/ ещё отслеживается git — сбрасываю локальные изменения (collectstatic пересоберёт)"
+    git checkout -- staticfiles/ 2>/dev/null || true
+fi
+
 # Git 2.35+: repo owned by www-data but pull runs as root → mark safe once per root
 if ! git config --global --get-all safe.directory | grep -Fxq "$PROJECT_DIR"; then
     git config --global --add safe.directory "$PROJECT_DIR"

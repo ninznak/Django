@@ -50,3 +50,42 @@
 ------
 Изменения только в Python-коде и тестах — collectstatic не нужен.
 На VPS: scripts/update-safe.sh (бэкап БД + git pull + migrate + restart).
+
+
+Аудит scripts/ — 12.06.2026 (вторая итерация)
+=============================================
+
+1. staticfiles/ убран из git (143 файла) и добавлен в .gitignore
+   Причина: collectstatic на сервере перезаписывает отслеживаемые файлы,
+   и git pull падал бы с конфликтом (та же история, что с db.sqlite3).
+   В update.sh добавлен переходный guard: если staticfiles/ ещё отслеживается
+   (старое состояние на сервере), локальные изменения сбрасываются перед pull
+   (каталог всё равно пересобирается шагом collectstatic).
+   ВАЖНО для первого обновления на сервере: старый update.sh на VPS ещё не
+   содержит guard, поэтому если pull упадёт — выполнить один раз:
+     cd /var/www/Django && git checkout -- staticfiles/ && sudo bash scripts/update.sh
+
+2. deploy-vps.sh: защита .env от перезаписи
+   Повторный запуск скрипта на живом сервере больше не стирает SMTP/Postgres
+   настройки и не меняет SECRET_KEY (раньше это разлогинило бы всех).
+   Если .env существует — скрипт оставляет его нетронутым.
+
+3. Удалены одноразовые скрипты:
+   - scripts/write_shop_template.py — повреждён (битые motion-теги);
+     повторный запуск перезаписал бы рабочий shop.html битой вёрсткой
+   - scripts/extract_i18n.py, scripts/patch_base_i18n.py — i18n-миграция
+     уже выполнена, их якоря в base.html больше не существуют
+
+4. update-safe.sh: автоопределение типа БД
+   Было: жёстко pg_dump (на SQLite-проде падал и блокировал деплой).
+   Стало: тип БД читается из .env (DJANGO_DATABASE=postgresql -> pg_dump,
+   иначе SQLite -> консистентная копия через sqlite3 .backup, fallback cp).
+   Ротация бэкапов работает для обоих форматов (последние 30).
+
+5. crontab-daily.example и AUTO_UPDATE.md: рекомендация update-safe.sh
+   Ежедневный автодеплой теперь по умолчанию с бэкапом БД перед миграциями.
+
+6. .gitignore: добавлен .venv/ (локальный venv больше не шумит в git status).
+
+Синтаксис всех .sh проверен (bash -n через Git Bash) — OK.
+AGENTS.md обновлён (§2 layout, §9 deploy).

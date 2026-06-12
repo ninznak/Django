@@ -79,10 +79,10 @@ sudo systemctl status creativesphere-gunicorn
 
 ### 5. Настроить cron (или systemd timer)
 
-**Пример: каждый день в 03:15** (мало трафика; время подстройте под часовой пояс сервера):
+**Пример: каждый день в 03:15** (мало трафика; время подстройте под часовой пояс сервера). Рекомендуется `update-safe.sh` — он сначала делает бэкап БД (pg_dump для Postgres или копию SQLite-файла) и JSON-снапшот статей, затем вызывает обычный `update.sh`:
 
 ```cron
-15 3 * * * root /bin/bash /var/www/Django/scripts/update.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1
+15 3 * * * root /bin/bash /var/www/Django/scripts/update-safe.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1
 ```
 
 - Путь к скрипту и к проекту замените на ваши реальные.
@@ -94,7 +94,7 @@ sudo systemctl status creativesphere-gunicorn
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-15 3 * * * root /bin/bash /var/www/Django/scripts/update.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1
+15 3 * * * root /bin/bash /var/www/Django/scripts/update-safe.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1
 ```
 
 После правки системного cron обычно не нужен `reload`, но проверьте синтаксис.
@@ -115,7 +115,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 - **`.env`** на сервере не перезаписывается скриптом обновления (он в `.gitignore`). После смены переменных в коде проверьте `.env` вручную.
 - **Nginx / SSL** — скрипт не перезагружает Nginx. Меняйте конфиги отдельно: `sudo nginx -t && sudo systemctl reload nginx`.
-- **Бэкап БД** — для SQLite можно добавить отдельный cron с копией `db.sqlite3`; для PostgreSQL — `pg_dump`. Это не входит в `update.sh`.
+- **Бэкап БД** — не входит в `update.sh`. Используйте `scripts/update-safe.sh`: он сам определяет тип БД по `.env` (Postgres → `pg_dump`, иначе консистентная копия SQLite) и складывает дампы в `/var/backups/creativesphere/` перед миграциями.
 
 ### 8. Безопасность и откат
 
@@ -129,6 +129,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 | Файл | Назначение |
 |------|------------|
 | `scripts/update.sh` | Основной сценарий обновления (ручной и из cron) |
+| `scripts/update-safe.sh` | `update.sh` + бэкап БД (pg_dump / копия SQLite) и снапшот статей перед миграциями — рекомендуется для cron |
 | `scripts/crontab-daily.example` | Пример строки для cron |
 | `scripts/AUTO_UPDATE.md` | Эта инструкция |
 | [DEPLOY_VPS.md](../DEPLOY_VPS.md) | Первичный деплой VPS и ссылка на `update.sh` |

@@ -11,8 +11,14 @@
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-# Каждый день в 03:15 (время и путь поправьте под себя)
-15 3 * * * root /bin/bash /var/www/Django/scripts/update.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1
+# Каждый день в 03:15 (время и путь поправьте под себя).
+# update-safe.sh: сначала бэкап БД (pg_dump или копия SQLite) + JSON-снапшот
+# статей, затем обычный update.sh. Контент, добавленный через админку,
+# не потеряется даже при неудачной миграции.
+15 3 * * * root /bin/bash /var/www/Django/scripts/update-safe.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1
+
+# Альтернатива без бэкапа (НЕ рекомендуется, если контент правится в админке):
+# 15 3 * * * root /bin/bash /var/www/Django/scripts/update.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1
 
 # Альтернатива с явной веткой и именем службы Gunicorn:
-# 15 3 * * * root env GIT_BRANCH=main GUNICORN_SERVICE=creativesphere-gunicorn /bin/bash /var/www/Django/scripts/update.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1
+# 15 3 * * * root env GIT_BRANCH=main GUNICORN_SERVICE=creativesphere-gunicorn /bin/bash /var/www/Django/scripts/update-safe.sh /var/www/Django >> /var/www/Django/deploy/cron.log 2>&1
