@@ -118,8 +118,10 @@ EMAIL_BACKEND = os.getenv(
 ).strip()
 EMAIL_HOST = os.getenv('EMAIL_HOST', '').strip()
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587').strip() or '587')
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', '1').strip() != '0'
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', '0').strip() == '1'
+# TLS and SSL are mutually exclusive in Django; SSL (implicit, port 465) wins
+# if explicitly enabled so a stray TLS default can't break send().
+EMAIL_USE_TLS = (os.getenv('EMAIL_USE_TLS', '1').strip() != '0') and not EMAIL_USE_SSL
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '').strip()
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
 DEFAULT_FROM_EMAIL = (os.getenv('DEFAULT_FROM_EMAIL', '') or SEO_CONTACT_EMAIL).strip()

@@ -8,6 +8,10 @@ from .shop_data import get_product
 
 CART_SESSION_KEY = "creativesphere_cart_v1"
 
+# Upper bound per cart line. Prevents absurd totals and integer overflow in
+# Order.total_cents / OrderItem.quantity (PositiveIntegerField) at checkout.
+MAX_QTY_PER_ITEM = 999
+
 
 def _quantities(session) -> dict[str, int]:
     raw = session.get(CART_SESSION_KEY)
@@ -36,7 +40,7 @@ def add_item(session, product_id: int, qty: int = 1) -> None:
     q = _quantities(session)
     key = str(int(product_id))
     current = int(q.get(key, 0))
-    new_qty = max(0, current + int(qty))
+    new_qty = min(MAX_QTY_PER_ITEM, max(0, current + int(qty)))
     if new_qty == 0:
         q.pop(key, None)
     else:
@@ -53,7 +57,7 @@ def set_qty(session, product_id: int, qty: int) -> None:
     if qty < 1:
         q.pop(key, None)
     else:
-        q[key] = int(qty)
+        q[key] = min(MAX_QTY_PER_ITEM, int(qty))
     _save(session, q)
 
 

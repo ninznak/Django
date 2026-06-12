@@ -105,8 +105,10 @@ def sign_up_login(request):
     return render(request, "core/sign-up-login.html", ctx)
 
 
-@require_http_methods(["GET", "POST"])
+@require_http_methods(["POST"])
 def logout_view(request):
+    # POST-only (like Django's own LogoutView): a GET logout could be
+    # triggered cross-site via <img>/link to forcibly sign users out.
     logout(request)
     messages.info(request, "You have been signed out.")
     return redirect(settings.LOGOUT_REDIRECT_URL)

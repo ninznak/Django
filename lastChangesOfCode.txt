@@ -1,0 +1,52 @@
+Последние изменения кода — 12.06.2026
+=====================================
+
+Аудит безопасности: найдено и исправлено 4 проблемы.
+Тесты: 144/144 OK (было 139, добавлено 5 новых).
+
+1. Обход rate-limit через подмену X-Forwarded-For (средняя серьёзность)
+   Файл: core/view_utils.py (client_ip)
+   Было: брался ПЕРВЫЙ элемент X-Forwarded-For — клиент мог подделать IP,
+   обходить троттлинг (контакты, логин, корзина, checkout) и подделывать
+   Order.ip_address (журнал 152-ФЗ).
+   Стало: порядок доверия X-Real-IP -> последний элемент XFF -> REMOTE_ADDR.
+   Nginx (deploy-vps.sh) перезаписывает X-Real-IP и дописывает реальный IP
+   в конец XFF, поэтому только эти значения достоверны.
+   Тесты: ClientIpTests (3 шт.).
+
+2. Неограниченный qty в корзине -> 500 на checkout
+   Файл: core/cart_utils.py
+   Было: qty любой величины; при создании заказа PositiveIntegerField
+   (Order.total_cents / OrderItem.quantity) переполнялся на уровне БД.
+   Стало: MAX_QTY_PER_ITEM = 999, клампится в add_item и set_qty.
+   Тест: test_quantities_are_capped_per_item.
+
+3. Logout по GET (forced-logout CSRF)
+   Файл: core/views/auth.py (logout_view)
+   Было: GET-запрос разлогинивал — чужой сайт мог выкидывать пользователей
+   через <img src="/logout/">.
+   Стало: POST-only (как LogoutView в Django 5). Все шаблоны и так шлют
+   POST-форму. GET теперь возвращает 405, сессия не трогается.
+   Тесты: test_logout_redirects_and_clears_session (POST),
+   test_logout_rejects_get.
+
+4. Конфликт EMAIL_USE_SSL + EMAIL_USE_TLS
+   Файл: creativesphere/settings.py
+   Было: EMAIL_USE_TLS по умолчанию включён; при EMAIL_USE_SSL=1 (Яндекс,
+   порт 465) без явного TLS=0 Django падал при отправке письма.
+   Стало: SSL автоматически отключает TLS (они взаимоисключающие).
+
+Прочее
+------
+- AGENTS.md обновлён: контракт client_ip (§6), кап корзины (§6),
+  POST-only logout (§5), SSL/TLS примечание (§8), счётчик тестов 144 (§10).
+- Проверено и признано безопасным: XSS в article_extras (экранирование +
+  фильтр схем URL), IDOR на order_confirmation (session-scoped),
+  open-redirect на ?next= (url_has_allowed_host_and_scheme),
+  .env в .gitignore и не в git, secure-заголовки при DEBUG=0,
+  версии пакетов свежие (Django 5.2.13, Pillow 12.2, gunicorn 25.3).
+
+Деплой
+------
+Изменения только в Python-коде и тестах — collectstatic не нужен.
+На VPS: scripts/update-safe.sh (бэкап БД + git pull + migrate + restart).

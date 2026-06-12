@@ -52,9 +52,18 @@ def session_owns_order(request, order_id: int) -> bool:
 
 
 def client_ip(request) -> str:
+    # X-Real-IP is set by our Nginx to $remote_addr (overwriting any client
+    # value), so it cannot be spoofed through the proxy. X-Forwarded-For is
+    # built with $proxy_add_x_forwarded_for, which APPENDS the real IP to
+    # client-supplied values — only the LAST entry is trustworthy. Never use
+    # the first entry: that would let clients rotate fake IPs to bypass
+    # rate limiting and poison Order.ip_address.
+    real_ip = (request.META.get("HTTP_X_REAL_IP") or "").strip()
+    if real_ip:
+        return real_ip
     forwarded_for = (request.META.get("HTTP_X_FORWARDED_FOR") or "").strip()
     if forwarded_for:
-        return forwarded_for.split(",")[0].strip() or "unknown"
+        return forwarded_for.split(",")[-1].strip() or "unknown"
     return (request.META.get("REMOTE_ADDR") or "unknown").strip() or "unknown"
 
 

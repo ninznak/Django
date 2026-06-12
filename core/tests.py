@@ -260,6 +260,18 @@ class CartUtilsTests(TestCase):
             str(self.valid_id), self.session[cart_utils.CART_SESSION_KEY]
         )
 
+    def test_quantities_are_capped_per_item(self):
+        cart_utils.set_qty(self.session, self.valid_id, 10**9)
+        self.assertEqual(
+            self.session[cart_utils.CART_SESSION_KEY][str(self.valid_id)],
+            cart_utils.MAX_QTY_PER_ITEM,
+        )
+        cart_utils.add_item(self.session, self.valid_id, 10**9)
+        self.assertEqual(
+            self.session[cart_utils.CART_SESSION_KEY][str(self.valid_id)],
+            cart_utils.MAX_QTY_PER_ITEM,
+        )
+
     def test_remove_item_removes_entry(self):
         cart_utils.add_item(self.session, self.valid_id, 1)
         cart_utils.remove_item(self.session, self.valid_id)
@@ -308,6 +320,49 @@ class CartUtilsTests(TestCase):
         self.assertEqual(summary["cart_total_items"], 3)
         self.assertEqual(summary["cart_subtotal_cents"], expected_subtotal)
         self.assertEqual(len(summary["cart_lines"]), 2)
+
+
+# ---------------------------------------------------------------------------
+# view_utils.client_ip — proxy header trust (rate limiting / Order.ip_address)
+# ---------------------------------------------------------------------------
+
+
+class ClientIpTests(TestCase):
+    """Nginx appends the real IP to X-Forwarded-For ($proxy_add_x_forwarded_for),
+    so only the LAST entry — or X-Real-IP, which Nginx overwrites — is trusted.
+    Using the first XFF entry would let clients spoof IPs and bypass throttling."""
+
+    def _request(self, **meta):
+        from django.test import RequestFactory
+
+        request = RequestFactory().get("/")
+        request.META.update(meta)
+        return request
+
+    def test_prefers_x_real_ip(self):
+        from core.view_utils import client_ip
+
+        request = self._request(
+            HTTP_X_REAL_IP="203.0.113.7",
+            HTTP_X_FORWARDED_FOR="6.6.6.6, 203.0.113.7",
+            REMOTE_ADDR="127.0.0.1",
+        )
+        self.assertEqual(client_ip(request), "203.0.113.7")
+
+    def test_uses_last_forwarded_for_entry_not_spoofable_first(self):
+        from core.view_utils import client_ip
+
+        request = self._request(
+            HTTP_X_FORWARDED_FOR="6.6.6.6, 198.51.100.9",
+            REMOTE_ADDR="127.0.0.1",
+        )
+        self.assertEqual(client_ip(request), "198.51.100.9")
+
+    def test_falls_back_to_remote_addr(self):
+        from core.view_utils import client_ip
+
+        request = self._request(REMOTE_ADDR="192.0.2.4")
+        self.assertEqual(client_ip(request), "192.0.2.4")
 
 
 # ---------------------------------------------------------------------------
@@ -1159,9 +1214,15 @@ class AuthViewTests(TestCase):
 
     def test_logout_redirects_and_clears_session(self):
         self.client.force_login(self.user)
-        r = self.client.get(reverse("core:logout"))
+        r = self.client.post(reverse("core:logout"))
         self.assertEqual(r.status_code, 302)
         self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_logout_rejects_get(self):
+        self.client.force_login(self.user)
+        r = self.client.get(reverse("core:logout"))
+        self.assertEqual(r.status_code, 405)
+        self.assertIn("_auth_user_id", self.client.session)
 
     @override_settings(AUTH_SHOW_REGISTRATION=False)
     def test_registration_blocked_when_disabled(self):

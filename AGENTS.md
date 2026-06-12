@@ -138,7 +138,7 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `free_models` | `/free-models/` | `views.free_models` | Dedicated free-download page with top folder-style tabs: `Художественные модели` / `Хоббийные модели` / `Технические модели` (порядок — из `Product.FreeCategory.choices`). Active tab uses site dark green (`#1a2e1a`) with white text. Карточки приходят из `Product` (`kind=free`, фильтр по `free_category`); пустые «Скоро новая модель» — это `Product.is_placeholder=True` (никакого хардкода в шаблоне). Названия табов переводятся через `data-i18="shop_free_tab_{{ tab.key }}"` (ключи `shop_free_tab_art`/`_hobby`/`_tech` — в `base.html::translations.ru/en`). Rows use a single light translucent background. Model cards use a click-driven image switcher (dots + image click). Клиентская пагинация в этом шаблоне использует общий helper `window.PaginationUtils` из `static/js/enhancements.js` (row-aligned окна страниц). |
 | `cart_api` | `/api/cart/` | `views.cart_api` | GET returns cart JSON; POST body `{action, product_id, qty}` with `action ∈ {add,set,remove,clear}`. CSRF-protected. **IP-throttled** (`429 {"error":"rate_limited"}` when burst exceeds per-window limit in `core/views.py`). |
 | `sign_up_login` | `/sign-up-login/` | `views.sign_up_login` | Login always; registration gated by `AUTH_SHOW_REGISTRATION`. Honors `?next=` (same-host only). |
-| `logout` | `/logout/` | `views.logout_view` | |
+| `logout` | `/logout/` | `views.logout_view` | **POST-only** (как `LogoutView` Django 5): GET-logout позволял бы насильно разлогинивать через `<img>`/ссылку. Все шаблоны уже шлют POST-форму. |
 | `profile` | `/profile/` | `views.profile` | Личный кабинет авторизованного пользователя. Анонимным — redirect на `core:sign_up_login?next=/profile/`. Staff/Editors/superuser (`can_manage_content(user)`) дополнительно видят блок «Управление контентом» со ссылками на формы добавления. Роль отдаётся шаблону как `profile_role` (русская подпись) + `profile_role_key` (ключ i18n: `admin`/`editor`/`staff`/`user`/`guest`). SEO — `noindex, nofollow`, без JSON-LD. |
 | `profile_add_product` | `/profile/products/add/` | `views.profile_add_product` | UI-дружелюбный дубль `ProductAdmin` (форма `ProductCreateForm`). Gated декоратором `@require_content_manager` из `core.permissions`; публикацию (`is_published=True`) форма блокирует для обычного staff (только Editors/superuser). |
 | `profile_add_article` | `/profile/articles/add/` | `views.profile_add_article` | UI-дружелюбный дубль `NewsArticleAdmin` (форма `NewsArticleCreateForm`). Те же правила прав + синхронизация `published_at` со `status`, как в `NewsArticleAdmin.save_model`. |
@@ -245,8 +245,9 @@ Session is the dict-like `request.session` (or any object supporting
 **Never mutate that dict directly — always go through these helpers:**
 
 ```python
-def add_item(session, product_id: int, qty: int = 1) -> None   # increments; unknown ids ignored
-def set_qty(session, product_id: int, qty: int) -> None        # qty < 1 removes; unknown ids ignored
+MAX_QTY_PER_ITEM = 999   # cap per line: protects Order.total_cents / OrderItem.quantity from int overflow
+def add_item(session, product_id: int, qty: int = 1) -> None   # increments; unknown ids ignored; capped at MAX_QTY_PER_ITEM
+def set_qty(session, product_id: int, qty: int) -> None        # qty < 1 removes; unknown ids ignored; capped at MAX_QTY_PER_ITEM
 def remove_item(session, product_id: int) -> None
 def clear_cart(session) -> None
 def build_lines(session) -> list[dict]                         # [{"product": {...}, "qty": n}], sorted by id
@@ -399,6 +400,7 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
 - `_send_contact_email(cleaned)` / `_send_order_email(order, data)` — plain `EmailMessage` → `settings.CONTACT_FORM_RECIPIENT` via whatever email backend is configured. Both call sites wrap the send in `try/except` and log via `logger.exception`; never let email failures break a response.
 - `sensitive_post_parameters` decorates `sign_up_login` — keep password fields listed there if you add any.
 - `_is_rate_limited(request, scope, limit, window_seconds)` — cache-backed IP throttling helper for POST-heavy endpoints (`homepage` contact submit, `sign_up_login`, `cart_api`, `checkout`). Keep error contract stable: JSON endpoints return `429` with machine-readable error; HTML endpoints render with messages and `429` status.
+- `view_utils.client_ip(request)` trust order: **`X-Real-IP` → last entry of `X-Forwarded-For` → `REMOTE_ADDR`**. Nginx (`deploy-vps.sh`) sets `X-Real-IP $remote_addr` (overwrites client value) and builds XFF with `$proxy_add_x_forwarded_for` (APPENDS real IP) — so the **first** XFF entry is client-spoofable and must never be used (rate-limit bypass + `Order.ip_address` poisoning). Pinned by `ClientIpTests`.
 - Checkout idempotency contract:
   - `templates/core/checkout.html` sends hidden `idempotency_key`.
   - `views.checkout` also accepts `X-Idempotency-Key`.
@@ -587,7 +589,7 @@ Env vars (see `.env.example`):
 | `DJANGO_CANONICAL_DOMAIN` | Override for `PRIMARY_DOMAIN`. Defaults to first of `SITE_DOMAINS`. |
 | `PUBLIC_SITE_URL` | e.g. `https://kurilenkoart.ru`. Used for absolute canonical / OG / sitemap URLs. Prod default: `https://<PRIMARY_DOMAIN>`. |
 | `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` | Fully override the derived values. |
-| `EMAIL_*`, `DEFAULT_FROM_EMAIL`, `SEO_CONTACT_EMAIL`, `SEO_AUTHOR_NAME`, `CONTACT_FORM_RECIPIENT`, `CONTACT_FORM_TRY_EMAIL` | Email wiring + JSON-LD Person name. Dev default: console backend. |
+| `EMAIL_*`, `DEFAULT_FROM_EMAIL`, `SEO_CONTACT_EMAIL`, `SEO_AUTHOR_NAME`, `CONTACT_FORM_RECIPIENT`, `CONTACT_FORM_TRY_EMAIL` | Email wiring + JSON-LD Person name. Dev default: console backend. `EMAIL_USE_SSL=1` автоматически отключает `EMAIL_USE_TLS` (они взаимоисключающие в Django; SSL/465 побеждает). |
 | `AUTH_SHOW_REGISTRATION` | `"1"` to expose the sign-up form on `/sign-up-login/`. Default off. |
 | `*_POST_LIMIT`, `*_WINDOW_SECONDS`, `CHECKOUT_IDEMPOTENCY_TTL_SECONDS`, `CHECKOUT_IDEMPOTENCY_SESSION_KEY` | Abuse-protection tuning (contact/auth/cart/checkout throttles + idempotency retention/session key name). See `.env.example` keys. Backed by `CACHES['default']` (LocMem in repo; per-worker — replace with Redis/Memcached for shared limits). |
 | `SECURE_*`, `SECURE_HSTS_*` | HTTPS hardening switches (only active when `DEBUG=0`). Production also sets `SECURE_CROSS_ORIGIN_OPENER_POLICY = same-origin`. |
@@ -632,7 +634,7 @@ edited via Django admin between deploys (see §11 "Content vs code" rule).
 
 ## 10. Tests (`core/tests.py`) — **use these as the contract**
 
-126 tests. Run with:
+144 tests. Run with:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test core
@@ -654,7 +656,8 @@ Coverage map (read a test before making a semantically-loaded change):
 | `ProductAdminTests` | Публикация `Product.is_published=True` — только superuser/Editors; staff может сохранять черновик. |
 | `ShopFreeViewsTests` | `/shop/` и `/free_models/` рендерят посеянных товаров, табы всегда присутствуют, external-download URL остаётся как есть, sold-out отключает кнопку, непубликованные не видны. Placeholder-продукт рендерится как `.free-placeholder-card`, в корзину не попадает. |
 | `PortfolioGalleryDataTests` | `gallery_context` for known/unknown slugs. |
-| `CartUtilsTests` | Add/set/remove/clear, sort order, malformed session data. Uses a `dict` subclass that accepts `.modified = True`. |
+| `CartUtilsTests` | Add/set/remove/clear, sort order, malformed session data, `MAX_QTY_PER_ITEM` cap. Uses a `dict` subclass that accepts `.modified = True`. |
+| `ClientIpTests` | `client_ip` proxy-header trust order (X-Real-IP → last XFF entry → REMOTE_ADDR); first-XFF spoofing regression. |
 | `ModelTests` | `__str__`s + `OrderItem.total_cents`. |
 | `FormTests` | Contact / Checkout (pd_consent mandatory) / Register (duplicate email, email lowercased). |
 | `PricingExtrasTemplateTagTests` | `\|rub_minor`. |
