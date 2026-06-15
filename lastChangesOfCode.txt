@@ -166,4 +166,66 @@ scripts/crontab-daily.example.
 (EMAIL_HOST/EMAIL_HOST_USER/EMAIL_HOST_PASSWORD в .env).
 
 
+Настройка SMTP (Яндекс) на VPS — инструкция
+===========================================
+
+Шаг 1. Пароль приложения в Яндексе
+  1) id.yandex.ru (под kuri1encko@yandex.ru) -> Безопасность ->
+     Пароли приложений -> создать пароль для "Почты".
+     Обычный пароль от почты для SMTP НЕ подходит.
+  2) mail.yandex.ru -> шестерёнка -> Все настройки -> Почтовые программы ->
+     включить "С сервера imap.yandex.ru по протоколу IMAP"
+     (это же включает SMTP-доступ).
+
+Шаг 2. Правка .env на сервере
+  nano /var/www/Django/.env
+  (сохранить и выйти: Ctrl+O, Enter, Ctrl+X)
+
+  Добавить/поправить строки:
+    EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+    EMAIL_HOST=smtp.yandex.ru
+    EMAIL_PORT=465
+    EMAIL_USE_SSL=1
+    EMAIL_HOST_USER=kuri1encko@yandex.ru
+    EMAIL_HOST_PASSWORD=пароль_приложения_из_шага_1
+    DEFAULT_FROM_EMAIL=kuri1encko@yandex.ru
+    CONTACT_FORM_RECIPIENT=kuri1encko@yandex.ru
+
+  Пояснения:
+    * EMAIL_USE_TLS указывать не нужно — SSL=1 сам отключает TLS
+      (исправление от 12.06.2026).
+    * DEFAULT_FROM_EMAIL должен СОВПАДАТЬ с EMAIL_HOST_USER —
+      Яндекс отклоняет письма с чужим "From".
+
+Шаг 3. Перезапуск
+  sudo systemctl restart creativesphere-gunicorn
+
+Шаг 4. Проверка
+  cd /var/www/Django
+  source venv/bin/activate
+  python manage.py shell
+
+  В шелле:
+    from django.core.mail import send_mail
+    from django.conf import settings
+    send_mail("SMTP test", "Работает", settings.DEFAULT_FROM_EMAIL,
+              settings.CONTACT_FORM_RECIPIENTS)
+
+  Вернёт 1 и письмо придёт — настроено. Выход: exit()
+  Затем боевой тест: отправить сообщение через форму на сайте
+  (в админке у записи флаг email_sent станет True).
+
+Если письмо не пришло:
+  * (535, ...) — неверный пароль приложения или не включён IMAP/SMTP
+    в настройках почты (шаг 1.2).
+  * Таймаут — хостер блокирует порт 465; попробовать EMAIL_PORT=587 +
+    EMAIL_USE_SSL=0 (TLS включится сам) или написать в поддержку VPS.
+  * Письмо ушло, но не видно — проверить папку "Спам".
+  * Подробности ошибок: journalctl -u creativesphere-gunicorn -n 50
+    (отправка обёрнута в try/except — страница не ломается).
+
+.env скриптами обновления не трогается (update.sh не перезаписывает,
+deploy-vps.sh после исправления — тоже), настройка делается один раз.
+
+
 

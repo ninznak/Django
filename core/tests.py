@@ -608,6 +608,15 @@ class SeoTests(TestCase):
         self.assertTrue(data["canonical_url"].endswith("/"))
         self.assertTrue(data["json_ld"])
 
+    def test_homepage_page_seo_matches_hero_positioning(self):
+        from core.seo import PAGE_SEO
+
+        home = PAGE_SEO["homepage"]
+        self.assertIn("медалей, монет и барельефов", home["title"])
+        self.assertIn("ручная художественная работа", home["description"])
+        self.assertIn("3D-печати", home["description"])
+        self.assertEqual(PAGE_SEO["homepage_path"], home)
+
     def test_get_seo_respects_no_json_ld_override(self):
         request = RequestFactory().get("/")
         data = get_seo(request, no_json_ld=True)
@@ -1721,32 +1730,32 @@ class ProfileAddArticleTests(TestCase):
         self.assertIsNotNone(art.published_at)
 
 
-class HeroMobileStackTests(TestCase):
-    def test_homepage_includes_mobile_deck_when_enabled(self):
-        with self.settings(HERO_MOBILE_STACK_ENABLED=True):
-            response = Client().get(reverse("core:homepage"))
+class HeroShowcaseTests(TestCase):
+    def test_homepage_includes_hero_showcase(self):
+        response = Client().get(reverse("core:homepage"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'id="heroMobileDeck"')
-        self.assertContains(response, "cs-deck--mobile-stack")
-        self.assertContains(response, "data-hero-mobile-prev")
+        self.assertContains(response, "data-hero-showcase")
+        self.assertContains(response, "hero-showcase.css")
+        self.assertContains(response, "hero-showcase.js")
+        self.assertContains(response, "images/news/model8.jpg")
+        self.assertContains(response, "images/medals/medal5.JPEG")
+        self.assertContains(response, "images/news/Georg1.jpg")
+        self.assertContains(response, "data-hero-showcase-dot")
         self.assertContains(response, "Церковь Преображения Господня")
 
-    def test_homepage_mobile_spotlight_image(self):
-        with self.settings(HERO_MOBILE_STACK_ENABLED=True):
-            response = Client().get(reverse("core:homepage"))
-        self.assertEqual(response.status_code, 200)
+    def test_homepage_includes_mobile_spotlight(self):
+        response = Client().get(reverse("core:homepage"))
         self.assertContains(response, "data-hero-spotlight")
         self.assertContains(response, "images/news/georg11.jpeg")
         self.assertContains(response, "images/news/ushak777.jpg")
-        self.assertContains(response, "images/news/Georg1.jpg")
-        self.assertContains(response, "data-hero-spotlight-prev")
         self.assertContains(response, "hero-mobile-spotlight.js")
+        self.assertContains(response, "hero-mobile-deck.css")
 
-    def test_homepage_omits_mobile_deck_when_disabled(self):
-        with self.settings(HERO_MOBILE_STACK_ENABLED=False):
-            response = Client().get(reverse("core:homepage"))
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'id="heroMobileDeck"')
+    def test_homepage_spotlight_below_desktop(self):
+        response = Client().get(reverse("core:homepage"))
+        self.assertContains(response, "hero-mobile-spotlight")
+        self.assertContains(response, "lg:hidden col-span-full hero-mobile-spotlight")
+        self.assertNotContains(response, "cs-deck--tablet")
 
 
 class HomepageNewsTests(TestCase):
@@ -1784,28 +1793,27 @@ class HomepageNewsTests(TestCase):
         )
 
 
-class HeroTitleGlitchTests(TestCase):
-    def test_homepage_includes_glitch_when_enabled(self):
-        with self.settings(HERO_TITLE_GLITCH_ENABLED=True):
-            response = Client().get(reverse("core:homepage"))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "hero-glitch")
-        self.assertContains(response, "data-hero-glitch")
-        self.assertContains(response, "hero-title-glitch.css")
-        self.assertContains(response, "hero-title-glitch.js")
-
-    def test_homepage_uses_gradient_when_glitch_disabled(self):
-        with self.settings(HERO_TITLE_GLITCH_ENABLED=False):
-            response = Client().get(reverse("core:homepage"))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "text-gradient-animated")
-        self.assertNotContains(response, 'class="hero-glitch italic" data-hero-glitch')
-        self.assertNotContains(response, "hero-title-glitch.css")
-
-    def test_homepage_hero_medals_accent_markup(self):
+class HeroHeadlineTests(TestCase):
+    def test_homepage_headline_markup(self):
         response = Client().get(reverse("core:homepage"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "hero-medals-accent")
-        self.assertContains(response, 'data-i18="hero_medals_line_accent"')
-        self.assertNotContains(response, "hero-title-orb-sync")
-        self.assertNotContains(response, "heroTitleOrbSync")
+        self.assertContains(response, 'data-i18="hero_title_lead"')
+        self.assertContains(response, 'data-i18="hero_title_keywords"')
+        self.assertContains(response, "hero-headline-main")
+        self.assertContains(response, "hero-headline-keywords")
+        self.assertContains(response, "text-gradient-animated")
+        self.assertContains(response, "медалей, монет, барельефов")
+
+    def test_hero_sub_handcraft_copy(self):
+        response = Client().get(reverse("core:homepage"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-i18="hero_sub"')
+        self.assertContains(response, "hero-lead-wrap")
+        self.assertContains(response, "hero-lead-particles")
+        self.assertContains(response, "hero-lead-particles.js")
+        self.assertContains(response, "Медали, монеты и барельефы")
+        self.assertContains(response, "создаются вручную")
+        self.assertContains(response, "3D-печати")
+        self.assertNotContains(response, "созданные вручную")
+        self.assertNotContains(response, "Создаю модели для чеканки")
+        self.assertNotContains(response, "hero-medals-line")

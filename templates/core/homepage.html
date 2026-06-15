@@ -2,10 +2,8 @@
 {% load static %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/hero-showcase.css' %}">
 <link rel="stylesheet" href="{% static 'css/hero-mobile-deck.css' %}">
-{% if hero_title_glitch_enabled %}
-<link rel="stylesheet" href="{% static 'css/hero-title-glitch.css' %}">
-{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -28,9 +26,9 @@
 {% endcomment %}
 {% with sculptor_busy=site_settings.sculptor_busy %}
 <!-- Hero Section -->
-<section class="home-hero-section relative pt-24 max-sm:pt-[8.5rem] pb-20">
-    <div class="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-12 gap-8 items-start">
-        <div class="md:hidden col-span-full hero-mobile-spotlight"
+<section class="home-hero-section relative pt-24 max-sm:pt-[8.5rem] pb-16 lg:pb-20">
+    <div class="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+        <div class="lg:hidden col-span-full hero-mobile-spotlight"
              data-hero-spotlight
              role="region"
              aria-label="Превью портфолио">
@@ -94,24 +92,18 @@
             </div>
         </div>
 
-        <!-- LEFT: Typography -->
-        <div class="lg:col-span-6 text-center lg:text-left">
+        <div class="lg:col-span-5 hero-copy relative z-10 text-center lg:text-left">
             <span class="section-label hero-section-label" data-i18="hero_label">Творческое Портфолио</span>
-            <h1 class="hero-title-main font-display font-bold leading-[0.88] tracking-display text-3xl sm:text-4xl md:text-6xl lg:text-7xl mt-3 md:mt-4 text-shadow">
-                <span class="block underline decoration-[2px] underline-offset-4"><span data-i18="hero_medals_line_lead">Создаю модели для чеканки </span><span class="hero-medals-accent" data-i18="hero_medals_line_accent">Медалей и Монет</span></span>
-                <span class="hero-title-subline hidden md:block mt-6 text-[0.75em]">
-                    <span data-i18="hero_title1">Когда Мастерство</span><br>
-                    {# HERO_TITLE_GLITCH: откат — HERO_TITLE_GLITCH_ENABLED=0, см. scripts/HERO_TITLE_GLITCH_ROLLBACK.md #}
-                    {% if hero_title_glitch_enabled %}
-                    <span class="hero-glitch italic" data-hero-glitch data-text="Встречает интеллект" data-i18="hero_title2">Встречает интеллект</span>
-                    {% else %}
-                    <span class="text-gradient-animated italic" data-i18="hero_title2">Встречает интеллект</span>
-                    {% endif %}
-                </span>
+            <h1 class="hero-headline font-display">
+                <span class="hero-headline-main text-gradient-animated" data-i18="hero_title_lead">Профессиональное изготовление </span><span class="hero-headline-keywords" data-i18="hero_title_keywords">медалей, монет, барельефов</span>
             </h1>
+            <div class="hero-lead-wrap">
+                <p class="hero-lead" data-i18="hero_sub">Медали, монеты и барельефы — создаются вручную, с учётом современных технологий и возможностей конечного производства (чеканки, 3D-печати).</p>
+                <canvas class="hero-lead-particles" aria-hidden="true"></canvas>
+            </div>
 
-            <div class="flex flex-wrap gap-3 md:gap-4 justify-center lg:justify-start mt-5 md:mt-8">
-                <a href="/portfolio/" class="btn-primary" data-i18="hero_cta1">
+            <div class="flex flex-wrap gap-3 md:gap-4 justify-center lg:justify-start mt-6 md:mt-8">
+                <a href="{% url 'core:portfolio' %}" class="btn-primary" data-i18="hero_cta1">
                     Смотреть Портфолио
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
@@ -120,7 +112,6 @@
                 <a href="{% url 'core:free_models' %}" class="btn-outline btn-attention" data-i18="hero_cta_free">
                     Бесплатные модели
                 </a>
-                {% comment %}Busyness button (tier + message computed from sculptor_busy).{% endcomment %}
                 <button type="button"
                         class="btn-busy"
                         data-busy-tier="{% if sculptor_busy < 25 %}free{% elif sculptor_busy < 50 %}open{% elif sculptor_busy < 75 %}partial{% else %}busy{% endif %}"
@@ -129,68 +120,26 @@
                     <span data-i18="hero_busy_label">Загруженность</span>:&nbsp;<span class="btn-busy-pct">{{ sculptor_busy }}%</span>
                 </button>
             </div>
-            <div class="hidden md:flex gap-8 md:gap-10 pt-6 mt-6 border-t justify-center lg:justify-start" style="border-color: var(--line);">
+
+            <div class="hero-stats">
                 <div>
-                    <p class="font-display text-2xl md:text-3xl font-semibold text-shadow">{{ site_settings.stat_3d_value }}</p>
-                    <p class="text-xs mt-1 uppercase tracking-widest" style="color: var(--muted);" data-i18="stats_3d">3D Моделей</p>
-                </div>
-                <div>
-                    <p class="font-display text-2xl md:text-3xl font-semibold text-shadow">{{ site_settings.stat_projects_value }}</p>
-                    <p class="text-xs mt-1 uppercase tracking-widest" style="color: var(--muted);" data-i18="stats_ai">Проектов Отчеканено</p>
+                    <p class="hero-stat-value">{{ site_settings.stat_3d_value }}</p>
+                    <p class="hero-stat-label" data-i18="stats_3d">3D Моделей</p>
                 </div>
                 <div>
-                    <p class="font-display text-2xl md:text-3xl font-semibold text-shadow">{{ site_settings.stat_years_value }}</p>
-                    <p class="text-xs mt-1 uppercase tracking-widest" style="color: var(--muted);" data-i18="stats_years">Лет Опыта</p>
+                    <p class="hero-stat-value">{{ site_settings.stat_projects_value }}</p>
+                    <p class="hero-stat-label" data-i18="stats_ai">Проектов Отчеканено</p>
                 </div>
-            </div>
-        </div>
-        
-        {# HERO_MOBILE_STACK_START — откат: HERO_MOBILE_STACK_ENABLED=0 в .env #}
-        {% if hero_mobile_stack_enabled %}
-        <div class="hidden col-span-full hero-mobile-stack-wrap relative z-20">
-            <div class="hero-mobile-carousel">
-                <button type="button" class="hero-mobile-arrow hero-mobile-arrow--prev" data-hero-mobile-prev aria-label="Предыдущая карточка" data-i18-aria-label="hero_mobile_prev">
-                    <svg class="hero-mobile-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                </button>
-                <div class="hero-mobile-carousel-stage">
-                    <div id="heroMobileDeck" class="cs-deck cs-deck--mobile-stack" role="region" tabindex="0" aria-label="Превью портфолио">
-                        {% include "core/includes/hero_carousel_cards.html" with mobile_stack=1 %}
-                    </div>
+                <div>
+                    <p class="hero-stat-value">{{ site_settings.stat_years_value }}</p>
+                    <p class="hero-stat-label" data-i18="stats_years">Лет Опыта</p>
                 </div>
-                <button type="button" class="hero-mobile-arrow hero-mobile-arrow--next" data-hero-mobile-next aria-label="Следующая карточка" data-i18-aria-label="hero_mobile_next">
-                    <svg class="hero-mobile-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="hero-mobile-indicators" role="tablist" aria-label="Карусель портфолио">
-                <button type="button" class="hero-mobile-indicator is-active" data-hero-mobile-indicator="0" aria-label="Слайд 1" aria-selected="true"></button>
-                <button type="button" class="hero-mobile-indicator" data-hero-mobile-indicator="1" aria-label="Слайд 2" aria-selected="false"></button>
-                <button type="button" class="hero-mobile-indicator" data-hero-mobile-indicator="2" aria-label="Слайд 3" aria-selected="false"></button>
-            </div>
-            <p class="text-xs mt-3 text-center max-w-xs mx-auto" style="color: var(--muted);" data-i18="hero_mobile_tap_hint">Стрелки или нажатие на карточку — следующий слайд</p>
-            <div class="flex justify-center mt-3 pb-2">
-                <a id="heroMobileDeckLink" href="{% url 'core:portfolio' %}#portfolio-products" class="btn-outline text-sm" data-i18="hero_mobile_open">Открыть раздел</a>
             </div>
         </div>
 
-        <div class="hidden md:flex lg:hidden col-span-full justify-center relative z-20">
-            <div class="cs-deck cs-deck--tablet" aria-label="Portfolio preview">
-                {% include "core/includes/hero_carousel_cards.html" with eager_images=1 %}
-            </div>
+        <div class="hidden lg:block lg:col-span-7 relative z-20 w-full">
+            {% include "core/includes/hero_showcase.html" with eager_images=1 %}
         </div>
-        {% endif %}
-        {# HERO_MOBILE_STACK_END #}
-
-        <!-- RIGHT: Carousel (desktop; md-only when mobile stack disabled) -->
-        <div class="lg:col-span-6 {% if hero_mobile_stack_enabled %}hidden lg:flex{% else %}hidden md:flex{% endif %} items-center justify-center pt-0 lg:pt-10 relative z-20">
-            <div class="cs-deck" aria-label="Portfolio preview">
-                {% include "core/includes/hero_carousel_cards.html" with eager_images=1 %}
-            </div>
-        </div>
-
     </div>
 
     {% comment %}
@@ -231,204 +180,6 @@
 /* Hero kicker: +50% vs default .section-label (10px → 15px) */
 .hero-section-label {
     font-size: 15px;
-}
-
-.hero-medals-accent {
-    display: inline;
-}
-
-/* Hero accent line (title1 + title2): room for italic descenders (e.g. EN "g") */
-.hero-title-main {
-    overflow: visible;
-}
-.hero-title-main .hero-title-subline {
-    line-height: 1.06;
-    overflow: visible;
-}
-.hero-title-main .text-gradient-animated,
-.hero-title-main .hero-glitch {
-    display: inline-block;
-    overflow: visible;
-    padding-bottom: 0.14em;
-}
-html[data-lang="ru"] .hero-title-main {
-    line-height: 0.96 !important;
-}
-
-/* ── Carousel deck ─────────────────────────────────────────────────────── */
-.cs-deck {
-    position: relative;
-    width: 500px;
-    height: 420px;
-    margin-top: 32px;
-    /* Own stacking context — z-index changes stay inside, never repaint parent */
-    isolation: isolate;
-}
-
-/* Cards: only transition transform + box-shadow (never "all")
-   so z-index snaps instantly without fighting the easing curve    */
-.cs-card {
-    position: absolute;
-    width: 215px;
-    height: 298px;
-    display: block;
-    border-radius: 18px;
-    cursor: pointer;
-    /* Smooth easing without overshoot to avoid hover jerk */
-    transition:
-        transform  1.6s cubic-bezier(0.22, 0.61, 0.36, 1),
-        box-shadow 1.4s cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: transform;
-    /* GPU layer: eliminates sub-pixel jitter */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    transform-style: preserve-3d;
-}
-
-/*
- * Stacking: center card is the visual "front" of the fan — never sandwiched
- * under both neighbors (linear 1,2,3 made idx=2 always cover the middle).
- * Wings sit behind; hover still promotes the active card above all.
- */
-.cs-card[data-idx="0"] { z-index: 1; }
-.cs-card[data-idx="1"] { z-index: 3; }
-.cs-card[data-idx="2"] { z-index: 2; }
-
-/* Base positions + individual staggered breathing animations */
-.cs-card[data-idx="0"] {
-    top: 64px;
-    left: 0;
-    animation: csFloat0 6.4s ease-in-out infinite;
-    box-shadow: 0 8px 24px rgba(30,50,20,0.22);
-}
-.cs-card[data-idx="1"] {
-    top: 32px;
-    left: 142px;
-    animation: csFloat1 7.6s ease-in-out 1.1s infinite;
-    box-shadow: 0 12px 32px rgba(30,50,20,0.28);
-}
-.cs-card[data-idx="2"] {
-    top: 0;
-    left: 284px;
-    animation: csFloat2 5.8s ease-in-out 2.2s infinite;
-    box-shadow: 0 16px 40px rgba(30,50,20,0.34);
-}
-
-/* Hover: pause breathing, lift + scale, green-ring glow */
-.cs-card:hover {
-    animation-play-state: paused;
-    transform: translateY(-10px) scale(1.02) !important;
-    box-shadow:
-        0 32px 64px rgba(30,50,20,0.44),
-        0 0 0 1.5px rgba(168,201,87,0.40) !important;
-    z-index: 10 !important;
-}
-
-/* Image zooms gently on hover via the parent transform */
-.cs-card:hover .cs-img {
-    transform: scale(1.07);
-}
-
-/* Staggered arcs — each card traces a slightly different oval path
-   so they never reach peak/trough simultaneously (prevents "sync twitch") */
-@keyframes csFloat0 {
-    0%   { transform: translateY(0px)   rotate(-0.35deg); }
-    28%  { transform: translateY(-8px)  rotate( 0.25deg); }
-    56%  { transform: translateY(-3px)  rotate(-0.55deg); }
-    100% { transform: translateY(0px)   rotate(-0.35deg); }
-}
-@keyframes csFloat1 {
-    0%   { transform: translateY(0px)   rotate( 0.20deg); }
-    33%  { transform: translateY(-10px) rotate(-0.28deg); }
-    62%  { transform: translateY(-4px)  rotate( 0.45deg); }
-    100% { transform: translateY(0px)   rotate( 0.20deg); }
-}
-@keyframes csFloat2 {
-    0%   { transform: translateY(0px)   rotate( 0.28deg); }
-    38%  { transform: translateY(-6px)  rotate(-0.18deg); }
-    72%  { transform: translateY(-11px) rotate( 0.38deg); }
-    100% { transform: translateY(0px)   rotate( 0.28deg); }
-}
-
-/* Inner wrapper: clip rounded corners + overflow */
-.cs-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 18px;
-    overflow: hidden;
-    border: 1px solid var(--line);
-}
-
-.cs-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 1.6s cubic-bezier(0.22, 0.61, 0.36, 1);
-    will-change: transform;
-}
-
-.cs-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        to top,
-        rgba(26,46,26,0.82) 0%,
-        rgba(26,46,26,0.12) 55%,
-        transparent 100%
-    );
-    pointer-events: none;
-}
-
-.cs-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-}
-
-html[data-theme="dark"] .cs-deck .tag-pill {
-    background: #031956;
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.92);
-}
-
-.cs-caption {
-    position: absolute;
-    bottom: 16px;
-    left: 16px;
-    right: 16px;
-}
-
-/* Responsive stacked mode when HERO_MOBILE_STACK_ENABLED=0 (legacy). */
-@media (max-width: 1023px) and (min-width: 768px) {
-    .cs-deck:not(.cs-deck--tablet) {
-        width: min(100%, 760px);
-        height: clamp(300px, 52vw, 396px);
-        margin-top: 22px;
-        --stack-card-w: clamp(150px, 27vw, 220px);
-        --stack-card-h: calc(var(--stack-card-w) * 1.386);
-    }
-
-    .cs-card {
-        width: var(--stack-card-w);
-        height: var(--stack-card-h);
-    }
-
-    /* Equal spread left/center/right; naturally converge as viewport shrinks. */
-    .cs-card[data-idx="0"] {
-        left: 0;
-        top: clamp(54px, 8.4vw, 82px);
-    }
-
-    .cs-card[data-idx="1"] {
-        left: calc((100% - var(--stack-card-w)) / 2);
-        top: clamp(24px, 4.8vw, 44px);
-    }
-
-    .cs-card[data-idx="2"] {
-        left: calc(100% - var(--stack-card-w));
-        top: 0;
-    }
 }
 
 /* ── Sculptor busyness button (third CTA) ──────────────────────────────── */
@@ -634,12 +385,8 @@ html[data-theme="dark"] .featured-card-overlay {
     })();
 </script>
 <script src="{% static 'js/hero-mobile-spotlight.js' %}"></script>
-{% if hero_title_glitch_enabled %}
-<script src="{% static 'js/hero-title-glitch.js' %}"></script>
-{% endif %}
-{% if hero_mobile_stack_enabled %}
-<script src="{% static 'js/hero-mobile-deck.js' %}"></script>
-{% endif %}
+<script src="{% static 'js/hero-showcase.js' %}"></script>
+<script src="{% static 'js/hero-lead-particles.js' %}"></script>
 
 <!-- Featured Works Section -->
 <section class="featured-works-section pt-8 pb-20 relative">

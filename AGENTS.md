@@ -134,7 +134,7 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `about` | `/about/` | `views.about` | |
 | `news` | `/news/` | `views.news` | |
 | `news_article` | `/news/<slug>/` | `views.news_article` | Reads `NewsArticle` by slug. Public users can open only `status=published`; staff can preview drafts. SEO is built via `core.seo.news_article_seo_overrides(request, slug, title)` with per-slug `NEWS_ARTICLE_SEO` fallback behavior preserved. |
-| `portfolio` | `/portfolio/` | `views.portfolio` | `?category=3d\|ai\|all` redirects to anchors or base. The homepage carousel (`templates/core/homepage.html`) links its three cards to `/portfolio/#portfolio-3d`, `#portfolio-products`, `#portfolio-ai` — keep those anchors in sync with `templates/core/portfolio.html`. |
+| `portfolio` | `/portfolio/` | `views.portfolio` | `?category=3d\|ai\|all` redirects to anchors or base. Homepage hero (`hero_showcase.html` on `lg+`, `hero-mobile-spotlight` on `<lg`) links slides to `/portfolio/#portfolio-3d`, `#portfolio-products`, `#portfolio-ai` — keep those anchors in sync with `templates/core/portfolio.html`. |
 | `portfolio_gallery` | `/portfolio/<slug>/` | `views.portfolio_gallery` | Slugs: `3d`, `ai`, `products`. Unknown → `Http404`. |
 | `shop` | `/shop/` | `views.shop` | Data comes from context processor. Header includes a CTA button to `core:free_models`. |
 | `free_models` | `/free-models/` | `views.free_models` | Dedicated free-download page with top folder-style tabs: `Художественные модели` / `Хоббийные модели` / `Технические модели` (порядок — из `Product.FreeCategory.choices`). Active tab uses site dark green (`#1a2e1a`) with white text. Карточки приходят из `Product` (`kind=free`, фильтр по `free_category`); пустые «Скоро новая модель» — это `Product.is_placeholder=True` (никакого хардкода в шаблоне). Названия табов переводятся через `data-i18="shop_free_tab_{{ tab.key }}"` (ключи `shop_free_tab_art`/`_hobby`/`_tech` — в `base.html::translations.ru/en`). Rows use a single light translucent background. Model cards use a click-driven image switcher (dots + image click). Клиентская пагинация в этом шаблоне использует общий helper `window.PaginationUtils` из `static/js/enhancements.js` (row-aligned окна страниц). |
@@ -493,15 +493,13 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
   - Block-level: `## heading` → `<h3>`, `- item` → `<ul><li>`, `1. item` (any positive integer) → `<ol><li>`, `![alt](images/news/file.jpg)` on its own line → styled `<img>` block, blank line separates paragraphs.
   - Inline (works inside paragraphs, headings and list items): `**bold**` → `<strong>`, `*italic*` → `<em>`, `[label](url)` → `<a>` with `rel="noopener noreferrer"`. Only `http://`, `https://`, `mailto:`, `tel:`, `#`, `/`, `./` and `../` URLs are allowed — `javascript:`, `data:` and unknown schemes are rendered as plain text.
   - Cover image is rendered separately by the template from `NewsArticle.cover_image`; don't duplicate it inside `content` via `![]()`.
-- `homepage.html` hero carousel (`.cs-card`) should keep hover motion smooth and calm (no spring overshoot curves that cause visual jerk on pointer hover). Prefer gentle `ease-out`-style cubic-bezier and moderate lift/scale. **Stacking:** the middle card uses the highest base `z-index` (fan “front”), so it is never covered by both side cards at once; sides use lower layers (`0→1`, `1→3`, `2→2`); hovered card still uses `z-index: 10`.
-- **Hero responsive (mobile stack):** when `HERO_MOBILE_STACK_ENABLED=1` (default, env in `creativesphere/settings.py`): `<768px` → `#heroMobileDeck` / `.cs-deck--mobile-stack` (tap/swipe/indicators, CSS/JS in `static/css/hero-mobile-deck.css`, `static/js/hero-mobile-deck.js`; card markup in `templates/core/includes/hero_carousel_cards.html` with `mobile_stack=1`); `768–1023px` → `.cs-deck--tablet`; `≥1024px` → desktop `.cs-deck` in right column. **Rollback:** `HERO_MOBILE_STACK_ENABLED=0` in `.env` — see `scripts/HERO_MOBILE_STACK_ROLLBACK.md`. Tests: `HeroMobileStackTests`.
+- **Hero showcase (homepage):** `templates/core/includes/hero_showcase.html` + `static/css/hero-showcase.css` + `static/js/hero-showcase.js` — large side image (**`lg+` only**, grid 5+7, `items-start`), cross-fade auto-advance (~6s), dots + arrows + swipe. **`< lg`:** `hero-mobile-spotlight` **above** copy (wide slider, `hero-mobile-spotlight.js`; styles in `hero-mobile-deck.css` through `max-width: 1023px`, taller viewport on tablet). Tablet fan `.cs-deck--tablet` removed from homepage. Legacy `hero-mobile-deck.js` / mobile stack deck not wired on homepage.
 - **Homepage news block** (`templates/core/includes/home_news_section.html`): последние **4** опубликованные `NewsArticle` из БД (`core/views/pages.py::_homepage_news_context`, сортировка `Coalesce(published_at, created_at)` desc). Первая — крупная карточка, следующие 3 — справа. Заголовок секции «Новости и Статьи» — ссылка на `core:news`. Новая статья в админке (`status=published`) появляется на главной после обновления страницы. Тесты: `HomepageNewsTests`.
-- Hero copy contract in `templates/core/homepage.html`:
-  - Primary line under H1: `hero_medals_line_lead` + `hero_medals_line_accent` (underlined block).
-    Orb-sync glow (`.hero-medals-accent.hero-title-orb-sync`): `text-shadow` pulse on accent words only
-    (`heroTitleOrbSync`, **12s**, peaks at 12.5/37.5/62.5/87.5% — in sync with `orbGlowA/B/C/D`); off under `prefers-reduced-motion`.
-  - Desktop alignment keeps the carousel slightly lower than the headline block via `lg:pt-10` on the right hero column wrapper; keep this offset unless the headline layout is redesigned.
-  - **Hero title glitch** (`HERO_TITLE_GLITCH_ENABLED`, default on): on `md+`, `hero_title2` («Встречает интеллект») uses `.hero-glitch` + `static/css/hero-title-glitch.css` + `static/js/hero-title-glitch.js` — **бегущий градиент** (`shimmerFlow`, как `.text-gradient-animated`) на основном тексте **плюс** RGB-split глитч на `::before`/`::after` (короткие вспышки ~8.5s); `prefers-reduced-motion` отключает только слои глитча. no-clip: `applyGradientTextFallback()` обрабатывает `[data-hero-glitch]` так же, как `.text-gradient-animated`. i18n: `data-text` через `window.syncHeroTitleGlitch()`. **Rollback:** `HERO_TITLE_GLITCH_ENABLED=0` — `scripts/HERO_TITLE_GLITCH_ROLLBACK.md`. Tests: `HeroTitleGlitchTests`.
+- Hero copy contract in `templates/core/homepage.html` (i18n keys in `static/js/i18n/ru.json` + `en.json`):
+  - H1: `hero_title_lead` (курсив + shimmer, `.hero-headline-main.text-gradient-animated`) + `hero_title_keywords` (`.hero-headline-keywords`, акцент `--primary` + тень).
+  - Lead: `hero_sub` in `.hero-lead-wrap` → `.hero-lead` (Cormorant Garamond italic 600 из Google Fonts в `base.html`, ~1.4× base size, tight leading, left accent bar + slow glow pulse). `static/js/hero-lead-particles.js` — canvas поверх текста: частицы от зелёной полосы летят вправо (2× ширина блока); `prefers-reduced-motion` отключает анимацию. RU copy: ручная работа + чеканка / 3D-печать (без акцента на AI).
+  - Subline `hero_medals_line_*` **удалён** с главной.
+  - **Hero title glitch** (`HERO_TITLE_GLITCH_ENABLED`): legacy flag in settings; homepage hero no longer uses `.hero-glitch`. Tests: `HeroShowcaseTests`, `HeroHeadlineTests`.
 - Homepage dark-mode card contract:
   - News section wrapper uses `.home-news-section` (light: soft green gradient); article cards use
     `.home-news-card` (light: translucent `rgba(225,236,198,0.82)`, not white).
@@ -648,7 +646,7 @@ between deploys (see §11 "Content vs code" rule); the cron example
 
 ## 10. Tests (`core/tests.py`) — **use these as the contract**
 
-144 tests. Run with:
+145 tests. Run with:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test core
@@ -676,8 +674,11 @@ Coverage map (read a test before making a semantically-loaded change):
 | `FormTests` | Contact / Checkout (pd_consent mandatory) / Register (duplicate email, email lowercased). |
 | `PricingExtrasTemplateTagTests` | `\|rub_minor`. |
 | `ArticleExtrasTemplateTagTests` | `\|render_article_body` — headings, ordered & unordered lists, inline images, bold / italic, safe links (and rejection of `javascript:`), HTML escaping. |
-| `SeoTests` | Defaults, overrides, JSON-LD structure, HTML-closer escaping, `lru_cache` behavior, `PUBLIC_SITE_URL`, lazy context processor. |
+| `SeoTests` | Defaults, overrides, JSON-LD structure, HTML-closer escaping, `lru_cache` behavior, `PUBLIC_SITE_URL`, lazy context processor, `PAGE_SEO["homepage"]` copy. |
 | `StaticPagesViewTests` | Every public page renders 200; portfolio redirects; robots.txt and sitemap; 404 catch-all; orb ambient markup + `orb-ambient.css` on homepage. |
+| `HeroShowcaseTests` | Homepage `hero_showcase` + mobile spotlight markup/scripts; no tablet fan deck. |
+| `HeroHeadlineTests` | Split H1 (`hero_title_lead` / `hero_title_keywords`), `hero_sub` hand-craft copy, `hero-lead-particles`. |
+| `HomepageNewsTests` | Latest 4 published articles on homepage; news title links to `core:news`. |
 | `CartApiTests` | Full GET/POST add/set/remove/clear + all 400 error paths + `429 rate_limited` branch. |
 | `ContactFormSubmissionTests` | Happy path + invalid form + SMTP failure path. |
 | `CheckoutFlowTests` | Empty cart redirect, full POST creates `Order` + items + email + clears cart, pd_consent blocks, idempotency-key repeat does not create duplicate order, **session-owned order_confirmation visible only to its session and to staff** (IDOR regression). |

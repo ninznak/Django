@@ -1,0 +1,99 @@
+{% load static %}
+{# Large hero image slider — fade transitions, badge + caption overlays. #}
+<div class="hero-showcase"
+     data-hero-showcase
+     role="region"
+     aria-label="Превью портфолио"
+     aria-roledescription="carousel">
+    <div class="hero-showcase-viewport">
+        <a href="{% url 'core:portfolio' %}#portfolio-3d"
+           class="hero-showcase-slide is-active"
+           data-hero-showcase-slide="0"
+           aria-hidden="false"
+           tabindex="0">
+            <img src="{% static 'images/news/model8.jpg' %}"
+                 alt="3D Models"
+                 class="hero-showcase-img"
+                 width="900"
+                 height="1120"
+                 {% if eager_images %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                 decoding="async">
+            <div class="hero-showcase-overlay" aria-hidden="true"></div>
+            <span class="hero-showcase-badge tag-pill" data-i18="carousel_3d_models">3D Models</span>
+            <div class="hero-showcase-caption">
+                <p class="hero-showcase-title font-display" data-i18="carousel_bas_relief_collection">Коллекция Барельефов</p>
+                <p class="hero-showcase-meta">
+                    <span class="hero-showcase-meta-dot" aria-hidden="true"></span>
+                    <span data-i18="carousel_models_available">200+ Моделей</span>
+                </p>
+            </div>
+        </a>
+        <a href="{% url 'core:portfolio' %}#portfolio-products"
+           class="hero-showcase-slide"
+           data-hero-showcase-slide="1"
+           aria-hidden="true"
+           tabindex="-1">
+            <img src="{% static 'images/medals/medal5.JPEG' %}"
+                 alt="Церковь Преображения Господня — золотая медаль"
+                 class="hero-showcase-img"
+                 width="900"
+                 height="1120"
+                 loading="lazy"
+                 decoding="async">
+            <div class="hero-showcase-overlay" aria-hidden="true"></div>
+            <span class="hero-showcase-badge tag-pill" data-i18="carousel_latest_commission">Последний Заказ</span>
+            <div class="hero-showcase-caption">
+                <p class="hero-showcase-title font-display" data-i18="carousel_silver_relief_panel">Церковь Преображения Господня · Золотая медаль</p>
+                <p class="hero-showcase-meta">
+                    <span class="hero-showcase-meta-dot" aria-hidden="true"></span>
+                    <span data-i18="carousel_custom_order_progress">Под Заказ · В Работе</span>
+                </p>
+            </div>
+        </a>
+        <a href="{% url 'core:portfolio' %}#portfolio-ai"
+           class="hero-showcase-slide"
+           data-hero-showcase-slide="2"
+           aria-hidden="true"
+           tabindex="-1">
+            <img src="{% static 'images/news/Georg1.jpg' %}"
+                 alt="Георгий Победоносец"
+                 class="hero-showcase-img"
+                 width="900"
+                 height="1120"
+                 loading="lazy"
+                 decoding="async">
+            <div class="hero-showcase-overlay" aria-hidden="true"></div>
+            <span class="hero-showcase-badge tag-pill" data-i18="carousel_ai_content">3d скульптура</span>
+            <div class="hero-showcase-caption">
+                <p class="hero-showcase-title font-display" data-i18="carousel_generative_art_series">Георгий Победоносец</p>
+                <p class="hero-showcase-meta">
+                    <span class="hero-showcase-meta-dot" aria-hidden="true"></span>
+                    <span data-i18="carousel_neural_landscapes">Герб Москвы</span>
+                </p>
+            </div>
+        </a>
+        <button type="button"
+                class="hero-showcase-nav hero-showcase-nav--prev"
+                data-hero-showcase-prev
+                aria-label="Предыдущий слайд"
+                data-i18-aria-label="hero_mobile_prev">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </button>
+        <button type="button"
+                class="hero-showcase-nav hero-showcase-nav--next"
+                data-hero-showcase-next
+                aria-label="Следующий слайд"
+                data-i18-aria-label="hero_mobile_next">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
+    </div>
+    <div class="hero-showcase-dots" role="tablist" aria-label="Слайды портфолио">
+        <button type="button" class="hero-showcase-dot is-active" data-hero-showcase-dot="0" role="tab" aria-label="Слайд 1" aria-selected="true"></button>
+        <button type="button" class="hero-showcase-dot" data-hero-showcase-dot="1" role="tab" aria-label="Слайд 2" aria-selected="false"></button>
+        <button type="button" class="hero-showcase-dot" data-hero-showcase-dot="2" role="tab" aria-label="Слайд 3" aria-selected="false"></button>
+    </div>
+</div>
