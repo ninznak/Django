@@ -293,10 +293,23 @@ html.no-clip-text .hero-headline-main.text-gradient-animated {
   bottom: 0;
   width: 200%;
   height: 100%;
+  display: block;
   pointer-events: none;
   z-index: 2;
   mix-blend-mode: soft-light;
   opacity: 0.9;
+}
+
+/* iOS WebKit: mix-blend-mode on canvas inside isolation often renders invisible. */
+html.ios-webkit .hero-lead-wrap {
+  isolation: auto;
+}
+
+html.ios-webkit .hero-lead-particles {
+  mix-blend-mode: normal;
+  opacity: 1;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 html[data-theme="dark"] .hero-lead-particles {

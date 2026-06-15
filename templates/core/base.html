@@ -63,6 +63,19 @@
     <script>
         (function () {
             try {
+                function isIOSWebKit() {
+                    const ua = navigator.userAgent || "";
+                    if (/iPad|iPhone|iPod/.test(ua)) return true;
+                    // iPadOS 13+ may report platform as MacIntel.
+                    return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+                }
+
+                // iOS WebKit paints background-clip:text but often ignores background-position animation.
+                if (isIOSWebKit()) {
+                    document.documentElement.classList.add("no-clip-text", "ios-webkit");
+                    return;
+                }
+
                 const test = document.createElement("span");
                 test.style.cssText = [
                     "position:absolute",
@@ -230,6 +243,10 @@
             animation: gradientCharFlow 2.8s linear infinite;
             animation-delay: var(--char-delay, 0s);
             will-change: color;
+        }
+
+        html.no-clip-text .hero-headline-main.text-gradient-animated .gradient-char {
+            animation-duration: 6.4s;
         }
 
         html.no-clip-text .text-gradient-animated .gradient-char--space,

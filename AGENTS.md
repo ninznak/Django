@@ -497,7 +497,7 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
 - **Homepage news block** (`templates/core/includes/home_news_section.html`): последние **4** опубликованные `NewsArticle` из БД (`core/views/pages.py::_homepage_news_context`, сортировка `Coalesce(published_at, created_at)` desc). Первая — крупная карточка, следующие 3 — справа. Заголовок секции «Новости и Статьи» — ссылка на `core:news`. Новая статья в админке (`status=published`) появляется на главной после обновления страницы. Тесты: `HomepageNewsTests`.
 - Hero copy contract in `templates/core/homepage.html` (i18n keys in `static/js/i18n/ru.json` + `en.json`):
   - H1: `hero_title_lead` (курсив + shimmer, `.hero-headline-main.text-gradient-animated`) + `hero_title_keywords` (`.hero-headline-keywords`, акцент `--primary` + тень).
-  - Lead: `hero_sub` in `.hero-lead-wrap` → `.hero-lead` (Cormorant Garamond italic 600 из Google Fonts в `base.html`, ~1.4× base size, tight leading, left accent bar + slow glow pulse). `static/js/hero-lead-particles.js` — canvas поверх текста: частицы от зелёной полосы летят вправо (2× ширина блока); `prefers-reduced-motion` отключает анимацию. RU copy: ручная работа + чеканка / 3D-печать (без акцента на AI).
+  - Lead: `hero_sub` in `.hero-lead-wrap` → `.hero-lead` (Cormorant Garamond italic 600, left accent + glow). `hero-lead-particles.js` — canvas; на iOS (`html.ios-webkit`) без `mix-blend-mode`, ярче частицы. `prefers-reduced-motion` отключает скрипт.
   - Subline `hero_medals_line_*` **удалён** с главной.
   - **Hero title glitch** (`HERO_TITLE_GLITCH_ENABLED`): legacy flag in settings; homepage hero no longer uses `.hero-glitch`. Tests: `HeroShowcaseTests`, `HeroHeadlineTests`.
 - Homepage dark-mode card contract:
@@ -703,6 +703,12 @@ Coverage map (read a test before making a semantically-loaded change):
 - **Gradient fallback gotchas** (`templates/core/base.html`):
   - Runtime feature-detection adds either `can-clip-text` or `no-clip-text` to
     `<html>`; keep this detection in `<head>` so first paint is stable.
+  - **iOS WebKit** (iPhone/iPad, all browsers): forced `no-clip-text` + class `ios-webkit` —
+    Safari supports `background-clip:text` but usually does not animate
+    `background-position` on clipped text; per-character `gradientCharFlow` runs
+    instead (`applyGradientTextFallback()` on load + after i18n). Hero lead
+    particles: no `mix-blend-mode` on canvas (`isolation` lifted) — otherwise
+    canvas is often invisible on iOS.
   - In `no-clip-text` mode the hero gradient words are rendered as many
     `.gradient-char` spans. This can affect CSS selectors targeting raw text
     nodes or scripts that expect `el.firstChild` to be a text node.
