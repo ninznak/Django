@@ -245,6 +245,11 @@
             will-change: color;
         }
 
+        html.no-clip-text .gradient-word {
+            display: inline-block;
+            white-space: nowrap;
+        }
+
         html.no-clip-text .hero-headline-main.text-gradient-animated .gradient-char {
             animation-duration: 6.4s;
         }
@@ -1484,16 +1489,31 @@
                 if (!text) return;
                 el.setAttribute('aria-label', text);
                 const frag = document.createDocumentFragment();
-                Array.from(text).forEach(function (char, idx) {
-                    const span = document.createElement('span');
-                    span.className = char === ' ' ? 'gradient-char gradient-char--space' : 'gradient-char';
-                    span.style.setProperty('--char-delay', `${-0.09 * idx}s`);
-                    if (char !== ' ') {
-                        span.textContent = char;
-                    } else {
-                        span.setAttribute('aria-hidden', 'true');
+                let charIdx = 0;
+                text.split(/(\s+)/).forEach(function (token) {
+                    if (!token) return;
+                    if (/^\s+$/.test(token)) {
+                        token.split('').forEach(function () {
+                            const space = document.createElement('span');
+                            space.className = 'gradient-char gradient-char--space';
+                            space.style.setProperty('--char-delay', `${-0.09 * charIdx}s`);
+                            space.setAttribute('aria-hidden', 'true');
+                            frag.appendChild(space);
+                            charIdx += 1;
+                        });
+                        return;
                     }
-                    frag.appendChild(span);
+                    const word = document.createElement('span');
+                    word.className = 'gradient-word';
+                    Array.from(token).forEach(function (char) {
+                        const span = document.createElement('span');
+                        span.className = 'gradient-char';
+                        span.style.setProperty('--char-delay', `${-0.09 * charIdx}s`);
+                        span.textContent = char;
+                        word.appendChild(span);
+                        charIdx += 1;
+                    });
+                    frag.appendChild(word);
                 });
                 el.replaceChildren(frag);
             });

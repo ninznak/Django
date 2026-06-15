@@ -710,7 +710,8 @@ Coverage map (read a test before making a semantically-loaded change):
     particles: no `mix-blend-mode` on canvas (`isolation` lifted) — otherwise
     canvas is often invisible on iOS.
   - In `no-clip-text` mode the hero gradient words are rendered as many
-    `.gradient-char` spans. This can affect CSS selectors targeting raw text
+    `.gradient-char` spans grouped in `.gradient-word` (`white-space: nowrap`)
+    so WebKit does not break inside a word (e.g. «изготовление» on iOS Safari).
     nodes or scripts that expect `el.firstChild` to be a text node.
   - If the hero heading starts stuttering on low-end phones, tune
     `@keyframes gradientCharFlow` duration and per-char delay before changing

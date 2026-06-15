@@ -250,6 +250,8 @@ html.can-clip-text .hero-headline-main.text-gradient-animated {
 html.no-clip-text .hero-headline-main.text-gradient-animated {
   color: #1a2e1a;
   white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
   --fallback-gradient-start: #1a2e1a;
   --fallback-gradient-mid: #e8f4c8;
   --fallback-gradient-end: #3d5a32;
