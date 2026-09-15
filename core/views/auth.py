@@ -23,8 +23,7 @@ from ..view_utils import (
     AUTH_POST_LIMIT,
     AUTH_WINDOW_SECONDS,
     is_rate_limited,
-    password_reset_email_blocked_reason,
-    record_password_reset_email_sent,
+    reserve_email,
 )
 
 User = get_user_model()
@@ -90,7 +89,7 @@ def sign_up_login(request):
         identifier = request.POST.get("username", "")
         password = request.POST.get("password", "")
         uname = username_for_login(identifier)
-        user = authenticate(request, username=uname, password=password) if uname else None
+        user = authenticate(request, username=uname or identifier, password=password)
         if user is not None:
             login(request, user)
             messages.success(request, "Signed in successfully.")
@@ -185,16 +184,16 @@ class CorePasswordResetView(PasswordResetView):
 
     def form_valid(self, form):
         email = (form.cleaned_data.get("email") or "").strip()
-        reason = password_reset_email_blocked_reason(email)
-        if reason:
-            logger.warning("Password reset email suppressed (%s)", reason)
+        users = list(form.get_users(email))
+        if users and not reserve_email("password_reset", email, count=len(users)):
+            logger.warning("Password reset email suppressed by quota")
+            return HttpResponseRedirect(self.get_success_url())
+        try:
+            return super().form_valid(form)
+        except Exception:
+            logger.exception("Password reset delivery failed")
             return HttpResponseRedirect(self.get_success_url())
 
-        users = list(form.get_users(email))
-        response = super().form_valid(form)
-        if users:
-            record_password_reset_email_sent(email)
-        return response
 
 
 class CorePasswordResetDoneView(PasswordResetDoneView):

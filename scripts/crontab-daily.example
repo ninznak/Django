@@ -11,6 +11,9 @@
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+# Shared security counters: remove expired inactive keys every hour.
+7 * * * * www-data cd /var/www/Django && /var/www/Django/venv/bin/python manage.py cleanup_abuse >> /var/www/Django/deploy/abuse-cleanup.log 2>&1
+
 # Каждый день в 03:15 (время и путь поправьте под себя).
 # update-safe.sh: сначала бэкап БД (pg_dump или копия SQLite) + JSON-снапшот
 # статей, затем обычный update.sh. Контент, добавленный через админку,

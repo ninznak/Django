@@ -1175,10 +1175,9 @@ class EmailAntiSpamTests(TestCase):
         second = c.post(reverse("core:homepage"), self._contact_payload())
         self.assertEqual(first.status_code, 302)
         self.assertEqual(second.status_code, 302)
-        self.assertEqual(ContactSubmission.objects.count(), 2)
+        self.assertEqual(ContactSubmission.objects.count(), 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertTrue(ContactSubmission.objects.order_by("pk")[0].email_sent)
-        self.assertFalse(ContactSubmission.objects.order_by("pk")[1].email_sent)
 
     @override_settings(
         CONTACT_FORM_TRY_EMAIL=True,
@@ -1230,6 +1229,8 @@ class CheckoutFlowTests(TestCase):
             data=json.dumps({"action": "add", "product_id": self.product["id"], "qty": qty}),
             content_type="application/json",
         )
+
+        self.client.get(reverse("core:checkout"))
 
     def test_empty_cart_redirects_to_shop(self):
         r = self.client.get(reverse("core:checkout"))

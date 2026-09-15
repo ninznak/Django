@@ -14,3 +14,6 @@ media/
 install.cmd
 SiteReplitVersion/
 resolvingProblems.txt
+
+# Private local backups (never commit database dumps)
+.local-backups/

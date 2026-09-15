@@ -843,3 +843,36 @@ Coverage map (read a test before making a semantically-loaded change):
 
 If the task needs context not covered here, open the specific file from §2 —
 this document is the index.
+
+
+## 13. Security revision — 2026-09-15 (supersedes legacy cache notes above)
+
+- Shared security counters/claims now live in `core.models.AbuseBucket`, via
+  `core/abuse.py::reserve/exceeded`: atomic conditional UPDATE, SHA-256 keys,
+  expiry recycling. LocMem is only presentation cache. No Redis dependency.
+- Run `manage.py cleanup_abuse` hourly to prune inactive expired keys.
+- SMTP quotas reserve before delivery, including failed attempts; conservative
+  partial reservations are retained until expiry. `EMAIL_TIMEOUT=8` by default.
+- Contact DB dedupe is independent of SMTP, across homepage/about/footer:
+  `CONTACT_SUBMISSION_DEDUPE_SECONDS=1800`. Honeypot `website` is included in all
+  forms and returns success without storage. CAPTCHA is deferred.
+- `Order.checkout_fingerprint`: nullable unique HMAC of session_key + server form
+  token, replaces cache/IP idempotency. First checkout POST requires a prior GET.
+  Duplicate key persists with Order (old TTL setting is obsolete). `create_order`
+  is transaction.atomic: Order + OrderItems roll back together. Concurrent unique
+  conflict retrieves only the same session's existing order. SMTP outside its
+  transaction. Migration: `0023_shared_abuse_and_checkout_fingerprint`.
+- `core.middleware.AuthThrottleMiddleware` covers admin login and password-reset
+  POSTs including invalid forms. Existing sign-up-login throttle remains.
+- `core.admin_site_config.SecureAdminConfig` configures the default admin site;
+  `core.admin_site.SecureAdminSite` supports django-otp TOTP/static recovery codes.
+  Enforce with `ADMIN_OTP_REQUIRED=1` AFTER device enrollment (default 0 avoids
+  upgrade lockout). `OTPMiddleware` follows AuthenticationMiddleware.
+- `manage.py backup_database --directory PATH --keep 30` reads effective Django
+  DB settings; Python SQLite backup API or pg_dump using explicit credentials.
+  update-safe.sh calls this command, no shell parsing of .env / unsafe live cp.
+- Tests: `core/tests_security.py` covers cross-process quotas, ownership, rollback,
+  unique keys, OTP login, honeypot/dedupe, mail failure budgets and backup contracts.
+- Deployment steps and operational limits: `SECURITY_DEPLOY.md`.
+- User explicitly deferred design/usability/CAPTCHA. Preserve their plan in
+  `FUTURE_IMPROVEMENTS.md`; implement only when requested later.

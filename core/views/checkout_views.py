@@ -2,7 +2,9 @@ import logging
 
 from django.conf import settings
 from django.contrib import messages
-from django.core.cache import cache
+from django.db import IntegrityError
+from django.http import HttpResponseBadRequest
+from django.utils.crypto import constant_time_compare, salted_hmac
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
@@ -17,7 +19,6 @@ from ..pricing import format_minor_as_rub
 from ..seo import get_seo
 from ..view_utils import (
     CHECKOUT_IDEMPOTENCY_SESSION_KEY,
-    CHECKOUT_IDEMPOTENCY_TTL_SECONDS,
     CHECKOUT_POST_LIMIT,
     CHECKOUT_WINDOW_SECONDS,
     checkout_idempotency_key,
@@ -63,13 +64,22 @@ def checkout(request):
     ).strip()
     ip_addr = client_ip(request)
 
-    if request.method == "POST" and submitted_idempotency_key:
-        idem_cache_key = f"idem:checkout:{ip_addr}:{submitted_idempotency_key}"
-        existing_order_id = cache.get(idem_cache_key)
-        if existing_order_id:
-            remember_confirmed_order(request, existing_order_id)
-            messages.info(request, f"Заказ №{existing_order_id} уже был оформлен ранее.")
-            return redirect("core:order_confirmation", order_id=existing_order_id)
+    fingerprint = None
+    if request.method == "POST":
+        if is_rate_limited(request, "checkout_post", CHECKOUT_POST_LIMIT, CHECKOUT_WINDOW_SECONDS):
+            return render(request, "core/checkout.html", _checkout_ctx(
+                request, CheckoutForm(request.POST), lines, summary["cart_subtotal_cents"],
+                request.session.get(CHECKOUT_IDEMPOTENCY_SESSION_KEY, "")), status=429)
+        active_key = request.session.get(CHECKOUT_IDEMPOTENCY_SESSION_KEY, "")
+        submitted_idempotency_key = submitted_idempotency_key or active_key
+        if submitted_idempotency_key and request.session.session_key:
+            fingerprint = salted_hmac("checkout", request.session.session_key + ":" + submitted_idempotency_key, algorithm="sha256").hexdigest()
+            existing_order = Order.objects.filter(checkout_fingerprint=fingerprint).first()
+            if existing_order:
+                remember_confirmed_order(request, existing_order.pk)
+                return redirect("core:order_confirmation", order_id=existing_order.pk)
+        if lines and (not active_key or not constant_time_compare(active_key, submitted_idempotency_key)):
+            return HttpResponseBadRequest("Обновите страницу оформления заказа и повторите отправку.")
 
     if not lines:
         messages.warning(request, "Ваша корзина пуста. Добавьте товары для оформления заказа.")
@@ -77,38 +87,29 @@ def checkout(request):
 
     total_cents = summary["cart_subtotal_cents"]
     idempotency_key = checkout_idempotency_key(request)
-    effective_idempotency_key = submitted_idempotency_key or idempotency_key
 
     if request.method == "POST":
-        if is_rate_limited(
-            request, "checkout_post", CHECKOUT_POST_LIMIT, CHECKOUT_WINDOW_SECONDS
-        ):
-            form = CheckoutForm(request.POST)
-            return render(
-                request,
-                "core/checkout.html",
-                _checkout_ctx(request, form, lines, total_cents, idempotency_key),
-                status=429,
-            )
-
         form = CheckoutForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            order = create_order(
-                cleaned_data=data,
-                lines=lines,
-                total_cents=total_cents,
-                ip_address=ip_addr,
-            )
+            try:
+                order = create_order(
+                    cleaned_data=data, lines=lines, total_cents=total_cents,
+                    ip_address=ip_addr, checkout_fingerprint=fingerprint,
+                )
+            except IntegrityError:
+                # create_order's atomic block rolled back; a concurrent winner
+                # is now visible. Do not suppress unrelated integrity failures.
+                order = Order.objects.filter(checkout_fingerprint=fingerprint).first()
+                if order is None:
+                    raise
+            else:
+                if getattr(settings, "CONTACT_FORM_TRY_EMAIL", True):
+                    try:
+                        deliver_order_notification(order, data)
+                    except Exception:
+                        logger.exception("Order notification email failed (order id=%s)", order.pk)
             finalize_checkout_session(request)
-            if getattr(settings, "CONTACT_FORM_TRY_EMAIL", True):
-                try:
-                    deliver_order_notification(order, data)
-                except Exception:
-                    logger.exception("Order notification email failed (order id=%s)", order.pk)
-
-            idem_cache_key = f"idem:checkout:{ip_addr}:{effective_idempotency_key}"
-            cache.set(idem_cache_key, order.id, timeout=CHECKOUT_IDEMPOTENCY_TTL_SECONDS)
             request.session.pop(CHECKOUT_IDEMPOTENCY_SESSION_KEY, None)
             remember_confirmed_order(request, order.id)
             messages.success(

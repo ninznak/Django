@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import DateTimeField
 from django.db.models.functions import Coalesce
 from django.contrib import messages
@@ -11,11 +12,13 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from ..forms import ContactForm
+from ..abuse import reserve
 from ..models import ContactSubmission, NewsArticle
 from ..portfolio_gallery_data import gallery_context
 from ..seo import get_seo, news_article_seo_overrides
 from ..site_settings import contact_form_enabled
 from ..view_utils import (
+    contact_email_fingerprint,
     CONTACT_FORM_POST_LIMIT,
     CONTACT_FORM_WINDOW_SECONDS,
     deliver_contact_email,
@@ -25,6 +28,20 @@ from ..view_utils import (
 logger = logging.getLogger(__name__)
 
 HOMEPAGE_NEWS_LIMIT = 4
+
+
+@transaction.atomic
+def _store_contact_submission(data):
+    # The dedupe claim rolls back if saving the message fails.
+    if data.get("website") or not reserve(
+        "contact_submission:" + contact_email_fingerprint(data), 1,
+        settings.CONTACT_SUBMISSION_DEDUPE_SECONDS,
+    ):
+        return None
+    return ContactSubmission.objects.create(
+        name=data["name"], email=data["email"], subject=data["subject"],
+        message=data["message"], email_sent=False,
+    )
 
 
 def _published_news_queryset():
@@ -72,13 +89,10 @@ def homepage(request):
         form = ContactForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            submission = ContactSubmission.objects.create(
-                name=data["name"],
-                email=data["email"],
-                subject=data["subject"],
-                message=data["message"],
-                email_sent=False,
-            )
+            submission = _store_contact_submission(data)
+            if submission is None:
+                messages.success(request, "Thank you — your message was received.")
+                return redirect("core:homepage")
             if getattr(settings, "CONTACT_FORM_TRY_EMAIL", True):
                 try:
                     if deliver_contact_email(data):
@@ -114,13 +128,10 @@ def about(request):
         form = ContactForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            submission = ContactSubmission.objects.create(
-                name=data["name"],
-                email=data["email"],
-                subject=data["subject"],
-                message=data["message"],
-                email_sent=False,
-            )
+            submission = _store_contact_submission(data)
+            if submission is None:
+                messages.success(request, "Thank you — your message was received.")
+                return redirect("core:about")
             if getattr(settings, "CONTACT_FORM_TRY_EMAIL", True):
                 try:
                     if deliver_contact_email(data):

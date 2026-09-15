@@ -622,6 +622,7 @@ Also uncomment forum in core/urls.py, core/sitemaps.py, and nav/footer links in 
             <form class="home-contact-form rounded-3xl p-8 border border-primary/10 shadow-lg night-glow-surface" method="post" action="{% url 'core:homepage' %}#contact">
                 {% csrf_token %}
                 <input type="hidden" name="contact_form" value="1">
+    {% include "core/includes/contact_honeypot.html" %}
                 <div class="space-y-5">
                     {% if contact_form.non_field_errors %}
                     <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">

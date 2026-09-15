@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.core.mail import EmailMessage
+from django.db import transaction
 
 from . import cart_utils
 from .models import Order, OrderItem
@@ -16,12 +17,14 @@ if TYPE_CHECKING:
     from django.http import HttpRequest
 
 
+@transaction.atomic
 def create_order(
     *,
     cleaned_data: dict[str, Any],
     lines: list[CartLine],
     total_cents: int,
     ip_address: str | None,
+    checkout_fingerprint: str | None = None,
 ) -> Order:
     """Создать ``Order`` + ``OrderItem`` из валидной формы и строк корзины."""
     order = Order.objects.create(
@@ -36,6 +39,7 @@ def create_order(
         notes=cleaned_data.get("notes", ""),
         pd_consent=cleaned_data["pd_consent"],
         ip_address=ip_address,
+        checkout_fingerprint=checkout_fingerprint,
     )
     for line in lines:
         product = line["product"]

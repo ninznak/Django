@@ -25,6 +25,7 @@ _CONTENT_CHECKBOX_CLASS = (
 
 
 class ContactForm(forms.Form):
+    website = forms.CharField(required=False, max_length=200, widget=forms.HiddenInput)
     name = forms.CharField(max_length=120, required=True)
     email = forms.EmailField(required=True)
     subject = forms.CharField(max_length=200, required=True)

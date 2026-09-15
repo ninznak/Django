@@ -171,6 +171,12 @@ systemctl restart "${SITE_NAME}"
 echo "==> Nginx (HTTP first)"
 # shellcheck disable=SC2086
 cat > "${NGINX_AVAILABLE}" <<EOF
+# Empty keys skip GET/static traffic; limits are shared by Nginx workers.
+map \$request_method \$creativesphere_post_ip {
+    default "";
+    POST \$binary_remote_addr;
+}
+limit_req_zone \$creativesphere_post_ip zone=creativesphere_post:10m rate=2r/s;
 server {
     listen 80;
     listen [::]:80;
@@ -189,6 +195,8 @@ server {
     }
 
     location / {
+        limit_req zone=creativesphere_post burst=10 nodelay;
+        limit_req_status 429;
         proxy_pass http://127.0.0.1:8000;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;

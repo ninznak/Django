@@ -40,6 +40,7 @@ class Order(models.Model):
     created_at = models.DateTimeField("Дата создания", auto_now_add=True)
     updated_at = models.DateTimeField("Дата обновления", auto_now=True)
     ip_address = models.GenericIPAddressField("IP-адрес", blank=True, null=True)
+    checkout_fingerprint = models.CharField(max_length=64, unique=True, null=True, blank=True, editable=False)
 
     class Meta:
         ordering = ["-created_at"]
@@ -92,6 +93,14 @@ class ContactSubmission(models.Model):
 
     def __str__(self) -> str:
         return f"{self.created_at:%Y-%m-%d %H:%M} — {self.subject[:60]}"
+
+
+class AbuseBucket(models.Model):
+    """Shared, bounded counters and short-lived claims; keys contain hashes only."""
+
+    key = models.CharField(max_length=64, primary_key=True)
+    hits = models.PositiveIntegerField(default=0)
+    expires_at = models.DateTimeField(db_index=True)
 
 
 class NewsArticle(models.Model):

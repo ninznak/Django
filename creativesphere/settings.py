@@ -118,6 +118,7 @@ EMAIL_BACKEND = os.getenv(
 ).strip()
 EMAIL_HOST = os.getenv('EMAIL_HOST', '').strip()
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587').strip() or '587')
+EMAIL_TIMEOUT = _env_int('EMAIL_TIMEOUT', 8)
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', '0').strip() == '1'
 # TLS and SSL are mutually exclusive in Django; SSL (implicit, port 465) wins
 # if explicitly enabled so a stray TLS default can't break send().
@@ -139,6 +140,7 @@ CONTACT_FORM_RECIPIENT = CONTACT_FORM_RECIPIENTS[0]
 CONTACT_FORM_TRY_EMAIL = os.getenv('CONTACT_FORM_TRY_EMAIL', '1').strip() == '1'
 
 # Abuse protection / throttling (cache-backed in core.views)
+CONTACT_SUBMISSION_DEDUPE_SECONDS = _env_int("CONTACT_SUBMISSION_DEDUPE_SECONDS", 1800)
 CONTACT_FORM_POST_LIMIT = _env_int("CONTACT_FORM_POST_LIMIT", 5)
 CONTACT_FORM_WINDOW_SECONDS = _env_int("CONTACT_FORM_WINDOW_SECONDS", 600)
 AUTH_POST_LIMIT = _env_int("AUTH_POST_LIMIT", 20)
@@ -183,7 +185,7 @@ if not DEBUG:
         SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', '0').strip() == '1'
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'core.admin_site_config.SecureAdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -191,6 +193,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.sitemaps',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_static',
     'core',
 ]
 
@@ -200,6 +205,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
+    'core.middleware.AuthThrottleMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -303,6 +310,8 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Registration UI on /sign-up-login/ (Sign up link + form). Set AUTH_SHOW_REGISTRATION=1 in .env to show again.
 AUTH_SHOW_REGISTRATION = os.getenv('AUTH_SHOW_REGISTRATION', '0').strip() == '1'
+ADMIN_OTP_REQUIRED = os.getenv('ADMIN_OTP_REQUIRED', '0').strip() == '1'
+OTP_TOTP_ISSUER = 'KurilenkoArt'
 
 # Hero on phones: stacked cards + tap/swipe (<768px). Set to 0 to restore legacy (no mobile deck).
 _HERO_MOBILE_STACK_RAW = os.getenv('HERO_MOBILE_STACK_ENABLED', '1').strip().lower()
@@ -312,9 +321,8 @@ HERO_MOBILE_STACK_ENABLED = _HERO_MOBILE_STACK_RAW in ('1', 'true', 'yes', 'on')
 _HERO_TITLE_GLITCH_RAW = os.getenv('HERO_TITLE_GLITCH_ENABLED', '1').strip().lower()
 HERO_TITLE_GLITCH_ENABLED = _HERO_TITLE_GLITCH_RAW in ('1', 'true', 'yes', 'on')
 
-# Rate limiting and checkout idempotency use Django's cache. LocMem is process-local;
-# with multiple Gunicorn workers each worker has its own counters (stricter overall).
-# For shared limits across workers, configure Redis/Memcached here.
+# Cache is only for presentation data. Security quotas use core.AbuseBucket;
+# checkout replay protection uses a unique Order.checkout_fingerprint in the DB.
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',

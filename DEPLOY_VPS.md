@@ -137,3 +137,10 @@ If you prefer not to use the script:
 - `deploy/creativesphere-gunicorn.service` — reference unit file (script writes `/etc/systemd/system/creativesphere-gunicorn.service`)
 - `.env.example` — template for environment variables
 - `requirements.txt` — includes `gunicorn` and `python-dotenv`
+
+
+## Security update 2026-09-15
+
+See [SECURITY_DEPLOY.md](SECURITY_DEPLOY.md) for migration 0023, shared DB quotas,
+Nginx POST limits, backup_database, hourly cleanup_abuse and admin OTP enrollment.
+Design/usability/CAPTCHA remain deferred in [FUTURE_IMPROVEMENTS.md](FUTURE_IMPROVEMENTS.md).
