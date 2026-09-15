@@ -14,11 +14,12 @@ from ..forms import ContactForm
 from ..models import ContactSubmission, NewsArticle
 from ..portfolio_gallery_data import gallery_context
 from ..seo import get_seo, news_article_seo_overrides
+from ..site_settings import contact_form_enabled
 from ..view_utils import (
     CONTACT_FORM_POST_LIMIT,
     CONTACT_FORM_WINDOW_SECONDS,
+    deliver_contact_email,
     is_rate_limited,
-    send_contact_email,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,6 +53,9 @@ def _homepage_context(contact_form) -> dict:
 @require_http_methods(["GET", "POST"])
 def homepage(request):
     if request.method == "POST" and request.POST.get("contact_form"):
+        if not contact_form_enabled():
+            messages.error(request, "Отправка сообщений с сайта временно отключена.")
+            return redirect("core:homepage")
         if is_rate_limited(
             request, "contact_form", CONTACT_FORM_POST_LIMIT, CONTACT_FORM_WINDOW_SECONDS
         ):
@@ -77,14 +81,13 @@ def homepage(request):
             )
             if getattr(settings, "CONTACT_FORM_TRY_EMAIL", True):
                 try:
-                    send_contact_email(data)
+                    if deliver_contact_email(data):
+                        ContactSubmission.objects.filter(pk=submission.pk).update(
+                            email_sent=True
+                        )
                 except Exception:
                     logger.exception(
                         "Contact form email failed (submission id=%s)", submission.pk
-                    )
-                else:
-                    ContactSubmission.objects.filter(pk=submission.pk).update(
-                        email_sent=True
                     )
             messages.success(request, "Thank you — your message was received.")
             return redirect("core:homepage")
@@ -95,6 +98,9 @@ def homepage(request):
 @require_http_methods(["GET", "POST"])
 def about(request):
     if request.method == "POST" and request.POST.get("contact_form"):
+        if not contact_form_enabled():
+            messages.error(request, "Отправка сообщений с сайта временно отключена.")
+            return redirect("core:about")
         if is_rate_limited(
             request, "contact_form", CONTACT_FORM_POST_LIMIT, CONTACT_FORM_WINDOW_SECONDS
         ):
@@ -117,14 +123,13 @@ def about(request):
             )
             if getattr(settings, "CONTACT_FORM_TRY_EMAIL", True):
                 try:
-                    send_contact_email(data)
+                    if deliver_contact_email(data):
+                        ContactSubmission.objects.filter(pk=submission.pk).update(
+                            email_sent=True
+                        )
                 except Exception:
                     logger.exception(
                         "Contact form email failed (submission id=%s)", submission.pk
-                    )
-                else:
-                    ContactSubmission.objects.filter(pk=submission.pk).update(
-                        email_sent=True
                     )
             messages.success(request, "Thank you — your message was received.")
             return redirect("core:about")

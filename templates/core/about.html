@@ -162,8 +162,12 @@
 
         <section class="mt-16 max-w-xl" id="contact-about">
             <h2 class="font-display text-2xl font-semibold mb-4" data-i18="footer_contact_form">Быстрая форма</h2>
+            {% if site_settings.contact_form_enabled %}
             {% url 'core:about' as about_url %}
             {% include "core/includes/contact_form_light.html" with contact_form_action=about_url %}
+            {% else %}
+            <p class="text-sm text-gray-500" data-i18="contact_disabled_note">Отправка сообщений с сайта временно отключена.</p>
+            {% endif %}
         </section>
     </div>
 </div>

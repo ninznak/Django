@@ -29,7 +29,7 @@ from django.urls import reverse
 from core import cart_utils
 from core.admin import NewsArticleAdmin, ProductAdmin
 from core.forms import CheckoutForm, ContactForm, RegisterForm
-from core.models import ContactSubmission, NewsArticle, Order, OrderItem, Product, ProductImage
+from core.models import ContactSubmission, NewsArticle, Order, OrderItem, Product, ProductImage, SiteSetting
 from core.portfolio_gallery_data import gallery_context
 from core.pricing import (
     USD_TO_RUB_RATE,
@@ -37,6 +37,7 @@ from core.pricing import (
     usd_whole_to_rub_kopecks,
 )
 from core.seo import get_seo
+from core.site_settings import invalidate_site_settings_cache, is_contact_email_domain_allowed
 from core.shop_data import (
     get_free_products,
     get_product,
@@ -965,6 +966,10 @@ class CartApiTests(TestCase):
 
 
 class ContactFormSubmissionTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        mail.outbox.clear()
+
     def test_valid_submission_creates_record_and_sends_email(self):
         c = Client()
         r = c.post(reverse("core:homepage"), {
@@ -1013,7 +1018,7 @@ class ContactFormSubmissionTests(TestCase):
 
     @override_settings(CONTACT_FORM_TRY_EMAIL=True)
     def test_email_failure_still_saves_submission(self):
-        with mock.patch("core.views.pages.send_contact_email", side_effect=RuntimeError("smtp boom")):
+        with mock.patch("core.views.pages.deliver_contact_email", side_effect=RuntimeError("smtp boom")):
             r = Client().post(reverse("core:homepage"), {
                 "contact_form": "1",
                 "name": "Jane",
@@ -1024,6 +1029,185 @@ class ContactFormSubmissionTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertEqual(ContactSubmission.objects.count(), 1)
         self.assertFalse(ContactSubmission.objects.get().email_sent)
+
+
+class ContactDomainFilterTests(TestCase):
+    """Контракт фильтра доменов контакт-формы (``SiteSetting``).
+
+    Матчинг — «домен письма совпадает с записью или заканчивается на
+    ``.<запись>``». Запись ``icloud`` НЕ покрывает ``icloud.com`` — поэтому
+    дефолтный список должен содержать ``icloud.com`` целиком (закреплено
+    тестом ниже).
+    """
+
+    def setUp(self):
+        cache.clear()
+
+    def _set_filter(self, mode, domains):
+        cfg = SiteSetting.load()
+        cfg.contact_email_domain_mode = mode
+        cfg.contact_email_allowed_domains = domains
+        cfg.save()
+        invalidate_site_settings_cache()
+
+    def test_default_domains_cover_documented_examples(self):
+        default_list = SiteSetting._meta.get_field(
+            "contact_email_allowed_domains"
+        ).get_default()
+        self._set_filter("whitelist", default_list)
+        for email in (
+            "user@icloud.com",
+            "user@gmail.com",
+            "user@mail.ru",
+            "user@proton.me",
+            "user@a.mail.ru",
+        ):
+            self.assertTrue(is_contact_email_domain_allowed(email), email)
+
+    def test_whitelist_blocks_unknown_domain(self):
+        self._set_filter("whitelist", "ru, com, icloud.com, me")
+        self.assertFalse(is_contact_email_domain_allowed("user@example.xyz"))
+        self.assertFalse(is_contact_email_domain_allowed("user@fakemail.com.evil.xyz"))
+
+    def test_any_mode_allows_every_domain(self):
+        self._set_filter("any", "ru")
+        self.assertTrue(is_contact_email_domain_allowed("user@example.xyz"))
+
+    def test_empty_whitelist_fails_open(self):
+        self._set_filter("whitelist", "")
+        self.assertTrue(is_contact_email_domain_allowed("user@example.xyz"))
+
+    def test_whitelist_blocks_form_submission(self):
+        self._set_filter("whitelist", "ru, com, icloud.com, me")
+        r = Client().post(reverse("core:homepage"), {
+            "contact_form": "1",
+            "name": "Jane",
+            "email": "jane@example.xyz",
+            "subject": "Hi",
+            "message": "Hello",
+        })
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(ContactSubmission.objects.count(), 0)
+
+
+class ContactFormToggleTests(TestCase):
+    """Переключатель ``SiteSetting.contact_form_enabled`` (админ может
+    полностью отключить приём сообщений с сайта)."""
+
+    def setUp(self):
+        cache.clear()
+
+    def _set_enabled(self, enabled: bool) -> None:
+        cfg = SiteSetting.load()
+        cfg.contact_form_enabled = enabled
+        cfg.save()
+        invalidate_site_settings_cache()
+
+    def test_enabled_by_default_renders_form(self):
+        r = Client().get(reverse("core:homepage"))
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('name="contact_form" value="1"', r.content.decode())
+
+    def test_disabled_form_hidden_on_homepage(self):
+        self._set_enabled(False)
+        r = Client().get(reverse("core:homepage"))
+        self.assertEqual(r.status_code, 200)
+        self.assertNotIn('name="contact_form" value="1"', r.content.decode())
+        self.assertIn("временно отключена", r.content.decode())
+
+    def test_disabled_form_blocks_post_without_saving(self):
+        self._set_enabled(False)
+        r = Client().post(reverse("core:homepage"), {
+            "contact_form": "1",
+            "name": "Jane",
+            "email": "jane@example.com",
+            "subject": "Hi",
+            "message": "Hello",
+        })
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(ContactSubmission.objects.count(), 0)
+        messages = [m.message for m in get_messages(r.wsgi_request)]
+        self.assertTrue(any("отключена" in str(m) for m in messages))
+
+    def test_disabled_form_blocks_about_post(self):
+        self._set_enabled(False)
+        r = Client().post(reverse("core:about"), {
+            "contact_form": "1",
+            "name": "Jane",
+            "email": "jane@example.com",
+            "subject": "Hi",
+            "message": "Hello",
+        })
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(ContactSubmission.objects.count(), 0)
+
+    def test_reenabling_restores_form(self):
+        self._set_enabled(False)
+        self._set_enabled(True)
+        r = Client().get(reverse("core:homepage"))
+        self.assertIn('name="contact_form" value="1"', r.content.decode())
+
+
+class EmailAntiSpamTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        mail.outbox.clear()
+
+    def _contact_payload(self, **overrides):
+        payload = {
+            "contact_form": "1",
+            "name": "Jane",
+            "email": "jane@example.com",
+            "subject": "Hi there",
+            "message": "Hello",
+        }
+        payload.update(overrides)
+        return payload
+
+    @override_settings(
+        CONTACT_FORM_TRY_EMAIL=True,
+        CONTACT_EMAIL_DEDUPE_SECONDS=1800,
+        CONTACT_SUBMITTER_EMAIL_LIMIT=10,
+    )
+    def test_duplicate_contact_content_suppresses_second_email(self):
+        c = Client()
+        first = c.post(reverse("core:homepage"), self._contact_payload())
+        second = c.post(reverse("core:homepage"), self._contact_payload())
+        self.assertEqual(first.status_code, 302)
+        self.assertEqual(second.status_code, 302)
+        self.assertEqual(ContactSubmission.objects.count(), 2)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertTrue(ContactSubmission.objects.order_by("pk")[0].email_sent)
+        self.assertFalse(ContactSubmission.objects.order_by("pk")[1].email_sent)
+
+    @override_settings(
+        CONTACT_FORM_TRY_EMAIL=True,
+        CONTACT_EMAIL_DEDUPE_SECONDS=0,
+        CONTACT_SUBMITTER_EMAIL_LIMIT=2,
+        CONTACT_SUBMITTER_EMAIL_WINDOW_SECONDS=3600,
+    )
+    def test_contact_submitter_rate_limits_notification_emails(self):
+        c = Client()
+        for idx in range(3):
+            c.post(
+                reverse("core:homepage"),
+                self._contact_payload(subject=f"Msg {idx}", message=f"Body {idx}"),
+            )
+        self.assertEqual(ContactSubmission.objects.count(), 3)
+        self.assertEqual(len(mail.outbox), 2)
+
+    @override_settings(
+        CONTACT_FORM_TRY_EMAIL=True,
+        EMAIL_OUTBOUND_LIMIT=1,
+        EMAIL_OUTBOUND_WINDOW_SECONDS=3600,
+        CONTACT_EMAIL_DEDUPE_SECONDS=0,
+        CONTACT_SUBMITTER_EMAIL_LIMIT=10,
+    )
+    def test_global_email_cap_suppresses_extra_notifications(self):
+        c = Client()
+        c.post(reverse("core:homepage"), self._contact_payload(subject="One", message="A"))
+        c.post(reverse("core:homepage"), self._contact_payload(subject="Two", message="B"))
+        self.assertEqual(len(mail.outbox), 1)
 
 
 # ---------------------------------------------------------------------------
@@ -1740,6 +1924,7 @@ class HeroShowcaseTests(TestCase):
         self.assertContains(response, "images/news/model8.jpg")
         self.assertContains(response, "images/medals/medal5.JPEG")
         self.assertContains(response, "images/news/Georg1.jpg")
+        self.assertContains(response, "images/medals/krondshtat.jpg")
         self.assertContains(response, "data-hero-showcase-dot")
         self.assertContains(response, "Церковь Преображения Господня")
 
@@ -1748,6 +1933,7 @@ class HeroShowcaseTests(TestCase):
         self.assertContains(response, "data-hero-spotlight")
         self.assertContains(response, "images/news/georg11.jpeg")
         self.assertContains(response, "images/news/ushak777.jpg")
+        self.assertContains(response, "images/medals/krondshtat.jpg")
         self.assertContains(response, "hero-mobile-spotlight.js")
         self.assertContains(response, "hero-mobile-deck.css")
 

@@ -45,7 +45,7 @@ Django/
 │   ├── forms.py                        # ContactForm, RegisterForm, CheckoutForm, ProductCreateForm, NewsArticleCreateForm
 │   ├── urls.py                         # app_name="core" route table
 │   ├── views/                          # HTTP views package (pages, shop, auth, checkout, profile, errors)
-│   ├── view_utils.py                   # rate limit, session orders, contact email helpers
+│   ├── view_utils.py                   # rate limit, session orders, email delivery + anti-spam gates
 │   ├── checkout_service.py             # create_order + admin notification email
 │   ├── site_settings.py                # cached SiteSetting.load()
 │   ├── shop_types.py                   # CartProduct / CartLine TypedDict
@@ -60,7 +60,7 @@ Django/
 │   ├── templatetags/pricing_extras.py  # {{ value|rub_minor }}
 │   ├── templatetags/article_extras.py  # {{ article.content|render_article_body }} (headings / ordered & unordered lists / inline images / bold / italic / safe links)
 │   ├── tests.py                        # tests covering pricing/forms/cart/SEO/news/admin/profile flows
-│   └── migrations/                     # 0001_contact_submission, 0002_order, 0003_order_address_optional
+│   └── migrations/                     # 0001…0022 (последняя — 0022_sitesetting_contact_email_allowed_domains_and_more: contact_form_enabled / domain mode / allowed domains)
 │
 ├── templates/core/                     # HTML templates for every named URL
 │   ├── base.html                       # Head/meta/OG/Twitter/JSON-LD wiring (consumes `seo`) + i18n engine (data-i18 / data-i18-placeholder / data-i18-aria-label)
@@ -97,13 +97,17 @@ Anything under `.venv/`, `venv/`, `.idea/`, `.vscode/`, `.gigaide/`,
 2. `core/urls.py` (`app_name="core"`) maps URL names → view functions in
    `core/views.py`. **Always use `reverse("core:<name>")`**, never hard-code
    paths.
-3. Two context processors run on every request (registered in
+3. Three context processors run on every request (registered in
    `creativesphere/settings.py` → `TEMPLATES[0].OPTIONS.context_processors`):
    - `core.context_processors.site_seo` — adds `seo` (lazy) + `contact_email`.
    - `core.context_processors.shop_cart` — adds `shop_products`,
      `shop_preview_products` (**lazy** `SimpleLazyObject`: DB hit only when the
      template iterates them — e.g. главная и `/shop/`), `cart_lines`,
      `cart_total_items`, `cart_subtotal_cents`, `cart_subtotal_formatted`.
+   - `core.context_processors.site_settings` — adds `site_settings` (lazy,
+     cache-backed `SiteSetting.load()`, TTL 300s — invalidate via
+     `core.site_settings.invalidate_site_settings_cache()`) + `current_year`
+     (footer copyright).
 4. Views typically render `core/<page>.html` extending `templates/core/base.html`,
    which reads `seo.*` for every meta tag.
 
@@ -117,7 +121,7 @@ Anything under `.venv/`, `venv/`, `.idea/`, `.vscode/`, `.gigaide/`,
 | `OrderItem` | Line in an `Order` (FK `related_name="items"`). | `product_id`, `product_name`, `product_price_cents`, `quantity`. Property `total_cents = price * qty`. |
 | `ContactSubmission` | Contact-form message stored in admin. | `name`, `email`, `subject`, `message`, `created_at`, `email_sent` (bool flag: notification actually delivered). |
 | `NewsArticle` | Admin-managed article with draft/publish flow. Public pages show only `published`. | `title`, `slug`, `excerpt`, `content`, `tag`, `reading_time_minutes`, `cover_image` (path in `static/`), `author` (nullable FK), `status` (`draft/published`), `published_at`, `created_at`, `updated_at`. |
-| `SiteSetting` | Singleton (pk=1): hero busyness + stat counters. | `sculptor_busy` (0–100), `stat_3d_value`, `stat_projects_value`, `stat_years_value`. Edit in admin or `/profile/site-settings/` (Editors). Context: `site_settings` via `core.context_processors.site_settings`. |
+| `SiteSetting` | Singleton (pk=1): hero busyness + stat counters + контактные формы. | `sculptor_busy` (0–100), `stat_3d_value`, `stat_projects_value`, `stat_years_value`, `contact_form_enabled` (default True — скрывает контактные формы на главной/`/about/` и отклоняет их POST), `contact_email_domain_mode` (`any`/`whitelist`), `contact_email_allowed_domains` (default `"ru, com, icloud.com, me"`; матчинг — домен равен записи или заканчивается на `.<запись>`, поэтому `icloud` НЕ покрывает `icloud.com` — пишите полный домен; пустой список = fail-open, контракт в `ContactDomainFilterTests`). Проверка домена — `core.site_settings.is_contact_email_domain_allowed` (вызывается из `ContactForm.clean_email`). Edit in admin or `/profile/site-settings/` (Editors). Context: `site_settings` via `core.context_processors.site_settings`. |
 
 **Money is stored as integer kopecks** (`*_cents` fields despite the name).
 Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
@@ -592,6 +596,7 @@ Env vars (see `.env.example`):
 | `EMAIL_*`, `DEFAULT_FROM_EMAIL`, `SEO_CONTACT_EMAIL`, `SEO_AUTHOR_NAME`, `CONTACT_FORM_RECIPIENT`, `CONTACT_FORM_TRY_EMAIL` | Email wiring + JSON-LD Person name. Dev default: console backend. `EMAIL_USE_SSL=1` автоматически отключает `EMAIL_USE_TLS` (они взаимоисключающие в Django; SSL/465 побеждает). |
 | `AUTH_SHOW_REGISTRATION` | `"1"` to expose the sign-up form on `/sign-up-login/`. Default off. |
 | `*_POST_LIMIT`, `*_WINDOW_SECONDS`, `CHECKOUT_IDEMPOTENCY_TTL_SECONDS`, `CHECKOUT_IDEMPOTENCY_SESSION_KEY` | Abuse-protection tuning (contact/auth/cart/checkout throttles + idempotency retention/session key name). See `.env.example` keys. Backed by `CACHES['default']` (LocMem in repo; per-worker — replace with Redis/Memcached for shared limits). |
+| `EMAIL_OUTBOUND_*`, `CONTACT_EMAIL_DEDUPE_SECONDS`, `CONTACT_SUBMITTER_EMAIL_*`, `ORDER_NOTIFY_*`, `PASSWORD_RESET_EMAIL_*` | Outbound email anti-spam (content dedupe, per-sender caps, global hourly cap). Applied in `deliver_contact_email` / `deliver_order_notification` / `CorePasswordResetView` — counts only emails actually sent. |
 | `SECURE_*`, `SECURE_HSTS_*` | HTTPS hardening switches (only active when `DEBUG=0`). Production also sets `SECURE_CROSS_ORIGIN_OPENER_POLICY = same-origin`. |
 
 Apps installed: `django.contrib.{admin,auth,contenttypes,sessions,messages,staticfiles,sites,sitemaps}` + `core`. `SITE_ID = 1`.
@@ -646,7 +651,7 @@ between deploys (see §11 "Content vs code" rule); the cron example
 
 ## 10. Tests (`core/tests.py`) — **use these as the contract**
 
-145 tests. Run with:
+158 tests. Run with:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test core
@@ -681,6 +686,9 @@ Coverage map (read a test before making a semantically-loaded change):
 | `HomepageNewsTests` | Latest 4 published articles on homepage; news title links to `core:news`. |
 | `CartApiTests` | Full GET/POST add/set/remove/clear + all 400 error paths + `429 rate_limited` branch. |
 | `ContactFormSubmissionTests` | Happy path + invalid form + SMTP failure path. |
+| `EmailAntiSpamTests` | Duplicate contact content, per-sender cap, global outbound cap suppress notification emails while still saving submissions. |
+| `ContactDomainFilterTests` | Whitelist матчинг (`==` или suffix `.<entry>`), дефолтный список покрывает `icloud.com`/`gmail.com`/`mail.ru`/`proton.me`, режим `any` и пустой список пропускают всё (fail-open), заблокированный домен не создаёт `ContactSubmission`. |
+| `ContactFormToggleTests` | `SiteSetting.contact_form_enabled`: по умолчанию формы на сайте есть; при выключении формы скрываются (главная/`/about/`/футер) с уведомлением `contact_disabled_note`, POST на `homepage`/`about` отклоняется redirect'ом + flash-сообщением без создания `ContactSubmission`; повторное включение возвращает формы. |
 | `CheckoutFlowTests` | Empty cart redirect, full POST creates `Order` + items + email + clears cart, pd_consent blocks, idempotency-key repeat does not create duplicate order, **session-owned order_confirmation visible only to its session and to staff** (IDOR regression). |
 | `AuthViewTests` | Login by username/email, wrong password, authenticated redirect, logout, registration gated, `?next=` open-redirect guard. |
 
@@ -720,6 +728,12 @@ Coverage map (read a test before making a semantically-loaded change):
   - POST endpoints with side effects are IP-throttled in `core/views.py` via
     `_is_rate_limited(...)` (contact form, auth form submits, cart API POST,
     checkout POST).
+  - **Outbound email anti-spam** (`core/view_utils.py`): `deliver_contact_email`,
+    `deliver_order_notification`, and `CorePasswordResetView.form_valid` gate
+    SMTP/console sends with cache-backed **content dedupe** (same
+    email+subject+message or same buyer+cart fingerprint), **per-sender hourly
+    caps**, and a **global hourly cap**. Suppressed sends are logged; contact
+    form still saves to DB and shows success (no leak to bots).
   - Preserve `429` behavior contracts (`{"error":"rate_limited"}` for JSON API,
     status-429 page render + message for HTML forms).
   - Checkout uses idempotency keys (`idempotency_key` form field or

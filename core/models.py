@@ -348,6 +348,41 @@ class SiteSetting(models.Model):
         "Счётчик: проекты", max_length=32, default="50+"
     )
     stat_years_value = models.CharField("Счётчик: лет опыта", max_length=32, default="12")
+
+    # Управление контактной формой (админка / /profile/site-settings/)
+    contact_form_enabled = models.BooleanField(
+        "Приём сообщений с сайта",
+        default=True,
+        help_text=(
+            "Выключите, чтобы скрыть контактные формы на сайте и блокировать "
+            "отправку сообщений (POST на главную и /about/ отклоняется)."
+        ),
+    )
+    contact_email_domain_mode = models.CharField(
+        "Фильтр доменов почты",
+        max_length=20,
+        choices=[
+            ("any", "Любой домен"),
+            ("whitelist", "Только разрешённые домены"),
+        ],
+        default="any",
+        db_index=True,
+        help_text=(
+            "«Только разрешённые» — сообщения принимаются лишь с адресов "
+            "на доменах из списка ниже."
+        ),
+    )
+    contact_email_allowed_domains = models.CharField(
+        "Разрешённые домены",
+        max_length=500,
+        blank=True,
+        default="ru, com, icloud.com, me",
+        help_text=(
+            "Домены или суффиксы через запятую. Домен письма должен совпадать "
+            "или заканчиваться на один из них: ru → mail.ru, com → gmail.com, "
+            "icloud.com, me → proton.me."
+        ),
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -369,6 +404,17 @@ class SiteSetting(models.Model):
             },
         )
         return obj
+
+    @property
+    def contact_email_allowed_domains_list(self) -> list[str]:
+        """Нормализованный список разрешённых доменов (lowercase, без @)."""
+        raw = self.contact_email_allowed_domains or ""
+        out: list[str] = []
+        for chunk in raw.replace(";", ",").split(","):
+            domain = chunk.strip().lower().lstrip("@").strip()
+            if domain:
+                out.append(domain)
+        return out
 
     @property
     def busy_tier(self) -> str:

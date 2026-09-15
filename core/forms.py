@@ -6,6 +6,7 @@ from django.utils.text import slugify
 
 from .models import NewsArticle, Product, SiteSetting
 from .permissions import can_publish_content
+from .site_settings import is_contact_email_domain_allowed
 
 User = get_user_model()
 
@@ -32,6 +33,16 @@ class ContactForm(forms.Form):
         max_length=5000,
         widget=forms.Textarea(attrs={"rows": 5}),
     )
+
+    def clean_email(self):
+        """Фильтр доменов почты из SiteSetting (админ может включить whitelist)."""
+        email = (self.cleaned_data.get("email") or "").strip()
+        if not is_contact_email_domain_allowed(email):
+            raise ValidationError(
+                "Сообщения с этого почтового домена не принимаются. "
+                "Пожалуйста, используйте адрес на одном из распространённых доменов."
+            )
+        return email
 
 
 class RegisterForm(UserCreationForm):
@@ -274,7 +285,7 @@ class ProductCreateForm(forms.ModelForm):
 
 
 class SiteSettingForm(forms.ModelForm):
-    """Настройки главной (singleton pk=1)."""
+    """Настройки главной (singleton pk=1) + управление контактной формой."""
 
     class Meta:
         model = SiteSetting
@@ -283,6 +294,9 @@ class SiteSettingForm(forms.ModelForm):
             "stat_3d_value",
             "stat_projects_value",
             "stat_years_value",
+            "contact_form_enabled",
+            "contact_email_domain_mode",
+            "contact_email_allowed_domains",
         )
         widgets = {
             "sculptor_busy": forms.NumberInput(
@@ -291,6 +305,18 @@ class SiteSettingForm(forms.ModelForm):
             "stat_3d_value": forms.TextInput(attrs={"class": _CONTENT_INPUT_CLASS}),
             "stat_projects_value": forms.TextInput(attrs={"class": _CONTENT_INPUT_CLASS}),
             "stat_years_value": forms.TextInput(attrs={"class": _CONTENT_INPUT_CLASS}),
+            "contact_form_enabled": forms.CheckboxInput(
+                attrs={"class": _CONTENT_CHECKBOX_CLASS}
+            ),
+            "contact_email_domain_mode": forms.Select(
+                attrs={"class": _CONTENT_SELECT_CLASS}
+            ),
+            "contact_email_allowed_domains": forms.TextInput(
+                attrs={
+                    "class": _CONTENT_INPUT_CLASS,
+                    "placeholder": "ru, com, icloud.com, me",
+                }
+            ),
         }
 
     def clean_sculptor_busy(self):
@@ -300,6 +326,17 @@ class SiteSettingForm(forms.ModelForm):
         if value < 0 or value > 100:
             raise ValidationError("Загруженность должна быть от 0 до 100.")
         return value
+
+    def clean(self):
+        cleaned = super().clean()
+        mode = cleaned.get("contact_email_domain_mode")
+        domains = (cleaned.get("contact_email_allowed_domains") or "").strip()
+        if mode == "whitelist" and not domains:
+            self.add_error(
+                "contact_email_allowed_domains",
+                "Для режима «Только разрешённые домены» укажите хотя бы один домен.",
+            )
+        return cleaned
 
 
 class NewsArticleCreateForm(forms.ModelForm):

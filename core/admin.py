@@ -210,9 +210,27 @@ class SiteSettingAdmin(admin.ModelAdmin):
         "stat_3d_value",
         "stat_projects_value",
         "stat_years_value",
+        "contact_form_enabled",
+        "contact_email_domain_mode",
         "updated_at",
     )
     readonly_fields = ("updated_at",)
+    fieldsets = (
+        ("Главная (hero)", {"fields": ("sculptor_busy", "stat_3d_value", "stat_projects_value", "stat_years_value")}),
+        ("Форма связи", {
+            "fields": (
+                "contact_form_enabled",
+                "contact_email_domain_mode",
+                "contact_email_allowed_domains",
+            ),
+            "description": (
+                "Выключение формы скрывает её на сайте и блокирует отправку сообщений. "
+                "Фильтр доменов проверяет домен email отправителя (ru → mail.ru, "
+                "com → gmail.com, icloud.com, me → proton.me)."
+            ),
+        }),
+        ("Тех. поля", {"fields": ("updated_at",)}),
+    )
 
     def has_add_permission(self, request):
         return not SiteSetting.objects.exists()

@@ -72,6 +72,28 @@
                 </p>
             </div>
         </a>
+        <a href="{% url 'core:portfolio' %}#portfolio-products"
+           class="hero-showcase-slide"
+           data-hero-showcase-slide="3"
+           aria-hidden="true"
+           tabindex="-1">
+            <img src="{% static 'images/medals/krondshtat.jpg' %}"
+                 alt="Морской Никольский собор — медаль, Кронштадт"
+                 class="hero-showcase-img"
+                 width="900"
+                 height="1120"
+                 loading="lazy"
+                 decoding="async">
+            <div class="hero-showcase-overlay" aria-hidden="true"></div>
+            <span class="hero-showcase-badge tag-pill" data-i18="carousel_kronstadt_badge">Мемориальная медаль</span>
+            <div class="hero-showcase-caption">
+                <p class="hero-showcase-title font-display" data-i18="carousel_kronstadt_title">Морской Никольский Собор · Кронштадт</p>
+                <p class="hero-showcase-meta">
+                    <span class="hero-showcase-meta-dot" aria-hidden="true"></span>
+                    <span data-i18="carousel_kronstadt_meta">1903–1913</span>
+                </p>
+            </div>
+        </a>
         <button type="button"
                 class="hero-showcase-nav hero-showcase-nav--prev"
                 data-hero-showcase-prev
@@ -95,5 +117,6 @@
         <button type="button" class="hero-showcase-dot is-active" data-hero-showcase-dot="0" role="tab" aria-label="Слайд 1" aria-selected="true"></button>
         <button type="button" class="hero-showcase-dot" data-hero-showcase-dot="1" role="tab" aria-label="Слайд 2" aria-selected="false"></button>
         <button type="button" class="hero-showcase-dot" data-hero-showcase-dot="2" role="tab" aria-label="Слайд 3" aria-selected="false"></button>
+        <button type="button" class="hero-showcase-dot" data-hero-showcase-dot="3" role="tab" aria-label="Слайд 4" aria-selected="false"></button>
     </div>
 </div>

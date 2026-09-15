@@ -1760,11 +1760,15 @@
                     <p class="text-white/60 text-sm mt-2" data-i18="footer_location">Moscow, Russia</p>
                     <a href="{% url 'core:homepage' %}#contact" class="text-white/60 text-sm mt-2 inline-block hover:text-white transition-colors" data-i18="footer_contact_link">Написать</a>
                     <p class="text-white/70 text-sm font-semibold mt-6 mb-1" data-i18="footer_contact_form">Быстрая форма</p>
+                    {% if site_settings.contact_form_enabled %}
                     {% include "core/includes/contact_form_compact.html" %}
+                    {% else %}
+                    <p class="text-white/70 text-sm mt-4" data-i18="contact_disabled_note">Отправка сообщений с сайта временно отключена.</p>
+                    {% endif %}
                 </div>
             </div>
             <div class="border-t border-white/10 mt-12 pt-8 text-center text-white/40 text-sm">
-                <p class="mb-2" data-i18="footer_copyright">© 2026 KurilenkoArt. All rights reserved.</p>
+                <p class="mb-2">© {{ current_year }} KurilenkoArt. <span data-i18="footer_copyright_text">All rights reserved.</span></p>
                 <p>ИП Куриленко А.А. ОГРНИП 324774600604502</p>
             </div>
         </div>

@@ -64,6 +64,16 @@
                                  decoding="async">
                         </a>
                     </div>
+                    <div class="hero-mobile-spotlight-slide">
+                        <a href="{% url 'core:portfolio' %}#portfolio-products">
+                            <img src="{% static 'images/medals/krondshtat.jpg' %}"
+                                 alt="Морской Никольский собор — медаль, Кронштадт"
+                                 width="1200"
+                                 height="900"
+                                 loading="lazy"
+                                 decoding="async">
+                        </a>
+                    </div>
                 </div>
                 <button type="button"
                         class="hero-mobile-spotlight-arrow hero-mobile-spotlight-arrow--prev"
@@ -89,6 +99,7 @@
                 <button type="button" class="hero-mobile-spotlight-dot is-active" data-hero-spotlight-dot="0" aria-label="Фото 1" aria-selected="true"></button>
                 <button type="button" class="hero-mobile-spotlight-dot" data-hero-spotlight-dot="1" aria-label="Фото 2" aria-selected="false"></button>
                 <button type="button" class="hero-mobile-spotlight-dot" data-hero-spotlight-dot="2" aria-label="Фото 3" aria-selected="false"></button>
+                <button type="button" class="hero-mobile-spotlight-dot" data-hero-spotlight-dot="3" aria-label="Фото 4" aria-selected="false"></button>
             </div>
         </div>
 
@@ -606,6 +617,7 @@ Also uncomment forum in core/urls.py, core/sitemaps.py, and nav/footer links in 
         </div>
         
         <!-- Contact Form -->
+        {% if site_settings.contact_form_enabled %}
         <div class="max-w-xl mx-auto mt-12">
             <form class="home-contact-form rounded-3xl p-8 border border-primary/10 shadow-lg night-glow-surface" method="post" action="{% url 'core:homepage' %}#contact">
                 {% csrf_token %}
@@ -645,6 +657,11 @@ Also uncomment forum in core/urls.py, core/sitemaps.py, and nav/footer links in 
                 </div>
             </form>
         </div>
+        {% else %}
+        <div class="max-w-xl mx-auto mt-12 rounded-3xl p-8 border border-primary/10 text-center" style="color: var(--muted);">
+            <p data-i18="contact_disabled_note">Отправка сообщений с сайта временно отключена.</p>
+        </div>
+        {% endif %}
         
         <div class="flex flex-col items-center gap-4 md:gap-6 mt-16">
                 <div class="flex items-center gap-3 text-gray-600">

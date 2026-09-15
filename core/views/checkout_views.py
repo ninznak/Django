@@ -10,7 +10,6 @@ from .. import cart_utils
 from ..checkout_service import (
     create_order,
     finalize_checkout_session,
-    send_order_notification,
 )
 from ..forms import CheckoutForm
 from ..models import Order
@@ -23,6 +22,7 @@ from ..view_utils import (
     CHECKOUT_WINDOW_SECONDS,
     checkout_idempotency_key,
     client_ip,
+    deliver_order_notification,
     is_rate_limited,
     remember_confirmed_order,
     session_owns_order,
@@ -103,7 +103,7 @@ def checkout(request):
             finalize_checkout_session(request)
             if getattr(settings, "CONTACT_FORM_TRY_EMAIL", True):
                 try:
-                    send_order_notification(order, data)
+                    deliver_order_notification(order, data)
                 except Exception:
                     logger.exception("Order notification email failed (order id=%s)", order.pk)
 

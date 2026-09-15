@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
@@ -8,6 +10,7 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
     PasswordResetView,
 )
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
@@ -16,9 +19,16 @@ from django.views.decorators.http import require_http_methods
 
 from ..forms import RegisterForm
 from ..seo import get_seo
-from ..view_utils import AUTH_POST_LIMIT, AUTH_WINDOW_SECONDS, is_rate_limited
+from ..view_utils import (
+    AUTH_POST_LIMIT,
+    AUTH_WINDOW_SECONDS,
+    is_rate_limited,
+    password_reset_email_blocked_reason,
+    record_password_reset_email_sent,
+)
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 def safe_next_url(request, default="/"):
@@ -172,6 +182,19 @@ class CorePasswordResetView(PasswordResetView):
             no_json_ld=True,
         )
         return ctx
+
+    def form_valid(self, form):
+        email = (form.cleaned_data.get("email") or "").strip()
+        reason = password_reset_email_blocked_reason(email)
+        if reason:
+            logger.warning("Password reset email suppressed (%s)", reason)
+            return HttpResponseRedirect(self.get_success_url())
+
+        users = list(form.get_users(email))
+        response = super().form_valid(form)
+        if users:
+            record_password_reset_email_sent(email)
+        return response
 
 
 class CorePasswordResetDoneView(PasswordResetDoneView):

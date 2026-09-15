@@ -6,13 +6,19 @@
         <div class="card p-6 sm:p-10">
             <p class="section-label mb-2" data-i18="profile_site_settings">Настройки главной</p>
             <h1 class="font-display text-3xl font-semibold mb-2">Настройки главной</h1>
-            <p class="text-sm mb-6" style="color: var(--muted);">Загруженность автора и счётчики в hero-блоке.</p>
+            <p class="text-sm mb-6" style="color: var(--muted);">Загруженность автора, счётчики в hero-блоке и приём сообщений с сайта.</p>
             <form method="post" class="space-y-4">
                 {% csrf_token %}
                 {% include "core/_form_field.html" with field=form.sculptor_busy help="0–100: цвет кнопки «Загруженность» подбирается автоматически." %}
                 {% include "core/_form_field.html" with field=form.stat_3d_value %}
                 {% include "core/_form_field.html" with field=form.stat_projects_value %}
                 {% include "core/_form_field.html" with field=form.stat_years_value %}
+                <div class="pt-4 border-t border-gray-100 space-y-4">
+                    <p class="section-label" data-i18="profile_contact_form">Форма связи</p>
+                    {% include "core/_form_field.html" with field=form.contact_form_enabled as_checkbox=True help="Выключите, чтобы скрыть формы на сайте и блокировать отправку сообщений." %}
+                    {% include "core/_form_field.html" with field=form.contact_email_domain_mode help="«Только разрешённые» — принимать сообщения лишь с указанных доменов." %}
+                    {% include "core/_form_field.html" with field=form.contact_email_allowed_domains help="Домены или суффиксы через запятую: ru, com, icloud, me." %}
+                </div>
                 <div class="flex flex-wrap gap-3 pt-2">
                     <button type="submit" class="btn-primary">Сохранить</button>
                     <a href="{% url 'core:profile' %}" class="btn-outline">← Профиль</a>

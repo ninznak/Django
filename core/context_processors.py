@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 
@@ -39,6 +41,7 @@ def site_settings(request):
         "hero_title_glitch_enabled": getattr(
             settings, "HERO_TITLE_GLITCH_ENABLED", True
         ),
+        "current_year": datetime.now().year,
     }
 
 
