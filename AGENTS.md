@@ -425,6 +425,18 @@ def require_content_manager(view_func) -> view_func   # декоратор: gate
 - Header responsive contract: on narrow phones (`<sm`) top row keeps logo left
   and language switcher right; cart button moves to the lower row (`sm:hidden`)
   right after `Магазин` (burger + shop + cart + optional sign in for guests).
+- Desktop nav row (`hidden xl:flex` in `base.html`): все ссылки `whitespace-nowrap`,
+  кроме «Генератор чешуи» — он `whitespace-normal` (span `nav-scales-link …
+  text-center leading-tight`) и при нехватке ширины переносится на две строки
+  («Генератор» / «чешуи»), чтобы ряд не наезжал на лого и правый кластер;
+  межпунктный интервал — `xl:gap-5`. Не возвращайте `whitespace-nowrap` на этот
+  пункт — иначе «Главная»/«Авторское право» снова перекрывают соседей при сужении
+  окна в диапазоне xl.
+- Средний nav-ряд `hidden lg:flex xl:hidden` (Главная / Портфолио / Генератор
+  чешуи / Контакты) построен по тому же правилу: «Генератор чешуи» —
+  `whitespace-normal` + `text-center leading-tight`, отступ ряда до правого
+  кластера `mx-2`. Иначе «Контакты» наезжает на кнопку-бургер в диапазоне lg
+  (1024–1279px, включая зум).
 - Flash messages (`{% if messages %}` block in `base.html`) must clear the fixed
   header on mobile (no overlap), and homepage hero should reduce top padding when
   flash is present to avoid a large visual gap before "Творческое Портфолио".

@@ -576,7 +576,7 @@
                 filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4));
             }
             50% {
-                transform: scale(1.35);
+                transform: scale(1.6875);
                 filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.9));
             }
             100% {
@@ -1264,14 +1264,14 @@
                     <span><span style="font-weight: 700;">Kurilenko</span><span style="font-weight: 400; opacity: 0.85;">Art</span></span>
                 </a>
 
-                <div class="hidden xl:flex flex-1 justify-center items-center gap-4 xl:gap-6 min-w-0 px-2" style="font-size: 14px;">
+                <div class="hidden xl:flex flex-1 justify-center items-center gap-3 xl:gap-5 min-w-0 px-2" style="font-size: 14px;">
                     <a href="{% url 'core:homepage' %}" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_home">Главная</a>
                     <a href="/about/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_about">Обо мне</a>
                     <a href="/portfolio/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_portfolio">Портфолио</a>
                     <a href="/news/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_news">Новости</a>
-                    <a href="{% url 'core:scales_generator' %}" class="font-semibold whitespace-nowrap inline-flex items-center gap-1.5 no-underline" style="color: #3a4830; opacity: 0.95; text-decoration: none !important;">
-                        <span class="nav-scales-link" data-i18="nav_scales">Генератор чешуи</span>
-                        <span class="scale-star-pulse text-xs select-none" aria-hidden="true" style="text-decoration: none !important;">🌟</span>
+                    <a href="{% url 'core:scales_generator' %}" class="font-semibold whitespace-normal inline-flex items-center gap-1.5 no-underline min-w-0" style="color: #3a4830; opacity: 0.95; text-decoration: none !important;">
+                        <span class="nav-scales-link text-center leading-tight" data-i18="nav_scales">Генератор чешуи</span>
+                        <span class="scale-star-pulse text-xs select-none shrink-0" aria-hidden="true" style="text-decoration: none !important;">🌟</span>
                     </a>
                     <a href="{% url 'core:homepage' %}#contact" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_contact">Контакты</a>
                     <a href="/copyright/" class="font-semibold whitespace-nowrap" style="color: #3a4830; opacity: 0.85;" data-i18="nav_copyright">Авторское право</a>
@@ -1309,12 +1309,12 @@
                         </svg>
                     </a>
                 </div>
-                <div class="hidden lg:flex xl:hidden items-center gap-2 xl:gap-3 min-w-0 mx-3">
+                <div class="hidden lg:flex xl:hidden items-center gap-2 xl:gap-3 min-w-0 mx-2">
                     <a href="{% url 'core:homepage' %}" class="px-2.5 py-1.5 rounded-lg text-xs lg:text-sm font-semibold whitespace-nowrap hover:bg-white/40 transition-colors" style="color: #3a4830; opacity: 0.9;" data-i18="nav_home">Главная</a>
                     <a href="/portfolio/" class="px-2.5 py-1.5 rounded-lg text-xs lg:text-sm font-semibold whitespace-nowrap hover:bg-white/40 transition-colors" style="color: #3a4830; opacity: 0.9;" data-i18="nav_portfolio">Портфолио</a>
-                    <a href="{% url 'core:scales_generator' %}" class="px-2.5 py-1.5 rounded-lg text-xs lg:text-sm font-semibold whitespace-nowrap inline-flex items-center gap-1.5 hover:bg-white/40 transition-colors no-underline" style="color: #3a4830; opacity: 0.9; text-decoration: none !important;" aria-label="Генератор чешуи">
-                        <span class="nav-scales-link" data-i18="nav_scales">Генератор чешуи</span>
-                        <span class="scale-star-pulse text-xs select-none" aria-hidden="true" style="text-decoration: none !important;">🌟</span>
+                    <a href="{% url 'core:scales_generator' %}" class="px-2.5 py-1.5 rounded-lg text-xs lg:text-sm font-semibold whitespace-normal inline-flex items-center gap-1.5 hover:bg-white/40 transition-colors no-underline min-w-0" style="color: #3a4830; opacity: 0.9; text-decoration: none !important;" aria-label="Генератор чешуи">
+                        <span class="nav-scales-link text-center leading-tight" data-i18="nav_scales">Генератор чешуи</span>
+                        <span class="scale-star-pulse text-xs select-none shrink-0" aria-hidden="true" style="text-decoration: none !important;">🌟</span>
                     </a>
                     <a href="{% url 'core:homepage' %}#contact" class="px-2.5 py-1.5 rounded-lg text-xs lg:text-sm font-semibold whitespace-nowrap hover:bg-white/40 transition-colors" style="color: #3a4830; opacity: 0.9;" data-i18="nav_contact">Контакты</a>
                 </div>
