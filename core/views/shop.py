@@ -4,11 +4,12 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.templatetags.static import static
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from .. import cart_utils
 from ..models import Product
-from ..seo import get_seo
+from ..seo import PAGE_SEO, get_seo
 from ..shop_data import get_product, get_shop_products
 from ..view_utils import (
     CART_API_POST_LIMIT,
@@ -46,6 +47,7 @@ def shop(request):
         {
             "shop_products": page_obj.object_list,
             "shop_page_obj": page_obj,
+            "shop_page_numbers": list(paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1)),
             "shop_hide_sold": hide_sold,
             "shop_query": q,
             "breadcrumbs": breadcrumbs,
@@ -53,6 +55,9 @@ def shop(request):
                 request,
                 breadcrumbs=breadcrumbs,
                 webpage_type="CollectionPage",
+                canonical_path=reverse("core:shop") + (f"?page={page_obj.number}" if page_obj.number > 1 and not (q or hide_sold) else ""),
+                title=PAGE_SEO["shop"]["title"] + (f" — страница {page_obj.number}" if page_obj.number > 1 else ""),
+                robots="noindex, follow" if q or hide_sold else "index, follow, max-image-preview:large",
             ),
         },
     )

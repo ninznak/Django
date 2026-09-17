@@ -1,11 +1,20 @@
 from django.conf import settings
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
+from types import SimpleNamespace
+from urllib.parse import urlsplit
 
 from .models import NewsArticle
 
 
 class _BaseSitemap(Sitemap):
+    def get_urls(self, page=1, site=None, protocol=None):
+        public = urlsplit(getattr(settings, "PUBLIC_SITE_URL", ""))
+        if public.netloc:
+            site = SimpleNamespace(domain=public.netloc, name=public.netloc)
+            protocol = public.scheme
+        return super().get_urls(page=page, site=site, protocol=protocol)
+
     def get_protocol(self, protocol=None):
         if protocol:
             return protocol
@@ -19,7 +28,7 @@ class CoreViewSitemap(_BaseSitemap):
     _HIGH_PRIORITY = frozenset(
         {"core:homepage", "core:about", "core:portfolio", "core:shop"}
     )
-    _MEDIUM_PRIORITY = frozenset({"core:free_models", "core:news", "core:copyright"})
+    _MEDIUM_PRIORITY = frozenset({"core:free_models", "core:news", "core:copyright", "core:scales_generator"})
 
     def items(self):
         # Named URL patterns to expose to crawlers (no admin, no API).
@@ -37,6 +46,7 @@ class CoreViewSitemap(_BaseSitemap):
             "core:news",
             # "core:forum",
             "core:copyright",
+            "core:scales_generator",
         ]
 
     def location(self, item):

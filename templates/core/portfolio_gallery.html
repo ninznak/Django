@@ -5,17 +5,17 @@
 <div class="portfolio-gallery-page min-h-screen pt-24 max-sm:pt-[8.5rem] pb-20">
     <div class="max-w-7xl mx-auto px-6">
         <nav class="mb-8" aria-label="Breadcrumb">
-            <a href="{% url 'core:portfolio' %}#{{ gallery.portfolio_hash }}" class="btn-outline text-sm inline-flex items-center gap-2" data-i18="portfolio_gallery_back">Back to portfolio</a>
+            <a href="{% url 'core:portfolio' %}#{{ gallery.portfolio_hash }}" class="btn-outline text-sm inline-flex items-center gap-2" data-i18="portfolio_gallery_back">Назад к портфолио</a>
         </nav>
 
         <header class="text-center mb-14 max-w-3xl mx-auto">
-            <span class="section-label" data-i18="portfolio_title">Portfolio</span>
+            <span class="section-label" data-i18="portfolio_title">Портфолио</span>
             {% if gallery_slug == 'ai' %}
-            <h1 class="font-display text-4xl md:text-5xl font-semibold mt-4" data-i18="portfolio_ai_title">AI-Generated Art</h1>
+            <h1 class="font-display text-4xl md:text-5xl font-semibold mt-4" data-i18="portfolio_ai_title">AI-Generated Арт</h1>
             {% elif gallery_slug == 'products' %}
-            <h1 class="font-display text-4xl md:text-5xl font-semibold mt-4" data-i18="portfolio_products_title">Finished Products</h1>
+            <h1 class="font-display text-4xl md:text-5xl font-semibold mt-4" data-i18="portfolio_products_title">Готовые изделия</h1>
             {% else %}
-            <h1 class="font-display text-4xl md:text-5xl font-semibold mt-4" data-i18="portfolio_3d_title">3D Bas-Reliefs & Medals</h1>
+            <h1 class="font-display text-4xl md:text-5xl font-semibold mt-4" data-i18="portfolio_3d_title">3D Барельефы и Медали</h1>
             {% endif %}
         </header>
 

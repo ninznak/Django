@@ -49,6 +49,7 @@ from .pages import (
     news_article,
     portfolio,
     portfolio_gallery,
+    scales_generator,
 )
 from .profile import (
     profile,
@@ -87,6 +88,7 @@ __all__ = [
     "profile_password_change",
     "profile_site_settings",
     "robots_txt",
+    "scales_generator",
     "shop",
     "sign_up_login",
 ]

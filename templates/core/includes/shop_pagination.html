@@ -1,0 +1,11 @@
+<div class="shop-page-list" data-shop-pages data-current="{{ shop_page_obj.number }}" data-total="{{ shop_page_obj.paginator.num_pages }}">
+    {% for number in shop_page_numbers %}
+        {% if number == shop_page_obj.paginator.ELLIPSIS %}
+            <span class="shop-page-dots">…</span>
+        {% elif number == shop_page_obj.number %}
+            <span class="shop-page-current" aria-current="page">{{ number }}</span>
+        {% else %}
+            <a class="shop-page-link" href="?page={{ number }}{% if shop_hide_sold %}&amp;hide_sold=1{% endif %}{% if shop_query %}&amp;q={{ shop_query|urlencode }}{% endif %}">{{ number }}</a>
+        {% endif %}
+    {% endfor %}
+</div>

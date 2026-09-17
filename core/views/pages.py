@@ -69,6 +69,8 @@ def _homepage_context(contact_form) -> dict:
 
 @require_http_methods(["GET", "POST"])
 def homepage(request):
+    if request.resolver_match.url_name == "homepage_path" and request.method == "GET":
+        return redirect("core:homepage", permanent=True)
     if request.method == "POST" and request.POST.get("contact_form"):
         if not contact_form_enabled():
             messages.error(request, "Отправка сообщений с сайта временно отключена.")
@@ -203,6 +205,7 @@ def news_article(request, slug):
             ),
             "seo": get_seo(
                 request,
+                robots="noindex, nofollow" if article.status != NewsArticle.Status.PUBLISHED else "index, follow, max-image-preview:large",
                 **news_article_seo_overrides(
                     request, article.slug, article.title, article=article
                 ),
@@ -262,3 +265,31 @@ def portfolio_gallery(request, slug):
 
 def copyright(request):
     return render(request, "core/copyright.html")
+
+
+def scales_generator(request):
+    if request.resolver_match.url_name == "scales_generator_tools":
+        return redirect("core:scales_generator", permanent=True)
+    breadcrumbs = [
+        {"label": "Главная", "url_name": "core:homepage"},
+        {"label": "Генератор чешуи", "current": True},
+    ]
+    return render(
+        request,
+        "core/scales_generator.html",
+        {
+            "breadcrumbs": breadcrumbs,
+            "seo": get_seo(
+                request,
+                canonical_path=reverse("core:scales_generator"),
+                breadcrumbs=breadcrumbs,
+                application_ld={
+                    "applicationCategory": "DesignApplication",
+                    "operatingSystem": "Any",
+                    "browserRequirements": "Requires JavaScript and HTML5 Canvas",
+                    "offers": {"@type": "Offer", "price": "0", "priceCurrency": "RUB"},
+                    "featureList": ["Бесшовные текстуры чешуи", "PNG 8/16 бит", "TIFF 32-bit Float", "Редактор кривой высоты"],
+                },
+            ),
+        },
+    )

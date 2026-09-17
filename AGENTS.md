@@ -152,6 +152,7 @@ Render with `core.pricing.format_minor_as_rub` or the `|rub_minor` filter.
 | `profile_site_settings` | `/profile/site-settings/` | `views.profile_site_settings` | `SiteSettingForm`; только Editors/superuser (`can_publish_content`). |
 | `password_reset` … `password_reset_complete` | `/password-reset/…` | `views.CorePasswordReset*` | Django auth reset flow + templates in `templates/core/password_reset*.html`. |
 | `copyright` | `/copyright/` | `views.copyright` | |
+| `scales_generator` | `/scales/` | `views.scales_generator` | Бесплатный JS/Canvas генератор бесшовных карт высот чешуи. `/tools/scales/` → 301 на основной URL. PNG 8 бит (Canvas), настоящий grayscale PNG 16 бит (свой encoder), TIFF 32-bit Float (15 IFD tags). WASM-файл не используется. SSR-инструкции и FAQ, `WebPage` + `WebApplication` JSON-LD, ключи `scales_*` в ru/en JSON. |
 | `checkout` | `/checkout/` | `views.checkout` | Empty cart → redirect to `core:shop`. Creates `Order` + `OrderItem`s, clears cart, emails admin. POST is **IP-throttled** and supports idempotency key (`idempotency_key` hidden form field or `X-Idempotency-Key` header) to prevent duplicate orders on retries. |
 | `order_confirmation` | `/order/<int>/confirmation/` | `views.order_confirmation` | **Session-scoped** to prevent IDOR / 152-ФЗ PII leak: only the session that placed the order (`session["confirmed_order_ids"]`, seeded by `checkout`) or `is_staff`/`superuser` may view; everyone else gets the same "Заказ не найден" redirect as a missing id (no info disclosed). |
 | `forum`, `forum_topic` | — | views exist, routes **commented out**. Re-enable by uncommenting in `core/urls.py` + `core/sitemaps.py` + templates (search `FORUM DISABLED`). |
@@ -876,3 +877,27 @@ this document is the index.
 - Deployment steps and operational limits: `SECURITY_DEPLOY.md`.
 - User explicitly deferred design/usability/CAPTCHA. Preserve their plan in
   `FUTURE_IMPROVEMENTS.md`; implement only when requested later.
+
+## 14. SEO revision — 2026-09-17 (supersedes earlier SEO notes)
+
+- GET `/homepage/` redirects permanently to `/`; legacy POST contact handling remains.
+  Navigation uses named canonical routes. `/tools/scales/` redirects to `/scales/`.
+- `PAGE_SEO["scales_generator"]` owns generator metadata. Visible instructions,
+  FAQ and free-texture links are SSR Russian with `scales_*` ru/en translations.
+- `get_seo(application_ld=...)` adds an independent `WebApplication` node;
+  public pages now include a `WebPage` node by default. No fabricated ratings.
+- Removed hreflang pointing multiple languages at the same URL: English remains
+  a client-side translation, not a separately indexable language route.
+- Shop pagination links render on the server via `includes/shop_pagination.html`
+  (elided range); crawlers and browsers without JavaScript can follow pages.
+- Shop pagination preserves `?page=N` in canonical (normalized actual page),
+  searches/availability filters use noindex. Published article descriptions use
+  their excerpt unless `NEWS_ARTICLE_SEO` has an explicit override; draft previews
+  are noindex. Sitemap origins follow PUBLIC_SITE_URL, independent of Site row.
+- Generator runs entirely in JS/Canvas. PNG 16-bit uses grayscale network-order
+  samples, CRC chunks and stored DEFLATE; TIFF has 15 entries including float
+  SampleFormat. The existing 44-byte WASM asset is unused, not an engine dependency.
+- Checks: `python manage.py test core`; `node scripts/test-scales.cjs` verifies
+  PNG CRC/DEFLATE and >256 levels, TIFF tags and pixel data, pattern periodicity.
+  Crawl regression tests are in `core/tests_seo.py`. Deployment/indexing notes:
+  `SEO_DEPLOY.md`. No database migration needed for this revision.

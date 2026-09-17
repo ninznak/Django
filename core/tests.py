@@ -794,7 +794,10 @@ class StaticPagesViewTests(TestCase):
         ):
             with self.subTest(url=name):
                 response = c.get(reverse(name))
-                self.assertEqual(response.status_code, 200, name)
+                if name == "core:homepage_path":
+                    self.assertRedirects(response, reverse("core:homepage"), status_code=301)
+                else:
+                    self.assertEqual(response.status_code, 200, name)
 
     def test_orb_ambient_markup_and_stylesheet(self):
         c = Client()

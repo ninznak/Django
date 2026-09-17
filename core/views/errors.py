@@ -35,7 +35,7 @@ def robots_txt(request):
         "Disallow: /checkout/",
         "Disallow: /order/",
     ]
-    base = getattr(settings, "PUBLIC_SITE_URL", "") or ""
+    base = (getattr(settings, "PUBLIC_SITE_URL", "") or "").rstrip("/")
     if base:
         host = base.replace("https://", "").replace("http://", "").rstrip("/")
         if host.startswith("www."):

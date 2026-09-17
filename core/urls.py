@@ -35,6 +35,8 @@ urlpatterns = [
     path('password-reset/<uidb64>/<token>/', views.CorePasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('password-reset/complete/', views.CorePasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('copyright/', views.copyright, name='copyright'),
+    path('scales/', views.scales_generator, name='scales_generator'),
+    path('tools/scales/', views.scales_generator, name='scales_generator_tools'),
     path('checkout/', views.checkout, name='checkout'),
     path('order/<int:order_id>/confirmation/', views.order_confirmation, name='order_confirmation'),
 ]

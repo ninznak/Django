@@ -24,7 +24,7 @@ from __future__ import annotations
 import json
 from functools import lru_cache
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 from django.conf import settings
 from django.templatetags.static import static
@@ -81,7 +81,7 @@ _DEFAULT_PAGE: dict[str, Any] = {
     "description": _DEFAULT_DESCRIPTION,
     "keywords": SEO_TOPIC_KEYWORDS,
     "og_type": "website",
-    "robots": "index, follow",
+    "robots": "index, follow, max-image-preview:large",
     "no_json_ld": False,
 }
 
@@ -91,7 +91,7 @@ _HOMEPAGE_SEO: dict[str, Any] = {
     "description": (
         "Профессиональное изготовление медалей, монет и барельефов: ручная художественная работа "
         "с учётом современных технологий, чеканки и 3D-печати. Портфолио цифровой скульптуры, "
-        "магазин моделей для ЧПУ, бесплатные STL/OBJ и практические статьи. "
+        "магазин моделей для ЧПУ, бесплатные STL/OBJ и генератор текстур чешуи. "
         "ZBrush, ArtCAM — от эскиза до готовой модели."
     ),
     "keywords": SEO_TOPIC_KEYWORDS,
@@ -99,6 +99,15 @@ _HOMEPAGE_SEO: dict[str, Any] = {
 
 # url_name from core.urls (core:…)
 PAGE_SEO: dict[str, dict[str, Any]] = {
+    "scales_generator": {
+        "title": "Бесплатный генератор текстур чешуи онлайн — KurilenkoArt",
+        "description": (
+            "Создавайте и скачивайте бесплатные бесшовные текстуры чешуи без регистрации: "
+            "карты высот для Blender и ZBrush. Экспорт PNG 8/16 бит и TIFF 32-bit Float."
+        ),
+        "keywords": "бесплатные текстуры, генератор чешуи онлайн, бесшовная текстура чешуи, "
+                    "карта высот, displacement map, heightmap, ZBrush alpha, free seamless scales texture",
+    },
     "homepage": _HOMEPAGE_SEO,
     "homepage_path": _HOMEPAGE_SEO,
     "about": {
@@ -562,6 +571,8 @@ _SERVICE_TYPES: tuple[str, ...] = (
 
 def _absolute_url(request, path: str) -> str:
     path = path or "/"
+    if urlsplit(path).scheme in {"http", "https"}:
+        return path
     if not path.startswith("/"):
         path = "/" + path
     base = (getattr(settings, "PUBLIC_SITE_URL", "") or "").rstrip("/")
@@ -632,7 +643,7 @@ def _build_webpage_ld(
         "url": canonical,
         "name": data["title"],
         "description": data["description"],
-        "inLanguage": ["ru-RU", "en-US"],
+        "inLanguage": "ru-RU",
         "isPartOf": {"@id": website_id},
     }
     if breadcrumb_id:
@@ -706,6 +717,7 @@ def _build_json_ld_graph(
     article_ld: dict[str, Any] | None,
     breadcrumbs: list[dict[str, Any]] | None = None,
     webpage_type: str | None = None,
+    application_ld: dict[str, Any] | None = None,
 ) -> str:
     """Render the JSON-LD ``@graph`` as a ``mark_safe`` JSON string.
 
@@ -745,6 +757,20 @@ def _build_json_ld_graph(
         art.setdefault("author", {"@id": person["@id"]})
         graph.append(art)
 
+    if application_ld:
+        app = dict(application_ld)
+        app.update({
+            "@type": "WebApplication",
+            "@id": data["canonical_url"] + "#application",
+            "url": data["canonical_url"],
+            "name": data["title"],
+            "description": data["description"],
+            "isAccessibleForFree": True,
+            "publisher": {"@id": org["@id"]},
+            "mainEntityOfPage": {"@id": data["canonical_url"].rstrip('/') + "/#webpage"},
+        })
+        graph.append(app)
+
     payload = {"@context": "https://schema.org", "@graph": graph}
     json_str = json.dumps(payload, ensure_ascii=False).replace("</", "<\\/")
     return mark_safe(json_str)
@@ -775,8 +801,9 @@ def get_seo(request, **overrides: Any) -> dict[str, Any]:
       string.
     """
     article_ld = overrides.pop("article_ld", None)
+    application_ld = overrides.pop("application_ld", None)
     breadcrumbs = overrides.pop("breadcrumbs", None)
-    webpage_type = overrides.pop("webpage_type", None)
+    webpage_type = overrides.pop("webpage_type", "WebPage")
     canonical_path = overrides.pop("canonical_path", None) or request.path
     og_image_url = overrides.pop("og_image_url", None) or _default_og_image_url(request)
 
@@ -798,7 +825,8 @@ def get_seo(request, **overrides: Any) -> dict[str, Any]:
         ""
         if data.get("no_json_ld")
         else _build_json_ld_graph(
-            request, data, article_ld, breadcrumbs=breadcrumbs, webpage_type=webpage_type
+            request, data, article_ld, breadcrumbs=breadcrumbs, webpage_type=webpage_type,
+            application_ld=application_ld,
         )
     )
 
@@ -852,19 +880,17 @@ def news_article_seo_overrides(
 
     entry = NEWS_ARTICLE_SEO.get(slug)
     if entry is None:
+        description = (getattr(article, "excerpt", "") or "").strip() or f"{label} — статья KurilenkoArt о 3D-моделировании и творческих техниках."
         article_ld = {
             "headline": label,
-            "description": f"Материал о 3D, медалях и творческих техниках: {label}",
+            "description": description,
             "inLanguage": "ru-RU",
             "keywords": "3D modeling, medals, bas-relief, digital sculpting, KurilenkoArt",
             **article_extras,
         }
         overrides: dict[str, Any] = {
-            "title": f"{label} — KurilenkoArt | Новости: 3D, медали, барельефы",
-            "description": (
-                f"Статья «{label}» — 3D-моделирование, медальерное дело, барельефы, "
-                "цифровая скульптура, ZBrush, ArtCAM и AI. KurilenkoArt."
-            ),
+            "title": f"{label} — KurilenkoArt",
+            "description": description,
             "keywords": (
                 f"{label}, новости 3D, медали моделирование, барельеф, скульптура, ZBrush, "
                 "ArtCAM, медальерное искусство, KurilenkoArt, " + SEO_COMMERCIAL_KEYWORDS

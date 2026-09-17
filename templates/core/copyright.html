@@ -74,7 +74,7 @@
                         </svg>
                     </div>
                     <h3 class="font-semibold text-gray-800 mb-2" data-i18="copyright_pr_lim_h">Ограничения</h3>
-                    <p class="text-gray-600 text-sm" data-i18="copyright_pr_lim_p">Запрещено копирование, распространение, переработка и коммерческое использование без письменного разрешения автора. Исключительное право может быть передано по договору (<strong>статьи 1234–1236 ГК РФ</strong>), однако <strong>нечёткие (нелиимущественные) права</strong> — право авторства, право на имя, право на неприкосновенность произведения — <strong>не отчуждаемы и не могут быть ограничены</strong> (<strong>статья 1229 ГК РФ</strong>).</p>
+                    <p class="text-gray-600 text-sm" data-i18="copyright_pr_lim_p">Запрещено копирование, распространение, переработка и коммерческое использование без письменного разрешения автора. Исключительное право может быть передано по договору (<strong>статьи 1234–1236 ГК РФ</strong>), однако <strong>неимущественные права</strong> — право авторства, право на имя, право на неприкосновенность произведения — <strong>не отчуждаемы и не могут быть ограничены</strong> (<strong>статья 1229 ГК РФ</strong>).</p>
                 </div>
 
                 <div class="bg-white/50 rounded-2xl p-6">
@@ -393,7 +393,7 @@
 
                         <div class="bg-blue-50 rounded-xl p-4 border border-blue-200 mt-4">
                             <p class="font-semibold text-gray-800 mb-2" data-i18="copyright_ar_portfolio_h">Право использования в портфолио</p>
-                            <p class="text-gray-600" data-i18="copyright_ar_portfolio_p">Возможность автора демонстрировать работы в портфолио, на выставках и в маркетинговых материалах основана на <strong>нечётких (нелиимущественных) правах</strong> (<strong>статьи 1229, 1265 ГК РФ</strong>):</p>
+                            <p class="text-gray-600" data-i18="copyright_ar_portfolio_p">Возможность автора демонстрировать работы в портфолио, на выставках и в маркетинговых материалах основана на <strong>неимущественных правах</strong> (<strong>статьи 1229, 1265 ГК РФ</strong>):</p>
                             <ul class="list-disc list-inside space-y-1 text-sm mt-2">
                                 <li data-i18="copyright_ar_portfolio_li1"><strong>Право авторства</strong> — право признаваться автором произведения (неотчуждаемо, бессрочно)</li>
                                 <li data-i18="copyright_ar_portfolio_li2"><strong>Право на имя</strong> — право использовать произведение под своим именем или псевдонимом (неотчуждаемо, бессрочно)</li>
@@ -541,7 +541,7 @@
         <div class="card p-8 text-center">
             <h2 class="font-display text-2xl font-semibold text-gray-800 mb-4" data-i18="copyright_cta_h2">Вопросы по лицензированию</h2>
             <p class="text-gray-600 mb-6" data-i18="copyright_cta_p">Для получения разрешения на использование работ, коммерческих запросов или вопросов об авторском праве свяжитесь с автором.</p>
-            <a href="/homepage/#contact" class="btn-primary inline-flex items-center gap-2">
+            <a href="{% url 'core:homepage' %}#contact" class="btn-primary inline-flex items-center gap-2">
                 <span data-i18="copyright_cta_btn">Связаться с Автором</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
@@ -659,7 +659,7 @@
                     </h3>
                     <p class="text-sm" data-i18="pd_policy_contact_p">
                         По вопросам, связанным с обработкой персональных данных, вы можете связаться с нами через
-                        <a href="/homepage/#contact" class="text-[#3d7a4f] hover:underline">форму обратной связи</a>
+                        <a href="{% url 'core:homepage' %}#contact" class="text-[#3d7a4f] hover:underline">форму обратной связи</a>
                         или направив письмо на электронную почту Сайта.
                     </p>
                 </div>
